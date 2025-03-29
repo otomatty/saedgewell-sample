@@ -1,0 +1,29 @@
+{
+  "title": "ガイド",
+  "description": "Mastraを使用した実装例とガイド",
+  "order": 3,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "chef-michel",
+      "title": "Agents: Chef Michel",
+      "description": "Chef Michel AIエージェントの実装ガイド",
+      "order": 1
+    },
+    {
+      "name": "stock-agent",
+      "title": "Tools: Stock Agent",
+      "description": "株価情報を提供するエージェントツールの実装ガイド",
+      "order": 2
+    },
+    {
+      "name": "ai-recruiter",
+      "title": "Workflows: AI Recruiter",
+      "description": "AI採用担当者ワークフローの実装ガイド",
+      "order": 3
+    }
+  ]
+}

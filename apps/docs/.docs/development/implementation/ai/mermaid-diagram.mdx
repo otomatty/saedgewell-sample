@@ -1,0 +1,687 @@
+---
+title: 'Mermaid図解自動生成機能'
+description: 'ドキュメント内容を分析し、適切な図解をMermaid構文で自動生成する機能'
+---
+
+# Mermaid図解自動生成機能
+
+## 1. 機能概要
+
+ドキュメント内容を分析し、適切な図解（フローチャート、シーケンス図、クラス図など）をMermaid構文で自動生成する機能。ユーザーは生成された図を編集・カスタマイズし、ドキュメントに追加できる。
+
+### 主要な特徴:
+- 複数の図表タイプ対応（フローチャート、シーケンス図、ER図など）
+- カスタムプロンプトによる図解生成の調整
+- 生成された図の編集機能
+- ドキュメントへの埋め込み
+
+## 2. 技術要件
+
+- **フロントエンド**: 
+  - Next.js 15
+  - React 19
+  - Tailwind CSS v4
+  - shadcn/ui
+- **状態管理**: 
+  - Jotai
+- **図表レンダリング**: 
+  - Mermaid.js
+- **API**: 
+  - Gemini API
+- **パッケージ**:
+  - @google/generative-ai
+  - mermaid
+  - @mermaid-js/mermaid-cli
+  - file-saver (図の保存用)
+
+## 3. ユーザーストーリー
+
+- ユーザーとして、複雑なドキュメント内容を視覚的に理解するための図解を自動生成してほしい
+- ユーザーとして、生成された図を自分の好みに合わせて編集・調整したい
+- ユーザーとして、図解を画像として保存したり、ドキュメントに埋め込んだりしたい
+- ユーザーとして、特定の内容に焦点を当てた図解を生成するためのプロンプトをカスタマイズしたい
+
+## 4. アーキテクチャ
+
+### コンポーネント構成:
+1. **DiagramGenerator**: ドキュメント内容から図解コードを生成
+2. **MermaidRenderer**: 生成されたコードを図としてレンダリング
+3. **DiagramEditor**: 図解コードの編集インターフェース
+4. **DiagramExporter**: 図解の保存・エクスポート機能
+
+### データフロー:
+1. ドキュメント内容 → DiagramGenerator → Mermaid構文生成
+2. Mermaid構文 → MermaidRenderer → 図表表示
+3. ユーザー編集 → DiagramEditor → 更新された図表
+4. エクスポート要求 → DiagramExporter → SVG/PNG保存または埋め込み
+
+## 5. APIインターフェース
+
+```typescript
+// lib/ai/diagram-service.ts
+import { atom } from 'jotai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+export type DiagramType = 'flowchart' | 'sequenceDiagram' | 'classDiagram' | 'entityRelationshipDiagram' | 'gantt';
+export type ComplexityLevel = 'simple' | 'medium' | 'detailed';
+
+export interface DiagramGenerationRequest {
+  documentContent: string;    // ドキュメント内容
+  diagramType: DiagramType;   // 図のタイプ
+  customPrompt?: string;      // カスタムプロンプト（オプション）
+  complexity?: ComplexityLevel; // 複雑さレベル
+  focusArea?: string;         // 焦点を当てる部分（オプション）
+}
+
+export interface DiagramResponse {
+  mermaidCode: string;        // 生成されたMermaid構文
+  suggestedTitle: string;     // 提案されるタイトル
+  explanation: string;        // 図の説明
+}
+
+export interface DiagramExportOptions {
+  format: 'svg' | 'png';
+  backgroundColor?: string;
+  includeTitle: boolean;
+}
+
+// Jotaiを使用した状態管理
+export const diagramSettingsAtom = atom<DiagramGenerationRequest>({
+  documentContent: '',
+  diagramType: 'flowchart',
+  complexity: 'medium',
+});
+
+export const mermaidCodeAtom = atom<string>('');
+export const suggestedTitleAtom = atom<string>('');
+export const diagramExplanationAtom = atom<string>('');
+export const isGeneratingDiagramAtom = atom<boolean>(false);
+export const diagramErrorAtom = atom<string | null>(null);
+
+// 図解生成関数
+export async function generateDiagram(request: DiagramGenerationRequest): Promise<DiagramResponse> {
+  // 実装
+}
+
+// 図解エクスポート関数
+export async function exportDiagram(mermaidCode: string, options: DiagramExportOptions): Promise<Blob> {
+  // 実装
+}
+
+// ドキュメント埋め込み用コード生成
+export function generateEmbedCode(mermaidCode: string, title?: string): string {
+  // 実装
+}
+```
+
+## 6. UIコンポーネント
+
+### 1. DiagramGeneratorPanel
+
+図解生成設定パネル
+
+```tsx
+// components/ai/DiagramGeneratorPanel.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAtom } from 'jotai';
+import { 
+  diagramSettingsAtom, 
+  isGeneratingDiagramAtom,
+  mermaidCodeAtom,
+  suggestedTitleAtom,
+  diagramExplanationAtom,
+  diagramErrorAtom,
+  generateDiagram,
+  DiagramType,
+  ComplexityLevel
+} from '@/lib/ai/diagram-service';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
+
+interface DiagramGeneratorPanelProps {
+  documentContent: string;
+  className?: string;
+}
+
+export function DiagramGeneratorPanel({ documentContent, className }: DiagramGeneratorPanelProps) {
+  const [settings, setSettings] = useAtom(diagramSettingsAtom);
+  const [isGenerating, setIsGenerating] = useAtom(isGeneratingDiagramAtom);
+  const [_, setMermaidCode] = useAtom(mermaidCodeAtom);
+  const [__, setSuggestedTitle] = useAtom(suggestedTitleAtom);
+  const [___, setDiagramExplanation] = useAtom(diagramExplanationAtom);
+  const [____, setDiagramError] = useAtom(diagramErrorAtom);
+  
+  const [localSettings, setLocalSettings] = useState({
+    diagramType: settings.diagramType,
+    complexity: settings.complexity || 'medium',
+    customPrompt: settings.customPrompt || '',
+    focusArea: settings.focusArea || '',
+  });
+  
+  const handleGenerate = async () => {
+    const updatedSettings = {
+      ...localSettings,
+      documentContent,
+    };
+    
+    setSettings(updatedSettings);
+    setIsGenerating(true);
+    setDiagramError(null);
+    
+    try {
+      const response = await generateDiagram(updatedSettings);
+      setMermaidCode(response.mermaidCode);
+      setSuggestedTitle(response.suggestedTitle);
+      setDiagramExplanation(response.explanation);
+    } catch (error) {
+      console.error('Error generating diagram:', error);
+      setDiagramError(error instanceof Error ? error.message : '図解生成中にエラーが発生しました');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>図解生成</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="diagramType">図の種類</Label>
+          <Select 
+            value={localSettings.diagramType}
+            onValueChange={(value: DiagramType) => 
+              setLocalSettings(prev => ({ ...prev, diagramType: value }))
+            }
+            disabled={isGenerating}
+          >
+            <SelectTrigger id="diagramType">
+              <SelectValue placeholder="図の種類を選択" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="flowchart">フローチャート</SelectItem>
+              <SelectItem value="sequenceDiagram">シーケンス図</SelectItem>
+              <SelectItem value="classDiagram">クラス図</SelectItem>
+              <SelectItem value="entityRelationshipDiagram">ER図</SelectItem>
+              <SelectItem value="gantt">ガントチャート</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="complexity">複雑さ</Label>
+          <Select 
+            value={localSettings.complexity}
+            onValueChange={(value: ComplexityLevel) => 
+              setLocalSettings(prev => ({ ...prev, complexity: value }))
+            }
+            disabled={isGenerating}
+          >
+            <SelectTrigger id="complexity">
+              <SelectValue placeholder="複雑さを選択" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="simple">シンプル</SelectItem>
+              <SelectItem value="medium">標準</SelectItem>
+              <SelectItem value="detailed">詳細</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="focusArea">焦点を当てる部分（任意）</Label>
+          <Input
+            id="focusArea"
+            placeholder="例: ユーザー認証フロー、データモデル"
+            value={localSettings.focusArea}
+            onChange={(e) => 
+              setLocalSettings(prev => ({ ...prev, focusArea: e.target.value }))
+            }
+            disabled={isGenerating}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="customPrompt">カスタムプロンプト（任意）</Label>
+          <Textarea
+            id="customPrompt"
+            placeholder="例: システムのデータフローを視覚化する図を作成してください"
+            value={localSettings.customPrompt}
+            onChange={(e) => 
+              setLocalSettings(prev => ({ ...prev, customPrompt: e.target.value }))
+            }
+            rows={3}
+            disabled={isGenerating}
+          />
+        </div>
+        
+        <Button 
+          onClick={handleGenerate} 
+          disabled={isGenerating} 
+          className="w-full"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              図解生成中...
+            </>
+          ) : '図解を生成する'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 2. MermaidEditor
+
+コード編集インターフェース
+
+```tsx
+// components/ai/MermaidEditor.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useAtom } from 'jotai';
+import { mermaidCodeAtom } from '@/lib/ai/diagram-service';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+
+interface MermaidEditorProps {
+  className?: string;
+}
+
+export function MermaidEditor({ className }: MermaidEditorProps) {
+  const [mermaidCode, setMermaidCode] = useAtom(mermaidCodeAtom);
+  const [syntaxError, setSyntaxError] = useState<string | null>(null);
+  
+  // シンタックスエラーのチェック
+  useEffect(() => {
+    if (!mermaidCode) return;
+    
+    // 実際の実装では、mermaid.jsのパースエラーをキャッチする
+    try {
+      // mermaid.parse(mermaidCode);
+      setSyntaxError(null);
+    } catch (error) {
+      setSyntaxError(error instanceof Error ? error.message : '構文エラーが発生しました');
+    }
+  }, [mermaidCode]);
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>Mermaidコード</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <Textarea
+            value={mermaidCode}
+            onChange={(e) => setMermaidCode(e.target.value)}
+            placeholder="Mermaid構文が生成されるとここに表示されます"
+            rows={10}
+            className="font-mono text-sm"
+          />
+          
+          {syntaxError && (
+            <div className="text-sm text-red-500">
+              <Label>構文エラー:</Label>
+              <p>{syntaxError}</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 3. DiagramPreview
+
+図解プレビュー
+
+```tsx
+// components/ai/DiagramPreview.tsx
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useAtomValue } from 'jotai';
+import { mermaidCodeAtom, suggestedTitleAtom } from '@/lib/ai/diagram-service';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
+
+interface DiagramPreviewProps {
+  className?: string;
+}
+
+export function DiagramPreview({ className }: DiagramPreviewProps) {
+  const mermaidCode = useAtomValue(mermaidCodeAtom);
+  const suggestedTitle = useAtomValue(suggestedTitleAtom);
+  const [isRendering, setIsRendering] = useState(false);
+  const [renderError, setRenderError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!mermaidCode || !containerRef.current) return;
+    
+    const renderDiagram = async () => {
+      setIsRendering(true);
+      setRenderError(null);
+      
+      try {
+        // 実際の実装では、mermaid.jsを使用して図をレンダリング
+        // const { mermaid } = await import('mermaid');
+        // mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+        // const { svg } = await mermaid.render('diagram', mermaidCode);
+        // containerRef.current.innerHTML = svg;
+        
+        // 仮実装（実際にはmermaid.jsを使用）
+        containerRef.current.innerHTML = `
+          <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-md text-center">
+            <p>ここに図が表示されます</p>
+            <p class="text-xs text-muted-foreground">実際の実装ではmermaid.jsを使用</p>
+          </div>
+        `;
+      } catch (error) {
+        setRenderError(error instanceof Error ? error.message : 'レンダリングエラーが発生しました');
+        containerRef.current.innerHTML = '';
+      } finally {
+        setIsRendering(false);
+      }
+    };
+    
+    renderDiagram();
+  }, [mermaidCode]);
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>{suggestedTitle || 'プレビュー'}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isRendering ? (
+          <Skeleton className="w-full h-64" />
+        ) : renderError ? (
+          <div className="p-4 border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 rounded-md">
+            <div className="flex items-center text-red-600 dark:text-red-400">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <span>レンダリングエラー</span>
+            </div>
+            <p className="mt-2 text-sm">{renderError}</p>
+          </div>
+        ) : (
+          <div ref={containerRef} className="mermaid-container overflow-auto max-h-96" />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 4. ExportToolbar
+
+エクスポートツールバー
+
+```tsx
+// components/ai/ExportToolbar.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAtomValue } from 'jotai';
+import { 
+  mermaidCodeAtom, 
+  suggestedTitleAtom,
+  exportDiagram,
+  generateEmbedCode
+} from '@/lib/ai/diagram-service';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { 
+  Download, 
+  Copy, 
+  Code, 
+  Check,
+  Loader2
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+interface ExportToolbarProps {
+  className?: string;
+}
+
+export function ExportToolbar({ className }: ExportToolbarProps) {
+  const mermaidCode = useAtomValue(mermaidCodeAtom);
+  const suggestedTitle = useAtomValue(suggestedTitleAtom);
+  const [includeTitle, setIncludeTitle] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  
+  const handleExport = async (format: 'svg' | 'png') => {
+    if (!mermaidCode) return;
+    
+    setIsExporting(true);
+    
+    try {
+      const blob = await exportDiagram(mermaidCode, {
+        format,
+        includeTitle,
+        backgroundColor: 'transparent'
+      });
+      
+      // ファイル保存
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${suggestedTitle || 'diagram'}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`${format.toUpperCase()} として保存しました`);
+    } catch (error) {
+      console.error('Error exporting diagram:', error);
+      toast.error('エクスポート中にエラーが発生しました');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
+  const handleCopyEmbedCode = () => {
+    if (!mermaidCode) return;
+    
+    const embedCode = generateEmbedCode(mermaidCode, includeTitle ? suggestedTitle : undefined);
+    navigator.clipboard.writeText(embedCode);
+    
+    setIsCopied(true);
+    toast.success('埋め込みコードをコピーしました');
+    
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
+  
+  if (!mermaidCode) return null;
+  
+  return (
+    <Card className={className}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={isExporting}>
+                  {isExporting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  エクスポート
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('svg')}>
+                  SVGとして保存
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('png')}>
+                  PNGとして保存
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleCopyEmbedCode}
+            >
+              {isCopied ? (
+                <Check className="mr-2 h-4 w-4 text-green-500" />
+              ) : (
+                <Code className="mr-2 h-4 w-4" />
+              )}
+              埋め込みコードをコピー
+            </Button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include-title" 
+              checked={includeTitle}
+              onCheckedChange={(checked) => setIncludeTitle(!!checked)}
+            />
+            <Label htmlFor="include-title">タイトルを含める</Label>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 7. 実装ステップ
+
+### フェーズ1: 基本図解生成（2週間）
+- フローチャート生成の基本実装
+- Mermaidレンダリング統合
+- シンプルなエディタUIの構築
+
+```tsx
+// TODO: フローチャート生成ロジック
+async function implementFlowchartGeneration() {
+  // 実装
+}
+
+// TODO: Mermaidレンダリング統合
+async function implementMermaidRendering() {
+  // 実装
+}
+```
+
+### フェーズ2: 図解タイプの拡張（2週間）
+- 追加の図解タイプ（シーケンス図、クラス図など）の実装
+- カスタムプロンプト機能の追加
+- エディタの機能強化
+
+```tsx
+// TODO: シーケンス図生成ロジック
+async function implementSequenceDiagramGeneration() {
+  // 実装
+}
+
+// TODO: クラス図生成ロジック
+async function implementClassDiagramGeneration() {
+  // 実装
+}
+
+// TODO: ER図生成ロジック
+async function implementERDiagramGeneration() {
+  // 実装
+}
+```
+
+### フェーズ3: エクスポートと高度な編集（1週間）
+- SVG/PNG保存機能の実装
+- ドキュメント埋め込み機能
+- UI/UXの洗練
+
+```tsx
+// TODO: SVG/PNG保存機能
+async function implementDiagramExport() {
+  // 実装
+}
+
+// TODO: ドキュメント埋め込み機能
+function implementEmbedCodeGeneration() {
+  // 実装
+}
+```
+
+## 8. テスト計画
+
+- 単体テスト: 各図解タイプの生成精度
+- 統合テスト: 生成から編集、エクスポートまでの一連のフロー
+- ユーザビリティテスト: 実際のユーザーによる図解生成と編集の使いやすさ評価
+- ブラウザ互換性テスト: 主要ブラウザでのMermaid表示確認
+
+```tsx
+// TODO: テストケースの実装
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+
+describe('DiagramGeneratorPanel', () => {
+  it('should generate diagram with selected settings', async () => {
+    // テスト実装
+  });
+});
+
+describe('MermaidEditor', () => {
+  it('should update mermaid code and detect syntax errors', () => {
+    // テスト実装
+  });
+});
+
+describe('DiagramPreview', () => {
+  it('should render diagram correctly', () => {
+    // テスト実装
+  });
+});
+```
+
+## 9. リスクと緩和策
+
+| リスク | 緩和策 |
+|-------|--------|
+| 複雑なドキュメントからの不正確な図解生成 | プロンプト最適化、フィードバックループの導入 |
+| Mermaid構文エラーの発生 | リアルタイムバリデーション、エラー修正提案 |
+| 大規模図解のパフォーマンス問題 | 複雑さ制限、段階的レンダリング |
+| ブラウザ間の表示差異 | 標準化されたSVGエクスポート、クロスブラウザテスト |
+
+## 10. パフォーマンス考慮事項
+
+- 大規模図解の効率的なレンダリング
+- 生成処理の非同期化とバックグラウンド実行
+- 編集中の遅延リアルタイムプレビュー
+- 生成された図解のキャッシング

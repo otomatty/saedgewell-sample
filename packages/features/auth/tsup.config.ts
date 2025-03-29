@@ -1,0 +1,35 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: [
+    'src/sign-in.ts',
+    'src/sign-up.ts',
+    'src/password-reset.ts',
+    'src/shared.ts',
+    'src/mfa.ts',
+    'src/captcha/client/index.ts',
+    'src/captcha/server/index.ts',
+    'src/components/resend-auth-link-form.tsx',
+  ],
+  format: ['esm', 'cjs'],
+  dts: true,
+  clean: true,
+  external: [
+    'react',
+    'react-dom',
+    'next',
+    '@supabase/supabase-js',
+    '@kit/ui',
+    '@kit/shared',
+    '@kit/supabase',
+    'zod',
+    'react-hook-form',
+    '@hookform/resolvers',
+    '@radix-ui/react-icons',
+    'sonner',
+    'lucide-react',
+    'react-i18next',
+    '@tanstack/react-query',
+    '@marsidev/react-turnstile',
+  ],
+});

@@ -1,0 +1,141 @@
+{
+  "date": "2025-03-23",
+  "entries": [
+    {
+      "id": "environment-variables",
+      "title": "モノレポにおける環境変数管理",
+      "description": "",
+      "tags": [
+        "環境変数",
+        "モノレポ",
+        "Next.js",
+        "Turbo"
+      ]
+    },
+    {
+      "id": "supabase-jwt-error-resolution",
+      "title": "Supabase JWT検証エラー解決記録",
+      "description": "",
+      "tags": [
+        "supabase",
+        "jwt",
+        "troubleshooting",
+        "docker"
+      ]
+    }
+  ],
+  "commits": [
+    {
+      "message": "安全な設定ファイルを復元",
+      "sha": "9d0c766131d394402f5798ea66cb73732bd5d272",
+      "date": "2025-03-23T10:58:20Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/9d0c766131d394402f5798ea66cb73732bd5d272",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 309,
+      "deletions": 0
+    },
+    {
+      "message": "Merge main branch into feature/docker-migration with resolved conflicts",
+      "sha": "584663334256603cc80e8d2c699d562a8f097029",
+      "date": "2025-03-23T10:41:36Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/584663334256603cc80e8d2c699d562a8f097029",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 5851,
+      "deletions": 895
+    },
+    {
+      "message": "Merge pull request #4 from otomatty/feature/migrate-docs-to-root-directory\n\nFeature/migrate-docs-to-root-directory",
+      "sha": "80ad52748deefe1d7a6a4cd809a868a32c56e32c",
+      "date": "2025-03-23T10:19:01Z",
+      "authorName": "AkimasaSugai",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/80ad52748deefe1d7a6a4cd809a868a32c56e32c",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 3816,
+      "deletions": 10317
+    },
+    {
+      "message": "Merge pull request #4 from otomatty/feature/migrate-docs-to-root-directory\n\nFeature/migrate-docs-to-root-directory",
+      "sha": "9615b636d09d519c31d4fce9919715cde265a25c",
+      "date": "2025-03-23T10:19:01Z",
+      "authorName": "AkimasaSugai",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/9615b636d09d519c31d4fce9919715cde265a25c",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 3816,
+      "deletions": 10317
+    },
+    {
+      "message": "feat: ドキュメント構造の移行と改善\n\n- ドキュメントをルートディレクトリの `.docs` に移行\n- コントリビューター、使用ライブラリ、デザインインスピレーションに関する新しいドキュメントを追加\n- 検索機能の実装を改善し、エラーハンドリングを強化\n- ヘッダーとフッターのレイアウトを更新し、ナビゲーションを強化\n- 見出しのスタイルを調整し、可読性を向上",
+      "sha": "a1e28ad4d8a244301ab420445c1e4e127a0b18d4",
+      "date": "2025-03-23T10:15:01Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/a1e28ad4d8a244301ab420445c1e4e127a0b18d4",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 48,
+      "deletions": 0
+    },
+    {
+      "message": "feat: ドキュメント構造の移行と改善\n\n- ドキュメントをルートディレクトリの `.docs` に移行\n- コントリビューター、使用ライブラリ、デザインインスピレーションに関する新しいドキュメントを追加\n- 検索機能の実装を改善し、エラーハンドリングを強化\n- ヘッダーとフッターのレイアウトを更新し、ナビゲーションを強化\n- 見出しのスタイルを調整し、可読性を向上",
+      "sha": "c76dd6e4021a19ba54a3d5814db4b2d0d18c0b19",
+      "date": "2025-03-23T10:15:01Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/c76dd6e4021a19ba54a3d5814db4b2d0d18c0b19",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 48,
+      "deletions": 0
+    },
+    {
+      "message": "feat: 謝辞とライブラリ情報の追加、ドキュメント構造の改善\n\n- コントリビューター、使用ライブラリ、デザインインスピレーションに関する新しいドキュメントを追加\n- 各ドキュメントの構造を整理し、情報の可視性を向上\n- 検索機能の実装を改善し、エラーハンドリングを強化\n- ヘッダーとフッターのレイアウトを更新し、ナビゲーションを強化\n- 見出しのスタイルを調整し、可読性を向上",
+      "sha": "1e5c192cbe85a4a62825309a31f3eb403e3d85f1",
+      "date": "2025-03-23T10:04:29Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/1e5c192cbe85a4a62825309a31f3eb403e3d85f1",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 711,
+      "deletions": 169
+    },
+    {
+      "message": "feat: 謝辞とライブラリ情報の追加、ドキュメント構造の改善\n\n- コントリビューター、使用ライブラリ、デザインインスピレーションに関する新しいドキュメントを追加\n- 各ドキュメントの構造を整理し、情報の可視性を向上\n- 検索機能の実装を改善し、エラーハンドリングを強化\n- ヘッダーとフッターのレイアウトを更新し、ナビゲーションを強化\n- 見出しのスタイルを調整し、可読性を向上",
+      "sha": "17a6f9253028f363eb6aff1b3fd8f9458aa955ef",
+      "date": "2025-03-23T10:04:29Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/17a6f9253028f363eb6aff1b3fd8f9458aa955ef",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 711,
+      "deletions": 169
+    }
+  ]
+}

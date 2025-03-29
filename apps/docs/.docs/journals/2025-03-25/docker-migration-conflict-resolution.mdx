@@ -1,0 +1,97 @@
+---
+title: 'Docker移行コンフリクト解消手順'
+description: ''
+date: '2025-03-25'
+author: 'Akimasa Sugai'
+tags: ['Docker', '移行', 'コンフリクト解消']
+---
+
+# Docker移行コンフリクト解消手順
+
+# Docker環境移行に伴うコンフリクト解消作業ドキュメント
+
+## 1. 作業概要
+- 作業内容：Docker環境への移行ブランチ（feature/docker-migration）をmainブランチにマージする際のコンフリクト解消
+- 対象ブランチ：
+  - ベースブランチ：main
+  - 作業ブランチ：feature/docker-migration
+
+## 2. 実施した手順
+
+### 2.1 作業準備
+1. 新しい作業ブランチの作成
+```bash
+git checkout feature/docker-migration
+git checkout -b feature/docker-migration-merge-main
+git merge origin/main
+```
+
+### 2.2 コンフリクト解消
+#### ディレクトリ単位での一括処理
+1. apps/adminディレクトリの変更
+   - 現在のブランチの変更を採用
+   ```bash
+   git checkout --ours apps/admin/
+   git add apps/admin/
+   ```
+
+2. 削除されたディレクトリの処理
+   - apps/web/(public)ディレクトリの削除を確定
+   ```bash
+   git rm -r "apps/web/app/(public)/"
+   ```
+
+#### その他のコンフリクト処理
+- VSCodeのマージエディタを使用して個別に解消
+- 両方削除となっているファイルは`git add`で確定
+
+## 3. 解消したコンフリクトの種類
+1. コンテンツの競合（content）
+   - ファイルの内容が両方のブランチで変更されていた場合
+
+2. 追加/追加の競合（add/add）
+   - 両方のブランチで同じファイルが追加された場合
+
+3. 名前変更/削除の競合（rename/delete）
+   - 一方のブランチでファイルが移動され、もう一方で削除された場合
+
+4. 両方削除の競合
+   - 両方のブランチで同じファイルが削除された場合
+
+## 4. コンフリクト解消後の作業
+1. 変更の確定
+```bash
+git add .
+git commit -m "Merge main into feature/docker-migration and resolve conflicts"
+```
+
+2. リモートへのプッシュ
+```bash
+git push origin feature/docker-migration-merge-main
+```
+
+## 5. 今後の作業
+1. プルリクエストの作成
+   - ベースブランチ：main
+   - 比較ブランチ：feature/docker-migration-merge-main
+
+2. レビュー対応
+   - コードレビューの実施
+   - 必要に応じて修正
+
+3. マージ完了後の後片付け
+```bash
+git checkout main
+git pull
+git branch -d feature/docker-migration-merge-main
+```
+
+## 6. 注意点
+- コンフリクト解消後は必ずアプリケーションの動作確認を行う
+- 重要なファイルの変更は慎重に確認
+- 不明な点がある場合はチームメンバーに確認
+
+## 7. 学んだこと
+- 大規模なコンフリクトの場合は、ディレクトリ単位での一括処理が効率的
+- VSCodeのマージツールを活用することで視覚的にコンフリクトを解消できる
+- 作業前にバックアップブランチを作成することで安全に作業できる

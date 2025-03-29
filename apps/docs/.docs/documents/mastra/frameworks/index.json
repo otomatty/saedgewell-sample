@@ -1,0 +1,23 @@
+{
+  "title": "フレームワーク",
+  "description": "Mastraと他のフレームワークとの連携",
+  "order": 4,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "ai-sdk",
+      "title": "AI SDK",
+      "description": "Mastraとの連携とAI SDKの活用方法",
+      "order": 1
+    },
+    {
+      "name": "nextjs-integration",
+      "title": "Integrate with Next.js",
+      "description": "Next.jsプロジェクトでのMastraの統合方法",
+      "order": 2
+    }
+  ]
+}

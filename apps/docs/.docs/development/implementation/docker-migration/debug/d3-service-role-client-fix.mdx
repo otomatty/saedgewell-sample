@@ -1,0 +1,151 @@
+# サービスロールクライアントの問題修正記録
+
+## 発生していた問題
+
+メトリクスの取得でJWTシグネチャエラーが発生し、サービスロールでの代替処理も失敗していました。
+
+```
+サービスロールクライアント処理中のエラー: Error: メトリクス取得エラー: 401
+メトリクス取得中にエラーが発生しました: Error: メトリクス取得エラー: 401
+```
+
+## 問題の原因
+
+1. **PostgRESTコンテナのJWT設定が不整合**:
+   - 複数のPostgRESTコンテナが同時に実行されていた
+   - 一方のコンテナはプレーンテキストのJWTシークレットを使用
+   - もう一方のコンテナはJSON形式のJWTシークレットを使用
+
+2. **JWT設定の形式の問題**:
+   - 正しい形式: `PGRST_JWT_SECRET="super-secret-jwt-token-with-at-least-32-characters-long"`
+   - 問題があった形式: `PGRST_JWT_SECRET={\"keys\":[{\"kty\":\"oct\",\"k\":\"YzNWd1pYSXRjMlZqY21WMExXcDNkQzEwYjJ0bGJpMTNhWFJvTFdGMExXeGxZWE4wTFRNeUxXTm9ZWEpoWTNSbGNuTXRiRzl1Wnc9PQ\"}]}`
+
+## 解決方法
+
+1. 既存のPostgRESTコンテナを削除:
+   ```bash
+   docker stop supabase_rest_saedgewell supabase_rest_saedgewell_new
+   docker rm supabase_rest_saedgewell supabase_rest_saedgewell_new
+   ```
+
+2. プレーンテキストのJWTシークレットを使用して新しいコンテナを起動:
+   ```bash
+   docker run -d --name supabase_rest_saedgewell \
+     --network=supabase_network_saedgewell \
+     -e PGRST_DB_URI="postgresql://authenticator:postgres@supabase_db_saedgewell:5432/postgres" \
+     -e PGRST_DB_SCHEMAS="public,graphql_public" \
+     -e PGRST_DB_EXTRA_SEARCH_PATH="public,extensions" \
+     -e PGRST_DB_MAX_ROWS=1000 \
+     -e PGRST_DB_ANON_ROLE=anon \
+     -e PGRST_JWT_SECRET="super-secret-jwt-token-with-at-least-32-characters-long" \
+     -e PGRST_ADMIN_SERVER_PORT=3001 \
+     public.ecr.aws/supabase/postgrest:v12.2.3
+   ```
+
+3. アプリケーションコンテナを再起動:
+   ```bash
+   docker-compose restart web docs admin
+   ```
+
+## 結果
+
+- **サービスロールクライアント**: 正常に動作するようになった
+- **標準クライアント（匿名ユーザー）**: JWTシグネチャエラーが継続
+
+## 今後の対応
+
+1. **匿名ユーザー認証の修正**:
+   - 匿名ユーザー用のJWTトークンが正しく検証されるよう設定を調整
+   - RLSポリシーを適切に設定
+
+2. **サービスロールクライアント利用の最適化**:
+   - 現在の実装ではサービスロールへのフォールバックが機能しているため、サービス運用に影響はない
+   - 長期的にはRLSポリシーを適切に設定し、匿名クライアントでも動作するようにすることが望ましい
+
+3. **Supabase環境の整理**:
+   - 定期的なメンテナンスで環境を再構築
+   - JWT設定の一貫性を確保するために環境変数管理を徹底
+
+## スクリプト
+
+この問題の修正に使用したスクリプト（`scripts/dev/fix-rest-jwt.sh`）も参照してください。 
+
+# サービスロールクライアント接続問題の解決
+
+## 問題の概要
+
+Supabaseクライアントでデータベースにアクセスする際に、以下のJWT署名エラーが発生していました：
+
+```
+エラーコード: PGRST301
+メッセージ: JWSError JWSInvalidSignature
+ステータス: 401 Unauthorized
+```
+
+## 根本原因
+
+詳細な調査により、以下の問題が特定されました：
+
+1. **JWT署名の不一致**:
+   - Supabase APIとPostgRESTコンテナで使用するJWT秘密鍵が一致していなかった
+   - データベースに設定されているJWT秘密鍵と、環境変数に設定されているJWT秘密鍵が異なっていた
+
+2. **コンテナネットワークの問題**:
+   - Docker内のサービス間通信でURLやホスト名の参照に不整合があった
+
+3. **複数のPostgRESTインスタンス**:
+   - Supabaseの構成に複数のPostgRESTコンテナが実行され、競合が発生していた
+
+## 解決策
+
+以下の手順で問題を解決しました：
+
+1. **専用のPostgRESTコンテナの作成**:
+   - 既存のPostgRESTコンテナを停止・削除
+   - 正しいJWT秘密鍵と認証情報を使用して新しいコンテナを起動
+   - ポート3000を公開して直接アクセスを可能に
+
+2. **JWT秘密鍵の統一**:
+   - 全ての環境（DB、PostgREST、アプリケーション）で同じJWT秘密鍵を使用
+   - Base64エンコードではなく、生の文字列として秘密鍵を提供
+
+3. **直接接続設定**:
+   - アプリケーションが`http://host.docker.internal:3000`を通じてPostgRESTに直接アクセス
+   - Kong APIゲートウェイを介さない接続パスを確立
+
+## 実装スクリプト
+
+この解決策は以下のスクリプトで実装されています：
+
+1. `scripts/dev/fix-postgrest2.sh` - PostgRESTコンテナの再作成と設定
+2. `scripts/dev/connect-direct.sh` - アプリケーションからの直接接続設定
+
+## 検証結果
+
+実装後の検証で、以下の結果が確認されました：
+
+- HTTPリクエストによるデータ取得が正常に動作
+- metricsテーブルから正常にデータを取得可能
+- JWTシグネチャエラーが解消
+
+## 教訓
+
+1. **Docker環境におけるホスト参照**:
+   - Dockerコンテナ間の通信には適切なホスト名（`host.docker.internal`など）の使用が重要
+
+2. **JWT秘密鍵の統一管理**:
+   - 認証コンポーネント間でJWT秘密鍵の一貫性を確保することが必須
+
+3. **代替接続パスの確立**:
+   - 複雑なAPIゲートウェイを介さない直接接続パスを確立することで、トラブルシューティングが容易になる
+
+## 今後の改善点
+
+1. **環境変数管理の一元化**:
+   - JWT秘密鍵などの重要な設定の一元管理と自動同期の仕組みを構築
+
+2. **コンテナ間の依存関係の明確化**:
+   - サービス間の依存関係と接続パスを明示的に定義・文書化
+
+3. **接続テストの自動化**:
+   - サービス間の接続テストを自動化し、早期に問題を検出 

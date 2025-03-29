@@ -1,0 +1,91 @@
+---
+title: 'アカウントAPI'
+description: 'MakerkitにおけるアカウントAPIの簡単な紹介'
+icon: 'user'
+order: 1
+---
+
+# アカウントAPI
+
+MakerkitにおけるアカウントAPIの簡単な紹介です。アカウントAPIを使用して、ユーザーの個人アカウントに関する情報を取得することができます。
+
+## アカウントAPIの使用方法
+
+アカウントAPIを使用するには、`@kit/account/api`から`createAccountsApi`関数をインポートする必要があります。この関数には有効な`SupabaseClient`を渡す必要があります - これによりサーバーからデータベースと対話することができます。
+
+```tsx
+import { createAccountsApi } from '@kit/accounts/api';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+async function ServerComponent() {
+  const client = getSupabaseServerClient();
+  const api = createAccountsApi(client);
+  // apiを使用する
+}
+```
+
+Server Actionのコンテキストでは、以下のように使用します：
+
+```tsx
+'use server';
+
+import { createAccountsApi } from '@kit/accounts/api';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+export async function myServerAction() {
+  const client = getSupabaseServerClient();
+  const api = createAccountsApi(client);
+  
+  // apiを使用する
+}
+```
+
+## メソッド
+
+アカウントAPIは以下のメソッドを提供しています：
+
+### アカウントワークスペースデータの取得
+
+`getAccountWorkspace`メソッドを使用してアカウントワークスペースデータを取得します。このメソッドはユーザーアカウントのワークスペースデータを返します。
+
+```tsx
+const api = createAccountsApi(client);
+const workspace = await api.getAccountWorkspace();
+```
+
+このメソッドはすでにユーザーアカウントレイアウトで呼び出されているため、このメソッドを呼び出す必要はほとんどありません。
+
+### ユーザーアカウントの読み込み
+
+`loadUserAccounts`メソッドを使用してユーザーアカウントを読み込みます。
+
+このメソッドはユーザーアカウントの配列を返します。各アカウントには`label`、`value`、`image`プロパティがあります。
+
+```tsx
+const api = createAccountsApi(client);
+const accounts = await api.loadUserAccounts();
+```
+
+### サブスクリプションデータの取得
+
+`getSubscription`メソッドを使用して、指定されたユーザーのサブスクリプションデータを取得します。
+
+このメソッドは指定されたユーザーアカウントのサブスクリプションデータを返します。
+
+```tsx
+const api = createAccountsApi(client);
+const subscription = await api.getSubscription(accountId);
+```
+
+`subscriptions`および`subscription_items`テーブルを返します。
+
+### 課金顧客IDの取得
+
+`getCustomerId`メソッドを使用して、指定されたユーザーの課金顧客IDを取得します。
+
+このメソッドは指定されたユーザーアカウントの課金顧客IDを返します。
+
+```tsx
+const api = createAccountsApi(client);
+const customerId = await api.getCustomerId(accountId);
+```

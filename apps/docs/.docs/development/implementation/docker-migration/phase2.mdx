@@ -1,0 +1,441 @@
+# フェーズ2: サブドメイン間認証共有の実装
+
+このフェーズでは、Docker化に伴い、複数のアプリケーション（web, docs, admin）をサブドメインで提供する際の認証状態共有を実装します。
+
+## 目標
+
+- [x] カスタムローカルドメイン設定の作成と自動化
+- [x] Supabase認証のサブドメイン間共有設定
+- [x] Nginxリバースプロキシの設定
+- [x] Supabaseクライアントの適切な構成
+- [x] Docker Compose設定の最適化
+
+## タスク
+
+### 2.1 カスタムドメイン設定
+
+- [x] `/etc/hosts` の設定
+  ```bash
+  # /etc/hostsファイルに以下を追加
+  127.0.0.1 saedgewell.test
+  127.0.0.1 web.saedgewell.test
+  127.0.0.1 docs.saedgewell.test
+  127.0.0.1 admin.saedgewell.test
+  ```
+
+- [x] 自動設定スクリプトの作成
+  ```bash
+  #!/bin/bash
+
+  HOSTS=("saedgewell.test" "web.saedgewell.test" "docs.saedgewell.test" "admin.saedgewell.test")
+  HOSTS_FILE="/etc/hosts"
+  IP="127.0.0.1"
+
+  echo "ホストファイルの更新には管理者権限が必要です"
+  for HOST in "${HOSTS[@]}"; do
+    if grep -q "$IP $HOST" $HOSTS_FILE; then
+      echo "$HOST は既に設定されています"
+    else
+      echo "$IP $HOST を追加します"
+      sudo sh -c "echo '$IP $HOST' >> $HOSTS_FILE"
+    fi
+  done
+
+  echo "ホスト設定が完了しました"
+  ```
+
+- [x] スクリプトに実行権限を付与
+  ```bash
+  mkdir -p scripts/dev
+  touch scripts/dev/setup-hosts.sh
+  chmod +x scripts/dev/setup-hosts.sh
+  ```
+
+### 2.2 Supabase CLI の設定
+
+- [x] `supabase/config.toml` の修正
+  ```toml
+  [auth]
+  enabled = true
+  # 親ドメインをsite_urlに設定
+  site_url = "http://saedgewell.test"
+  # サブドメインを追加リダイレクトURLに設定
+  additional_redirect_urls = [
+    "http://web.saedgewell.test",
+    "http://docs.saedgewell.test", 
+    "http://admin.saedgewell.test"
+  ]
+  ```
+
+### 2.3 Nginxリバースプロキシの設定
+
+- [x] `docker/nginx/nginx.conf` の作成
+  ```nginx
+  user  nginx;
+  worker_processes  auto;
+
+  error_log  /var/log/nginx/error.log notice;
+  pid        /var/run/nginx.pid;
+
+  events {
+      worker_connections  1024;
+  }
+
+  http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log  /var/log/nginx/access.log  main;
+
+      sendfile        on;
+      keepalive_timeout  65;
+
+      include /etc/nginx/conf.d/*.conf;
+  }
+  ```
+
+- [x] `docker/nginx/conf.d/default.conf` の作成
+  ```nginx
+  server {
+      listen 80;
+      server_name saedgewell.test;
+      
+      location / {
+          proxy_pass http://web:7510;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+
+  server {
+      listen 80;
+      server_name web.saedgewell.test;
+      
+      location / {
+          proxy_pass http://web:7510;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+
+  server {
+      listen 80;
+      server_name docs.saedgewell.test;
+      
+      location / {
+          proxy_pass http://docs:7511;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+
+  server {
+      listen 80;
+      server_name admin.saedgewell.test;
+      
+      location / {
+          proxy_pass http://admin:7512;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+  ```
+
+### 2.4 Supabaseクライアント実装
+
+- [x] `packages/supabase/src/clients/browser-client.ts` の修正
+  ```typescript
+  import { createBrowserClient } from '@supabase/ssr';
+  import type { Database } from '../database.types';
+  import { getSupabaseClientKeys } from '../get-supabase-client-keys';
+
+  export function getSupabaseBrowserClient<GenericSchema = Database>() {
+    const keys = getSupabaseClientKeys();
+    
+    // ホスト名からドメイン設定を決定
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    let domain = undefined;
+    
+    // 開発環境の場合
+    if (hostname.includes('saedgewell.test')) {
+      domain = '.saedgewell.test';
+    } 
+    // 本番環境の場合: トップレベルドメインを抽出（example.comなど）
+    else if (hostname.includes('.')) {
+      const parts = hostname.split('.');
+      if (parts.length >= 2) {
+        domain = `.${parts.slice(-2).join('.')}`;
+      }
+    }
+    
+    return createBrowserClient<GenericSchema>(keys.url, keys.anonKey, {
+      cookieOptions: {
+        // ドメインが存在する場合のみ設定
+        ...(domain ? { domain } : {}),
+        path: '/',
+        sameSite: 'lax',
+        // 開発環境ではfalse、本番環境ではtrue
+        secure: hostname !== 'localhost' && 
+                !hostname.endsWith('.test') && 
+                !hostname.endsWith('.local'),
+      }
+    });
+  }
+  ```
+
+- [x] `packages/supabase/src/clients/middleware-client.ts` の修正
+  ```typescript
+  import 'server-only';
+  import type { NextRequest, NextResponse } from 'next/server';
+  import { createServerClient } from '@supabase/ssr';
+  import type { Database } from '../database.types';
+  import { getSupabaseClientKeys } from '../get-supabase-client-keys';
+
+  export function createMiddlewareClient<GenericSchema = Database>(
+    request: NextRequest,
+    response: NextResponse
+  ) {
+    const keys = getSupabaseClientKeys();
+
+    // ホスト名からドメイン設定を決定
+    const host = request.headers.get('host') || '';
+    let domain = undefined;
+
+    // 開発環境の場合
+    if (host.includes('saedgewell.test')) {
+      domain = '.saedgewell.test';
+    } 
+    // 本番環境の場合: トップレベルドメインを抽出
+    else if (host.includes('.')) {
+      const parts = host.split('.');
+      if (parts.length >= 2) {
+        domain = `.${parts.slice(-2).join('.')}`;
+      }
+    }
+
+    return createServerClient<GenericSchema>(keys.url, keys.anonKey, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          // リクエストにクッキーを設定
+          for (const { name, value } of cookiesToSet) {
+            request.cookies.set(name, value);
+          }
+
+          // レスポンスにクッキーを設定（ドメイン付き）
+          for (const { name, value, options } of cookiesToSet) {
+            const cookieOptions = {
+              ...options,
+              ...(domain ? { domain } : {}),
+            };
+
+            response.cookies.set(name, value, cookieOptions);
+          }
+        },
+      },
+    });
+  }
+  ```
+
+### 2.5 重複クッキー問題の解決
+
+- [x] `apps/web/middleware.ts` の修正（各アプリに適用）
+  ```typescript
+  import { NextRequest, NextResponse } from 'next/server';
+  import { createMiddlewareClient } from '@kit/supabase/middleware-client';
+
+  export async function middleware(request: NextRequest) {
+    const response = NextResponse.next();
+    const supabase = createMiddlewareClient(request, response);
+    
+    // 認証チェックなどの既存処理...
+    
+    // 重複クッキー問題の解決
+    // サブドメイン固有のクッキーを削除し、親ドメインのクッキーのみを使用
+    const authCookieNames = request.cookies.getAll()
+      .filter(cookie => cookie.name.includes('auth-token'))
+      .map(cookie => cookie.name);
+    
+    for (const cookieName of authCookieNames) {
+      if (!cookieName.includes('supabase') && !cookieName.startsWith('sb-')) {
+        continue;
+      }
+      
+      // ホストがサブドメインの場合、サブドメイン固有のクッキーを削除
+      const host = request.headers.get('host') || '';
+      if (host.includes('.')) {
+        const parts = host.split('.');
+        // サブドメインが含まれる場合（例：web.saedgewell.test）
+        if (parts.length > 2) {
+          // クッキーオプションのdomainがないか、または特定のサブドメイン用の場合
+          response.cookies.delete(cookieName);
+        }
+      }
+    }
+    
+    return response;
+  }
+  ```
+
+### 2.6 Docker Compose設定
+
+- [x] `docker-compose.yml` への設定追加
+  ```yaml
+  version: '3.8'
+
+  services:
+    nginx:
+      image: nginx:alpine
+      ports:
+        - "80:80"
+      volumes:
+        - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+        - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      depends_on:
+        - web
+        - docs
+        - admin
+        - supabase
+      networks:
+        - saedgewell_net
+    
+    web:
+      # ...既存の設定...
+      environment:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-http://supabase:54321}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: http://web.saedgewell.test
+  
+    docs:
+      # ...既存の設定...
+      environment:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-http://supabase:54321}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: http://docs.saedgewell.test
+  
+    admin:
+      # ...既存の設定...
+      environment:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-http://supabase:54321}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: http://admin.saedgewell.test
+  
+    supabase:
+      image: supabase/supabase-local
+      container_name: supabase
+      restart: unless-stopped
+      networks:
+        - saedgewell_net
+      volumes:
+        - ./supabase/config.toml:/etc/supabase/config.toml
+        - ./supabase/seed.sql:/app/seed.sql
+        - supabase_data:/var/lib/postgresql/data
+      ports:
+        - "54321:54321" # API
+        - "54322:54322" # PostgreSQL
+        - "54323:54323" # Studio
+
+  networks:
+    saedgewell_net:
+      driver: bridge
+
+  volumes:
+    supabase_data:
+  ```
+
+## 動作確認方法
+
+### 2.7 実装検証
+
+- [x] 環境構築
+  ```bash
+  # ホスト設定
+  ./scripts/dev/setup-hosts.sh
+
+  # Dockerイメージのビルドと起動
+  docker compose build
+  docker compose up -d
+  ```
+
+- [x] 認証フローのテスト
+  1. ブラウザで http://web.saedgewell.test にアクセス
+  2. ログインフォームからログイン
+  3. 成功したら、新しいタブで http://docs.saedgewell.test にアクセス
+  4. 自動的にログイン状態になっていることを確認
+
+- [x] クッキー設定確認
+  1. ブラウザの開発者ツールで`Application` > `Cookies` > `http://web.saedgewell.test`を開く
+  2. 認証クッキーのドメインが`.saedgewell.test`になっていることを確認
+  3. Pathが`/`になっていることを確認
+
+- [x] 認証状態の持続性テスト
+  1. ブラウザを再起動
+  2. http://admin.saedgewell.test にアクセス
+  3. ログイン状態が維持されていることを確認
+
+- [x] ログアウトテスト
+  1. いずれかのサブドメインからログアウト
+  2. 別のサブドメインにアクセスし、ログアウト状態になっていることを確認
+
+## トラブルシューティング
+
+### クッキーが共有されない場合
+
+1. ブラウザの開発者ツールでクッキー設定を確認
+   - ドメインが正しく `.saedgewell.test` になっているか
+   - Path が `/` になっているか
+
+2. `/etc/hosts` の設定を確認
+   ```bash
+   cat /etc/hosts | grep saedgewell
+   ```
+
+3. Nginxの設定を確認
+   ```bash
+   docker exec -it nginx nginx -t
+   ```
+
+### 認証エラーが発生する場合
+
+1. Supabaseの設定を確認
+   ```bash
+   cat ./supabase/config.toml | grep site_url
+   cat ./supabase/config.toml | grep additional_redirect_urls
+   ```
+
+2. Supabaseコンテナのログを確認
+   ```bash
+   docker logs supabase
+   ```
+
+## セキュリティ上の注意点
+
+1. 開発環境でのみ `secure: false` を使用し、本番環境では必ず `secure: true` を設定すること
+2. `.test` および `.local` はRFC 6761で予約されたTLDであり、ローカル開発に適している
+3. 本番環境では実際のドメインを使用し、適切なSSL証明書を設定すること
+
+## 今後の拡張
+
+1. 本番環境用の設定を `.env.production` ファイルに定義
+2. CI/CDパイプラインでの環境変数設定の自動化
+3. 複数の認証プロバイダ（OAuth）でのテスト実施
+
+## 参考情報
+
+- [Supabase Auth - Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
+- [RFC 6761 - Special-Use Domain Names](https://datatracker.ietf.org/doc/html/rfc6761)
+- [HTTP Cookies - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies) 

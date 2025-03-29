@@ -1,0 +1,53 @@
+name: Sync to Public Repository
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/**'
+      - 'apps/**'
+      - 'docker/**'
+      - 'nginx/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - 'tooling/**'
+      - 'turbo/**'
+      - 'README.md'
+      - 'LICENSE'
+      - 'ACKNOWLEDGMENTS.md'
+      - 'tsconfig.json'
+      - 'turbo.json'
+      - 'biome.json'
+      - 'bunfig.toml'
+      - '.npmrc'
+      - '.nvmrc'
+      - '.syncpackrc'
+      - '.gitattributes'
+      - 'package.json'
+      - 'docker-compose.yml'
+      - 'docker-compose.apple-silicon.yml'
+      - '.dockerignore'
+      - '.env.example'
+      - '.gitignore'
+  # 手動実行も可能にする
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync to Public Repository
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+     
+      - name: Make sync script executable
+        run: chmod +x ./scripts/sync-public-repo.sh
+     
+      - name: Sync to public repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: ./scripts/sync-public-repo.sh 

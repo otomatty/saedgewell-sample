@@ -1,0 +1,17 @@
+{
+  "title": "よくある質問",
+  "description": "Mastraに関するよくある質問",
+  "order": 11,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "licensing",
+      "title": "ライセンス",
+      "description": "Mastraのライセンスに関する情報",
+      "order": 1
+    }
+  ]
+}

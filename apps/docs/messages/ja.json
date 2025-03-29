@@ -1,0 +1,11 @@
+{
+  "common": {
+    "title": "ドキュメント",
+    "description": "プロジェクトドキュメント"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "documents": "ドキュメント",
+    "search": "検索"
+  }
+}

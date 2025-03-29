@@ -1,0 +1,96 @@
+---
+title: '機能フラグ設定の構成'
+description: 'Next.js Supabaseアプリケーションの機能フラグ設定のセットアップ方法を学びます'
+icon: 'flag'
+order: 5
+---
+
+# 機能フラグ設定の構成
+
+機能フラグ設定は`apps/web/config/feature-flags.config.ts`で設定されています。この設定は、アプリ内の特定の機能を有効または無効にするための機能フラグを保存するために使用されます。
+
+この設定はアプリケーションレベルで設定されます。設定はアプリがインポートするパッケージに伝播されるため、パッケージの動作とロジックを制御できます。これにより、各アプリケーションが独自の設定を定義するため、同じモノレポで複数のアプリをホストすることも可能になります。
+
+推奨されるのは、この設定を直接更新するのではなく、以下の環境変数を定義してデフォルトの動作をオーバーライドすることです。設定は`FeatureFlagsSchema`というZodスキーマを使用して検証されるため、何か問題があればエラーが表示されます。
+
+```ts
+const featuresFlagConfig = FeatureFlagsSchema.parse({
+  enableThemeToggle: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_THEME_TOGGLE,
+    true,
+  ),
+  enableAccountDeletion: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION,
+    false,
+  ),
+  enableTeamDeletion: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION,
+    false,
+  ),
+  enableTeamAccounts: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS,
+    true,
+  ),
+  enableTeamCreation: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION,
+    true,
+  ),
+  enablePersonalAccountBilling: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING,
+    false,
+  ),
+  enableTeamAccountBilling: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING,
+    false,
+  ),
+  languagePriority: process.env
+    .NEXT_PUBLIC_LANGUAGE_PRIORITY as LanguagePriority,
+  enableNotifications: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_NOTIFICATIONS,
+    true,
+  ),
+  realtimeNotifications: getBoolean(
+    process.env.NEXT_PUBLIC_REALTIME_NOTIFICATIONS,
+    false,
+  ),
+  enableVersionUpdater: getBoolean(
+    process.env.NEXT_PUBLIC_ENABLE_VERSION_UPDATER,
+    false,
+  ),
+} satisfies z.infer<typeof FeatureFlagsSchema>);
+export default featuresFlagConfig;
+```
+
+デフォルトの動作をオーバーライドするには、以下の環境変数を更新できます：
+
+```
+NEXT_PUBLIC_ENABLE_THEME_TOGGLE=
+NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION=
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS=
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION=
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION=
+NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING=
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING=
+NEXT_PUBLIC_LANGUAGE_PRIORITY=
+NEXT_PUBLIC_ENABLE_NOTIFICATIONS=
+NEXT_PUBLIC_REALTIME_NOTIFICATIONS=
+NEXT_PUBLIC_ENABLE_VERSION_UPDATER=
+```
+
+## 説明
+
+- **NEXT_PUBLIC_ENABLE_THEME_TOGGLE**: 特定のテーマモード（ダークまたはライト）を設定し、別のモードへの切り替えを許可しない場合に使用します
+- **NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION**: ユーザーが自分のアカウントを自己削除できないようにする場合に使用します
+- **NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS**: チームアカウントを有効または無効にするために使用します。B2Cアプリの場合、無効にすることが好ましい場合があります
+- **NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION**: ユーザーがチームアカウントを自己削除できないようにする場合に使用します
+- **NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION**: ユーザーがチームアカウントを作成できないようにするために使用します。オンボーディングを自分で管理したい場合に便利です
+- **NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING**: 個人アカウントがプランに登録する機能を有効または無効にするために使用します
+- **NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING**: チームアカウントがプランに登録する機能を有効または無効にするために使用します
+- **NEXT_PUBLIC_LANGUAGE_PRIORITY**: 言語の優先順位を設定するために使用します。`user`に設定すると、ユーザーの優先言語が使用されます。`application`に設定すると、アプリケーションのデフォルト言語が使用されます
+- **NEXT_PUBLIC_ENABLE_NOTIFICATIONS**: アプリ内の通知を有効または無効にするために使用します
+- **NEXT_PUBLIC_REALTIME_NOTIFICATIONS**: アプリ内のリアルタイム通知を有効または無効にするために使用します
+- **NEXT_PUBLIC_ENABLE_VERSION_UPDATER**: アプリ内のバージョンアップデーターを有効または無効にするために使用します
+
+## 注意
+
+`NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING`と`NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING`の両方が同時に有効になることはほとんどありません。ほとんどの場合、ユーザーまたはチームアカウントのいずれかに対して有効にします。

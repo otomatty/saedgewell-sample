@@ -1,0 +1,29 @@
+{
+  "title": "ローカル開発",
+  "description": "Mastraのローカル開発環境",
+  "order": 8,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "creating-projects",
+      "title": "プロジェクト作成",
+      "description": "Mastraプロジェクトの作成方法",
+      "order": 1
+    },
+    {
+      "name": "mastra-dev",
+      "title": "Mastra Dev",
+      "description": "Mastra開発環境の活用方法",
+      "order": 2
+    },
+    {
+      "name": "integrations",
+      "title": "統合",
+      "description": "ローカル開発時の外部サービスとの統合",
+      "order": 3
+    }
+  ]
+}

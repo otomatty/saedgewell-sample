@@ -1,0 +1,8 @@
+# パッケージ関連ファイルは親プロジェクトの変更を優先
+packages/* merge=recursive-ours
+# ドキュメント関連も親プロジェクトの変更を優先
+docs/* merge=recursive-ours
+
+# 子プロジェクト固有の設定ファイルは子プロジェクトの変更を維持
+apps/* merge=recursive-theirs
+.env* merge=recursive-theirs 

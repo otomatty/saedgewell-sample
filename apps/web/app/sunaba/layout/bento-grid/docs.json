@@ -1,0 +1,69 @@
+{
+	"id": "bento-grid",
+	"name": "Bento Grid",
+	"description": "モダンなベントーグリッドレイアウトを実装するコンポーネント",
+	"category": "layout",
+	"tags": ["grid", "layout", "responsive", "animation"],
+	"usage": {
+		"description": "BentoGrid、BentoCard、MagicBentoCardの3つのコンポーネントを提供します。BentoGridは12カラムのグリッドレイアウトを作成し、その中にカードコンポーネントを配置できます。",
+		"example": "```tsx\n<BentoGrid>\n  <BentoCard\n    name=\"プロジェクト1\"\n    className=\"md:col-span-2\"\n    background={<img src=\"/project1.jpg\" alt=\"プロジェクト1\" />}\n    Icon={ProjectIcon}\n    description=\"プロジェクトの説明\"\n    href=\"/projects/1\"\n    cta=\"詳細を見る\"\n  />\n</BentoGrid>\n```",
+		"props": [
+			{
+				"name": "BentoGrid.children",
+				"type": "ReactNode",
+				"description": "グリッド内に表示するBentoCardコンポーネント"
+			},
+			{
+				"name": "BentoGrid.className",
+				"type": "string",
+				"description": "追加のスタイリングクラス"
+			},
+			{
+				"name": "BentoCard.name",
+				"type": "string",
+				"description": "カードのタイトル"
+			},
+			{
+				"name": "BentoCard.className",
+				"type": "string",
+				"description": "グリッド内での位置やサイズを制御するクラス"
+			},
+			{
+				"name": "BentoCard.background",
+				"type": "ReactNode",
+				"description": "カードの背景に表示するコンテンツ"
+			},
+			{
+				"name": "BentoCard.Icon",
+				"type": "React.ElementType",
+				"description": "カードに表示するアイコンコンポーネント"
+			},
+			{
+				"name": "BentoCard.description",
+				"type": "string",
+				"description": "カードの説明文"
+			},
+			{
+				"name": "BentoCard.href",
+				"type": "string",
+				"description": "クリック時の遷移先URL"
+			},
+			{
+				"name": "BentoCard.cta",
+				"type": "string",
+				"description": "コールトゥアクションのテキスト"
+			}
+		]
+	},
+	"implementation": {
+		"description": "CSS Gridを使用して12カラムのレイアウトを実装し、カードコンポーネントにはホバーエフェクトやアニメーションを実装しています。MagicBentoCardはマウスの動きに応じたグラデーションエフェクトも提供します。",
+		"features": [
+			"12カラムのレスポンシブグリッドレイアウト",
+			"ホバー時のアニメーションとインタラクション",
+			"カスタマイズ可能なカードデザイン",
+			"マジックエフェクト付きのカードバリエーション",
+			"アクセシビリティ対応",
+			"ダークモード対応"
+		]
+	}
+}

@@ -1,0 +1,163 @@
+---
+title: 'Dockerコンテナにパッケージをインストールする方法'
+date: '2024-03-25'
+author: 'Akimasa Sugai'
+tags: ['docker', 'package-management', 'bun', 'troubleshooting']
+---
+
+# Dockerコンテナにパッケージをインストールする方法とその仕組み
+
+## はじめに
+
+本プロジェクトでは開発環境としてDockerコンテナを使用しています。Dockerコンテナでは、ホスト環境とは独立した環境でアプリケーションが動作するため、パッケージのインストール方法も通常の開発環境とは異なる点があります。このドキュメントでは、実際に遭遇したエラーと解決策をもとに、Dockerコンテナにパッケージをインストールする方法について解説します。
+
+## 1. 発生した問題
+
+以下のようなエラーが発生した場合：
+
+```
+Runtime Error
+Error: ./apps/web/lib/server/gemini/client.ts:1:1
+Module not found: Can't resolve '@google/generative-ai'
+```
+
+これは、アプリケーションが `@google/generative-ai` パッケージを使用しようとしていますが、このパッケージがコンテナ内にインストールされていないことを示しています。
+
+## 2. Dockerコンテナとホスト環境の分離
+
+Dockerコンテナはホスト環境から隔離された実行環境です。つまり、ホスト環境（あなたのPC）にパッケージをインストールしても、そのパッケージはコンテナ内からは見えません。これは以下の理由によります：
+
+- コンテナは独自のファイルシステムを持っています
+- ホストとコンテナはそれぞれ異なるノードモジュールディレクトリを持っています
+- ボリュームマウントを設定していない限り、ホストの変更はコンテナに反映されません
+
+## 3. Dockerコンテナへのパッケージインストール方法
+
+### 方法1: コンテナ内で直接インストール（実行中のコンテナに対して）
+
+```bash
+docker exec -it <コンテナ名> bash -c "cd /app && bun add <パッケージ名>"
+```
+
+例：
+```bash
+docker exec -it saedgewell-web-1 bash -c "cd /app && bun add @google/generative-ai"
+```
+
+これはコンテナが既に起動している場合に有効です。ただし、コンテナを再ビルドすると変更は失われます。
+
+### 方法2: Dockerfileに追加（ビルド時にインストール）
+
+```dockerfile
+FROM oven/bun:1 AS base
+WORKDIR /app
+COPY package.json .
+RUN bun install
+RUN bun add <パッケージ名>
+```
+
+これはイメージビルド時にパッケージをインストールする方法です。永続的な変更になりますが、イメージの再ビルドが必要です。
+
+### 方法3: package.jsonを更新してからビルド
+
+ホスト環境の`package.json`に依存関係を追加し、それをコンテナにコピーしてからインストールする方法です。
+
+```json
+// package.json
+{
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0"
+  }
+}
+```
+
+そして、Dockerfileでこのファイルをコピーして`bun install`を実行します。
+
+## 4. ボリュームマウントとパッケージインストール
+
+我々のプロジェクトでは以下のようなボリュームマウントが設定されています：
+
+```yaml
+volumes:
+  - .:/app:cached
+  - node_modules:/app/node_modules
+```
+
+これは重要なポイントです：
+
+- `.:/app:cached` - ホストのカレントディレクトリをコンテナの `/app` にマウントしています
+- `node_modules:/app/node_modules` - `node_modules` という名前のボリュームをコンテナの `/app/node_modules` にマウントしています
+
+**ここで重要なのは、node_modulesが名前付きボリュームになっている点です。** これにより：
+
+1. ホストの `node_modules` ディレクトリはコンテナ内の `/app/node_modules` に反映されない
+2. コンテナ内の `node_modules` は永続化されるが、ホストとは独立している
+3. ホストで `bun add` を実行しても、その変更はコンテナには反映されない
+
+## 5. 実際のユースケースでの対処法
+
+### 開発中の一時的なパッケージ追加
+
+```bash
+docker exec -it saedgewell-web-1 bash -c "cd /app && bun add @google/generative-ai"
+```
+
+開発中にテストしたいパッケージがある場合、この方法が最も簡単です。
+
+### 本番環境用の永続的なパッケージ追加
+
+1. ホスト環境の `package.json` に依存関係を追加
+   ```bash
+   bun add @google/generative-ai
+   ```
+
+2. Dockerイメージを再ビルド
+   ```bash
+   docker compose down
+   docker compose build web
+   docker compose up -d
+   ```
+
+これにより、package.jsonの変更がDockerイメージに反映され、永続的な変更になります。
+
+## 6. 今回のケースでの詳細な解説
+
+今回のケースでは：
+
+1. ホスト環境で `bun add @google/generative-ai` を実行しました
+2. しかし、コンテナは独自のnode_modulesボリュームを使用しているため、その変更はコンテナには反映されませんでした
+3. そのため、`docker exec -it saedgewell-web-1 bash -c "cd /app && bun add @google/generative-ai"` を実行して、コンテナ内にも同じパッケージをインストールする必要がありました
+
+これは`node_modules`が名前付きボリュームとしてマウントされているDockerの設定によるものです。この方法には以下のメリットがあります：
+
+- ビルド時間の短縮（ホストとコンテナで別々にnode_modulesを管理）
+- ホストOSとコンテナOSの違いによる互換性問題の回避
+- コンテナ再起動後もnode_modulesの内容が保持される
+
+## 7. ベストプラクティス
+
+1. **開発初期段階**：package.jsonに必要なパッケージをすべて記述し、イメージを完全に再ビルド
+2. **開発中の一時的な変更**：`docker exec`でコンテナ内に直接インストール
+3. **本番環境への変更**：package.jsonを更新し、CIパイプラインで新しいイメージをビルド
+
+## 8. 環境変数の設定
+
+パッケージによっては、API キーなどの環境変数が必要な場合があります。環境変数をコンテナに設定する方法：
+
+1. `.env.local` ファイルに環境変数を追加
+   ```
+   NEXT_PUBLIC_GEMINI_API_KEY=your_api_key_here
+   ```
+
+2. docker-compose.yml の environment セクションに環境変数を追加（機密情報でない場合）
+   ```yaml
+   environment:
+     - NEXT_PUBLIC_GEMINI_API_KEY=${NEXT_PUBLIC_GEMINI_API_KEY}
+   ```
+
+3. コンテナを再起動して変更を反映
+   ```bash
+   docker compose restart web
+   ```
+
+この方法で、Dockerコンテナを使った開発環境でもスムーズにパッケージ管理ができます。

@@ -1,0 +1,142 @@
+---
+title: 'Supabaseクライアント'
+description: 'ブラウザまたはサーバー上でSupabaseと対話するための異なるクライアントの使用方法'
+icon: 'database'
+order: 1
+---
+コードがブラウザで実行されているか、サーバー上で実行されているかによって、Supabaseと対話するために異なるクライアントを使用する必要があります。
+サーバーと通信するさまざまな方法について詳しく説明する前に、データベースをホストしているSupabase（つまりデータのソース）とどのように通信するかを紹介する必要があります。
+
+# Supabaseクライアントの使用
+
+コードがブラウザで実行されているか、サーバー上で実行されているかによって、Supabaseと対話するために異なるクライアントを使用する必要があります。
+
+## ブラウザでのSupabaseクライアントの使用
+
+ブラウザ環境でSupabaseクライアントをインポートするには、`useSupabase`フックを使用できます：
+
+```tsx
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+
+export default function Home() {
+  const supabase = useSupabase()
+  return (
+    <div>
+      <h1>Supabase ブラウザクライアント</h1>
+      <button onClick={() => supabase.auth.signOut()}>サインアウト</button>
+    </div>
+  )
+}
+```
+
+## サーバー環境でのSupabaseクライアントの使用
+
+サーバー環境でSupabaseクライアントをインポートするには、`getSupabaseServerClient`関数を使用できます。これはServer Actions、Route Handlers、Server Componentsなど、すべてのサーバー環境で同様に行うことができます：
+
+```tsx
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+export async function myServerAction() {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase.from('users').select('*')
+  return {
+    success: true,
+  };
+}
+```
+
+特権が昇格された管理者クライアント（Server Admin）を使用するには、`getSupabaseServerAdminClient`関数を使用できます：
+
+```tsx
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+
+export async function myServerAction() {
+  const supabase = getSupabaseServerAdminClient();
+  const { data, error } = await supabase.from('users').select('*')
+  return {
+    success: true,
+  };
+}
+```
+
+注意：`getSupabaseServerAdminClient`関数は、`SUPABASE_SERVICE_ROLE_KEY`環境変数の設定が必要なため、サーバー環境でのみ使用してください。また、特権が昇格されているため、非常に例外的なケースでのみ使用してください。ほとんどの場合は、`getSupabaseServerClient`関数を使用してください。
+
+# 非推奨：キットの古いバージョン
+
+注意：以下は、キットの古いバージョンに適用されます。
+
+キットの古いバージョンでは、Supabaseクライアントをインポートする異なる方法が見られるかもしれません。以下のコードは機能しますが、キットの将来のバージョンでは削除される予定の非推奨のものであることに注意してください。
+
+コードが実行される場所によって、Supabaseと対話するために異なるクライアントを使用する必要がある場合があります。これは、Next.jsアプリケーションのさまざまな部分でクッキーが異なる方法で設定されるためです。
+
+Supabaseと対話するために4つの異なるクライアントを使用できます：
+
+- ブラウザ - ブラウザで実行され、クライアントからSupabaseと対話するために使用されます
+- Server Actions - Server Actionsで実行され、サーバーからSupabaseと対話するために使用されます
+- Route Handlers - Route Handlersで実行され、サーバーからSupabaseと対話するために使用されます
+- Server Components - Server Componentsで実行され、サーバーからSupabaseと対話するために使用されます
+
+## ブラウザ
+
+ブラウザクライアントを使用するには、`useSupabase`フックを使用します：
+
+```tsx
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+
+export default function Home() {
+  const supabase = useSupabase()
+  return (
+    <div>
+      <h1>Supabase ブラウザクライアント</h1>
+      <button onClick={() => supabase.auth.signOut()}>サインアウト</button>
+    </div>
+  )
+}
+```
+
+## Server Actions
+
+Server Actionsクライアントを使用するには、`getSupabaseServerActionClient`フックを使用します：
+
+```tsx
+'use server';
+
+import { getSupabaseServerActionClient } from '@kit/supabase/server-actions-client';
+
+export async function myServerAction() {
+  const supabase = getSupabaseServerActionClient();
+  const { data, error } = await supabase.from('users').select('*')
+  return {
+    success: true,
+  };
+}
+```
+
+## Route Handlers
+
+Route Handlersクライアントを使用するには、`getSupabaseRouteHandlerClient`関数を使用します：
+
+```tsx
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseRouteHandlerClient } from '@kit/supabase/route-handlers-client';
+
+export async function POST(req: NextRequest) {
+  const supabase = getSupabaseRouteHandlerClient();
+  const { data, error } = await supabase.from('users').select('*')
+  return NextResponse.json({ data });
+}
+```
+
+## Server Components
+
+Server Componentsクライアントを使用するには、`getSupabaseServerComponentClient`関数を使用します：
+
+```tsx
+import { getSupabaseServerComponentClient } from '@kit/supabase/server-component-client';
+
+export default async function TasksPage() {
+  const supabase = getSupabaseServerComponentClient();
+  const { data, error } = await supabase.from('users').select('*');
+  return <TasksList tasks={data} />
+}
+```

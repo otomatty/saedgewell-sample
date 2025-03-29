@@ -1,0 +1,321 @@
+# フェーズ1: 準備と検証
+
+このフェーズでは、Docker環境への移行に必要な準備作業と基本的な検証を行います。
+
+## 目標
+
+- [x] Docker実行環境の確認と設定
+- [x] Bunとパッケージ依存環境の検証
+- [x] 既存環境のバックアップ作成
+- [x] 基本的なDockerの設定ファイル作成
+
+## タスク
+
+### 1.1 開発環境の準備
+
+- [x] Dockerの動作確認
+  ```bash
+  # バージョン確認（最低要件: Docker 24.0.0、Compose 2.20.0）
+  docker --version
+  docker compose version
+  
+  # Docker Desktopの設定確認（GUI設定画面より）
+  # Resources > Advanced:
+  # - CPUs: 4以上
+  # - Memory: 8GB以上
+  # - Swap: 2GB以上
+  ```
+
+- [x] Bunの動作確認
+  ```bash
+  # Bunの動作確認（最低バージョン: 1.2.4）
+  bun --version
+  
+  # Bunのキャッシュと挙動を確認するテストスクリプト
+  mkdir -p ./tests
+  echo 'console.log("Bun test")' > ./tests/bun-test.js
+  bun run ./tests/bun-test.js
+  
+  # Bunを使用したNext.jsのビルドテスト
+  mkdir -p ./tests/next-test
+  cd ./tests/next-test
+  echo '{ "name": "next-test", "dependencies": { "next": "^15.0.0" } }' > package.json
+  bun install
+  bun bun add react react-dom
+  echo 'export default function Home() { return <div>Test</div> }' > page.js
+  bun run --bun next build
+  ```
+
+- [x] Apple Silicon (M1/M2) Mac向け追加設定
+  ```bash
+  # Docker Desktopの設定
+  # - Settings > General > Use VirtioFS for shared filesystems: 有効化
+  # - Settings > Advanced > CPU Architecture > Use Rosetta for x86/amd64 emulation on Apple Silicon: 有効化
+  ```
+
+- [x] バックアップディレクトリの作成
+  ```bash
+  # バックアップディレクトリを作成
+  mkdir -p ./backup/{env,config}
+  mkdir -p ./supabase/backup
+  ```
+
+- [x] 現在の環境のバックアップ
+  ```bash
+  # データベースのダンプを作成
+  bun run supabase:db:dump:local > ./supabase/backup/$(date +%Y%m%d)_db_dump.sql
+
+  # 環境変数のバックアップ
+  cp apps/web/.env.local ./backup/env/web.env.local
+  cp apps/docs/.env.local ./backup/env/docs.env.local
+  cp apps/admin/.env.local ./backup/env/admin.env.local
+
+  # 設定ファイルのバックアップ
+  cp supabase/config.toml ./backup/config/
+  cp package.json ./backup/config/
+  ```
+
+### 1.2 基本設定ファイルの作成
+
+- [x] Docker関連のディレクトリ構造を作成
+  ```bash
+  mkdir -p docker/{web,docs,admin,nginx}
+  mkdir -p docker/shared
+  mkdir -p scripts/{dev,deploy,test}
+  touch docker-compose.yml
+  touch .env.docker
+  touch .dockerignore
+  ```
+
+- [x] `.dockerignore`ファイルの作成
+  ```plaintext
+  # 開発環境の一時ファイル
+  **/.git
+  **/.gitignore
+  **/.env*
+  **/.next
+  **/node_modules
+  **/dist
+  **/.turbo
+  **/.cache
+
+  # ログとデバッグファイル
+  **/*.log
+  **/npm-debug.log*
+  **/yarn-debug.log*
+  **/yarn-error.log*
+
+  # テストとドキュメント
+  **/coverage
+  **/docs
+  **/*.test.ts
+  **/*.spec.ts
+
+  # OS固有のファイル
+  .DS_Store
+  Thumbs.db
+  ```
+
+- [x] 開発用の環境変数ファイル`.env.docker`の作成
+  ```plaintext
+  # Docker環境設定
+  COMPOSE_PROJECT_NAME=saedgewell
+  DOCKER_BUILDKIT=1
+  
+  # アプリケーションポート
+  WEB_PORT=7510
+  DOCS_PORT=7511
+  ADMIN_PORT=7512
+  
+  # Supabase設定
+  SUPABASE_PROJECT_ID=saedgewell-app
+  POSTGRES_PASSWORD=your-secure-password
+  SUPABASE_AUTH_JWT_SECRET=your-jwt-secret
+  
+  # Node環境設定
+  NODE_ENV=development
+  NEXT_TELEMETRY_DISABLED=1
+  
+  # ホットリロード最適化
+  CHOKIDAR_USEPOLLING=true
+  WATCHPACK_POLLING=true
+  
+  # Apple Silicon M1/M2最適化
+  BUN_RUNTIME=--smol
+  
+  # サブドメイン環境設定
+  COOKIE_DOMAIN=localhost
+  SITE_URL=http://web.localhost
+  ADDITIONAL_REDIRECT_URLS=http://docs.localhost,http://admin.localhost
+  
+  # Supabase Cookie設定 
+  SUPABASE_AUTH_COOKIE_SECURE=false
+  SUPABASE_AUTH_COOKIE_SAME_SITE=lax
+  ```
+
+- [x] 基本的な`docker-compose.yml`の作成
+  ```yaml
+  version: '3.8'
+  
+  services:
+    # 基本設定（後で各サービスを追加）
+    
+  networks:
+    saedgewell_net:
+      driver: bridge
+  
+  volumes:
+    node_modules:
+    turbo_cache:
+    bun_cache:
+    supabase_data:
+    postgres_data:
+  ```
+
+- [x] シークレット管理のためのディレクトリ作成
+  ```bash
+  # Dockerシークレット用ディレクトリ
+  mkdir -p ./secrets
+  
+  # シークレット生成スクリプト
+  echo '#!/bin/bash
+  mkdir -p ./secrets
+  
+  # パスワード生成（ランダムな32文字の文字列）
+  if [ ! -f ./secrets/db_password.txt ]; then
+    openssl rand -base64 32 > ./secrets/db_password.txt
+    echo "データベースパスワードを生成しました"
+  fi
+  
+  # JWT Secret生成（ランダムな64文字の文字列）
+  if [ ! -f ./secrets/jwt_secret.txt ]; then
+    openssl rand -base64 64 > ./secrets/jwt_secret.txt
+    echo "JWTシークレットを生成しました"
+  fi' > ./scripts/dev/generate-secrets.sh
+  
+  chmod +x ./scripts/dev/generate-secrets.sh
+  
+  # .gitignoreに追加
+  echo "/secrets/" >> .gitignore
+  ```
+
+### 1.3 ベースDockerfileの作成
+
+- [x] Bun用のベースイメージDockerfile作成（`docker/shared/base.Dockerfile`）
+  ```dockerfile
+  # Multi-architecture対応のBunベースイメージ
+  FROM oven/bun:1.2.4 AS base
+
+  # システム依存パッケージのインストール
+  RUN apt-get update && apt-get install -y \
+      git \
+      curl \
+      python3 \
+      make \
+      g++ \
+      libc6-compat \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*
+
+  # ワークディレクトリの設定
+  WORKDIR /app
+
+  # 環境変数の設定
+  ENV NODE_ENV=development
+  ENV NEXT_TELEMETRY_DISABLED=1
+  ENV TURBO_TEAM=local
+  ENV TURBO_REMOTE_ONLY=false
+  
+  # Bunの挙動検証
+  RUN echo 'console.log("Docker+Bun test")' > test.js && \
+      bun build test.js --outdir ./dist && \
+      cat ./dist/test.js
+
+  # 共通ボリュームのマウントポイント
+  VOLUME [ "/app/.turbo", "/app/.bun-cache" ]
+  ```
+
+### 1.4 ローカル開発ホスト設定
+
+- [x] ローカルホスト設定スクリプト (`scripts/dev/setup-hosts.sh`)
+  ```bash
+  #!/bin/bash
+
+  HOSTS=("web.localhost" "docs.localhost" "admin.localhost" "api.localhost")
+  HOSTS_FILE="/etc/hosts"
+  IP="127.0.0.1"
+
+  # すでに設定があるか確認
+  NEEDS_UPDATE=false
+  for HOST in "${HOSTS[@]}"; do
+    if ! grep -q "$HOST" "$HOSTS_FILE"; then
+      NEEDS_UPDATE=true
+      break
+    fi
+  done
+
+  if $NEEDS_UPDATE; then
+    echo "以下のホストエントリを $HOSTS_FILE に追加します:"
+    for HOST in "${HOSTS[@]}"; do
+      echo " - $HOST"
+    done
+    
+    echo "パスワードを入力してください（hostsファイル編集に必要）"
+    
+    # ホストエントリを追加
+    ENTRIES=""
+    for HOST in "${HOSTS[@]}"; do
+      ENTRIES="$ENTRIES $HOST"
+    done
+    
+    sudo sh -c "echo '$IP$ENTRIES' >> $HOSTS_FILE"
+    
+    # DNS再キャッシュ（Mac OS X）
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      echo "DNSキャッシュをフラッシュしています..."
+      sudo dscacheutil -flushcache
+      sudo killall -HUP mDNSResponder
+    fi
+    
+    echo "ローカルドメイン設定が完了しました！"
+  else
+    echo "ホストエントリはすでに存在しています。変更は不要です。"
+  fi
+  
+  # DNSテスト
+  echo "DNSテスト実行中..."
+  for HOST in "${HOSTS[@]}"; do
+    ping -c 1 $HOST > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo "✓ $HOST にアクセス可能"
+    else
+      echo "✗ $HOST にアクセスできません。設定を確認してください"
+    fi
+  done
+  ```
+
+- [x] スクリプトに実行権限を付与
+  ```bash
+  chmod +x ./scripts/dev/setup-hosts.sh
+  ```
+
+## 検証ポイント
+
+- [x] Dockerコンテナが適切に起動するか
+- [x] Bunを使用したNext.jsアプリが正常に動作するか
+- [x] ホストとコンテナ間のディレクトリ共有が正常に機能するか
+- [x] サブドメインへのアクセスが可能か
+- [x] マルチアーキテクチャ（Intel Mac、M1/M2 Mac）での動作に問題がないか
+
+## エラーと解決策
+
+| エラー | 解決策 |
+|-------|--------|
+| Bunインストールエラー | `curl -fsSL https://bun.sh/install | bash` でBunを最新版に更新 |
+| Docker起動エラー | Docker Desktopの再起動、または `docker system prune -a` でクリーンアップ |
+| ホスト名解決エラー | `scripts/dev/setup-hosts.sh` を実行して `/etc/hosts` を更新 |
+| ビルド速度が遅い | Docker VM割り当てメモリを増やす、Rosetta2の有効化（Apple Silicon） |
+
+## 次のステップ
+
+✅ フェーズ1が完了しました。[フェーズ2: Supabaseの移行](./phase2.md)に進みます。 

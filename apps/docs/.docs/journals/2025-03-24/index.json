@@ -1,0 +1,61 @@
+{
+  "date": "2025-03-24",
+  "entries": [
+    {
+      "id": "docker-auth-supabase",
+      "title": "Docker環境での認証エラー解決",
+      "description": "",
+      "tags": []
+    },
+    {
+      "id": "docker-network-ipv",
+      "title": "DockerネットワークのIPv4、IPv6に関するメモ",
+      "description": "",
+      "tags": []
+    }
+  ],
+  "commits": [
+    {
+      "message": "feat: 環境変数と設定の更新、ドキュメントの追加\n\n- .env.dockerファイルのURLをHTTPからHTTPSに変更し、セキュリティを強化\n- 新しい.env.exampleファイルを追加し、環境変数の設定例を提供\n- docker-compose.yml内のSupabase URLをHTTPSに更新し、Docker環境での一貫性を確保\n- NGINX設定を更新し、IPv4アドレスの使用を明示化\n- 認証関連のユーティリティ関数を追加し、クッキーのクリア処理を実装\n- 認証設定を見直し、セキュリティを強化\n- Docker環境における認証エラー解決に関するドキュメントを新規作成",
+      "sha": "b0a4ed5c669195ef3ad98fcaaa7ef141a74ea3e2",
+      "date": "2025-03-24T13:59:55Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/b0a4ed5c669195ef3ad98fcaaa7ef141a74ea3e2",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 328,
+      "deletions": 77
+    },
+    {
+      "message": "feat: メトリクス取得処理の簡素化とデバッグ情報の削除\n\n- JWT問題が解決したため、標準クライアントのみを使用するように変更\n- 不要なデバッグ情報出力関数を削除し、コードをクリーンアップ\n- 接続診断の実行を削除し、メトリクス取得処理を簡素化",
+      "sha": "a79e60e3f7f3e5101088bea952ccc333a27ab65a",
+      "date": "2025-03-24T05:23:19Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/a79e60e3f7f3e5101088bea952ccc333a27ab65a",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 10,
+      "deletions": 206
+    },
+    {
+      "message": "feat: 環境変数管理の改善とドキュメントの追加\n\n- Supabase設定を.env.dockerから削除し、セキュリティを強化\n- .env.exampleファイルを削除し、不要なファイルを整理\n- Docker環境におけるネットワーク構成に関する新しいドキュメントを追加\n- JWT検証エラー解決に関する詳細な記録を新規作成\n- 環境変数の管理方法に関するドキュメントを追加し、ベストプラクティスを明示化\n- 不要なテンプレートファイルを削除し、プロジェクトのクリーンアップを実施",
+      "sha": "b57f5614aa6396c6d93da659a0c75079af037c86",
+      "date": "2025-03-24T02:30:34Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/b57f5614aa6396c6d93da659a0c75079af037c86",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 636,
+      "deletions": 1933
+    }
+  ]
+}

@@ -1,0 +1,435 @@
+/*
+* global.css
+*
+* Global styles for the entire application
+ */
+
+/* Tailwind CSS */
+@import 'tailwindcss';
+
+/* local styles - update the below if you add a new style */
+@import './theme.css';
+@import './theme.utilities.css';
+@import './shadcn-ui.css';
+@import './markdoc.css';
+@import './super-next-app.css';
+
+/* コードブロックのスタイル */
+pre {
+  position: relative;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  background-color: #1e1e1e; /* ダークな背景色 */
+  color: #d4d4d4; /* 明るいテキスト色 */
+}
+
+pre code {
+  font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background-color: transparent !important; /* 背景色を透明に強制 */
+  color: inherit; /* 親要素の色を継承 */
+  padding: 0; /* パディングをリセット */
+  border-radius: 0; /* 角丸をリセット */
+}
+
+/* MDXコンテンツのスタイル */
+.mdx-content {
+  /* ベースのスタイル */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: hsl(var(--foreground));
+  width: 100%;
+  padding: 0 1rem;
+}
+
+/* 見出しのスタイルを直接指定 */
+.mdx-content h1,
+.mdx-content h2,
+.mdx-content h3,
+.mdx-content h4,
+.mdx-content h5,
+.mdx-content h6 {
+  font-weight: bold !important; /* 見出しを強制的に太字に */
+  position: relative;
+  scroll-margin-top: 7rem;
+}
+
+/* proseクラスによる見出しスタイルの上書きを防止 */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: bold !important;
+}
+
+.prose h1 a,
+.prose h2 a,
+.prose h3 a,
+.prose h4 a,
+.prose h5 a,
+.prose h6 a {
+  font-weight: bold !important;
+  text-decoration: none;
+}
+
+/* Tailwind proseクラスのmax-width制限をオーバーライド */
+/* .prose {
+  max-width: none !important;
+} */
+
+/* 特定のコンテキストでのみproseの最大幅を解除 */
+.full-width-content .prose {
+  max-width: none;
+}
+
+.mdx-content p {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+}
+
+.mdx-content ul,
+.mdx-content ol {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.mdx-content ul {
+  list-style-type: disc;
+}
+
+.mdx-content ol {
+  list-style-type: decimal;
+}
+
+.mdx-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+}
+
+.mdx-content li > ul,
+.mdx-content li > ol {
+  margin: 0.5rem 0;
+}
+
+.mdx-content blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.mdx-content a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+/* 見出し内のリンクのスタイル */
+.mdx-content h1 a,
+.mdx-content h2 a,
+.mdx-content h3 a,
+.mdx-content h4 a,
+.mdx-content h5 a,
+.mdx-content h6 a {
+  font-weight: bold !important;
+  color: inherit; /* 見出しの色を継承 */
+}
+
+.mdx-content a:hover {
+  border-bottom-color: currentColor;
+}
+
+.mdx-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+}
+
+.mdx-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.mdx-content table thead {
+  background-color: hsl(var(--muted) / 50%);
+}
+
+.mdx-content table th,
+.mdx-content table td {
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  text-align: left;
+}
+
+.mdx-content table th {
+  font-weight: 600;
+}
+
+.mdx-content hr {
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+/* ダークモード対応 */
+.dark .mdx-content {
+  color: hsl(var(--foreground));
+}
+
+.dark .mdx-content p {
+  color: hsl(var(--muted-foreground));
+}
+
+/* シンタックスハイライトのスタイル */
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955; /* コメント: 緑色 */
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-name,
+.hljs-strong {
+  color: #569cd6; /* キーワード: 青色 */
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-subst {
+  color: #e06c75; /* 変数: 赤色 */
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+  color: #ce9178; /* 文字列: オレンジ色 */
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title,
+.hljs-type {
+  color: #4ec9b0; /* ビルトイン型: ターコイズ */
+}
+
+.hljs-attr,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #dcdcaa; /* 属性: 黄色 */
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+/* 行番号のスタイル */
+.hljs-line-numbers {
+  counter-reset: line;
+  padding-left: 2rem;
+}
+
+.hljs-line-numbers .hljs-line {
+  position: relative;
+  counter-increment: line;
+}
+
+.hljs-line-numbers .hljs-line::before {
+  content: counter(line);
+  position: absolute;
+  left: -2rem;
+  width: 1.5rem;
+  text-align: right;
+  color: rgba(156, 163, 175, 0.5);
+}
+
+/* plugins - update the below if you add a new plugin */
+@plugin "tailwindcss-animate";
+
+/* content sources - update the below if you add a new path */
+@source "../../../packages/*/src/**/*.{ts,tsx}";
+@source "../../../packages/features/*/src/**/*.{ts,tsx}";
+@source "../../../packages/billing/*/src/**/*.{ts,tsx}";
+@source "../../../packages/plugins/*/src/**/*.{ts,tsx}";
+@source "../../../packages/cms/*/src/**/*.{ts,tsx}";
+@source "../{app,components,config,lib}/**/*.{ts,tsx}";
+
+/* variants - update the below if you add a new variant */
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border, currentColor);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted-foreground);
+  }
+}
+
+/* Mermaidコンテナのスタイル */
+.mermaid-container {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mermaid-diagram {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.mermaid-diagram:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ダイアグラム種類ごとのスタイル */
+.mermaid-flowchart .node rect,
+.mermaid-flowchart .node circle,
+.mermaid-flowchart .node ellipse,
+.mermaid-flowchart .node polygon {
+  fill: #f8f9fa;
+  stroke-width: 1.5px;
+}
+
+.mermaid-flowchart .edgeLabel {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.mermaid-class .classGroup rect {
+  fill: #f5f7fa;
+  stroke-width: 1.5px;
+}
+
+.mermaid-sequence .actor {
+  fill: #f5f7fa;
+  stroke-width: 1.5px;
+}
+
+.mermaid-sequence .note {
+  fill: #fff9c4;
+  stroke-width: 1.5px;
+}
+
+.mermaid-state .stateGroup rect {
+  fill: #f0f4f8;
+  stroke-width: 1.5px;
+}
+
+.mermaid-er .entityBox {
+  fill: #f5f7fa;
+  stroke-width: 1.5px;
+}
+
+.mermaid-gantt .taskText {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mermaid-gantt .grid .tick line {
+  stroke: #e0e0e0;
+}
+
+/* ダークモード対応 */
+.dark .mermaid-diagram {
+  background-color: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.dark .mermaid-flowchart .node rect,
+.dark .mermaid-flowchart .node circle,
+.dark .mermaid-flowchart .node ellipse,
+.dark .mermaid-flowchart .node polygon {
+  fill: #2d3748;
+  stroke: #4a5568;
+}
+
+.dark .mermaid-flowchart .edgeLabel {
+  background-color: rgba(45, 55, 72, 0.85);
+  color: #e2e8f0;
+}
+
+.dark .mermaid-class .classGroup rect {
+  fill: #2d3748;
+  stroke: #4a5568;
+}
+
+.dark .mermaid-sequence .actor {
+  fill: #2d3748;
+  stroke: #4a5568;
+}
+
+.dark .mermaid-sequence .note {
+  fill: #4a5568;
+  stroke: #718096;
+}
+
+.dark .mermaid-state .stateGroup rect {
+  fill: #2d3748;
+  stroke: #4a5568;
+}
+
+.dark .mermaid-er .entityBox {
+  fill: #2d3748;
+  stroke: #4a5568;
+}
+
+.dark .mermaid-gantt .grid .tick line {
+  stroke: #4a5568;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .mermaid-container {
+    padding: 0.5rem;
+  }
+  
+  .mermaid-diagram {
+    overflow-x: auto;
+  }
+}
+
+/* コピーボタンのスタイル */
+.copy-button {
+  @apply absolute top-2 right-2 px-2 py-1 text-xs bg-gray-700 text-white rounded opacity-70 hover:opacity-100 transition-opacity;
+}

@@ -1,0 +1,369 @@
+---
+title: ローカルインストール
+description: Mastra を実行するには、LLM (大規模言語モデル) へのアクセスが必要です。通常、OpenAI、Anthropic、Google Gemini などの LLM プロバイダーから API キーを取得します。Ollama を使用してローカル LLM で Mastra を実行することもできます。
+order: 1
+---
+
+Mastra を実行するには、LLM (大規模言語モデル) へのアクセスが必要です。通常、OpenAI、Anthropic、Google Gemini などの LLM プロバイダーから API キーを取得します。Ollama を使用してローカル LLM で Mastra を実行することもできます。
+
+**前提条件**
+
+*   Node.js v20.0 以上
+*   サポートされている大規模言語モデル (LLM) へのアクセス
+
+**自動インストール**
+
+**新しいプロジェクトの作成**
+
+プロジェクトを構築する create-mastra を使用して、新しい Mastra プロジェクトを開始することをお勧めします。プロジェクトを作成するには、以下を実行します。
+
+```bash
+npx create-mastra@latest
+```
+
+インストール時に、以下のプロンプトが表示されます。
+
+```
+プロジェクト名を何にしますか？ my-mastra-app
+インストールするコンポーネントを選択してください:
+  ◯ Agents (推奨)
+  ◯ Tools
+  ◯ Workflows
+デフォルトのプロバイダーを選択してください:
+  ◯ OpenAI (推奨)
+  ◯ Anthropic
+  ◯ Groq
+サンプルコードを含めますか？ いいえ / はい
+IDE を Mastra エキスパートにしますか？ (MCP サーバーをインストールします)
+  ◯ 今はスキップ
+  ◯ Cursor
+  ◯ Windsurf
+```
+
+プロンプトの後、create-mastra は以下を実行します。
+
+*   TypeScript でプロジェクトディレクトリをセットアップします
+*   依存関係をインストールします
+*   選択したコンポーネントと LLM プロバイダーを構成します
+*   コーディング中にドキュメント、サンプル、およびヘルプにすぐにアクセスできるように、IDE で MCP サーバーを構成します (選択した場合)
+
+**MCP 注記:** 別の IDE を使用している場合は、MCP サーバーのドキュメントの手順に従って、MCP サーバーを手動でインストールできます。また、MCP サーバーをアクティブ化するには、Cursor と Windsurf に対して追加の手順があることに注意してください。
+
+**API キーの設定**
+
+構成した LLM プロバイダーの API キーを `.env` ファイルに追加します。
+
+`.env`
+
+```
+OPENAI_API_KEY=<your-openai-key>
+```
+
+**補足:**
+
+フラグを使用してコマンドを（非インタラクティブモードで）実行し、サンプルコードを含める場合は、次を使用できます。
+
+```bash
+npx create-mastra@latest --components agents,tools --llm openai --example
+```
+
+インストールに時間がかかりすぎる場合にタイムアウトを構成および指定するには、`timeout` フラグを使用します。
+
+```bash
+npx create-mastra@latest --timeout
+```
+
+**LLM の注意:** 例を含む簡単なワンライナーの場合は、`npx -y mastra@latest --project-name <ask-the-user> --example --components "tools,agents,workflows" --llm <ask-the-user>` を実行できます。`llm` フラグで使用できるオプションは、`openai|anthropic|groq|google|cerebras` です。
+
+**手動インストール**
+
+Mastra プロジェクトを手動でセットアップする場合は、以下の手順に従ってください。
+
+**新しいプロジェクトの作成**
+
+プロジェクトディレクトリを作成して、そこに移動します。
+
+```bash
+mkdir hello-mastra
+cd hello-mastra
+```
+
+次に、@mastra/core パッケージを含む TypeScript プロジェクトを初期化します。
+
+```bash
+npm init -y
+npm install typescript tsx @types/node mastra --save-dev
+npm install @mastra/core zod @ai-sdk/openai
+npx tsc --init
+```
+
+**TypeScript の初期化**
+
+次の構成で、プロジェクトのルートに `tsconfig.json` ファイルを作成します。
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "dist"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".mastra"
+  ]
+}
+```
+
+この TypeScript 構成は、最新のモジュール解決と厳密な型チェックを使用して、Mastra プロジェクト向けに最適化されています。
+
+**API キーの設定**
+
+プロジェクトのルートディレクトリに `.env` ファイルを作成し、API キーを追加します。
+
+`.env`
+
+```
+OPENAI_API_KEY=<your-openai-key>
+```
+
+`your_openai_api_key` を実際の API キーに置き換えます。
+
+**ツールの作成**
+
+weather-tool ツールファイルを作成します。
+
+```bash
+mkdir -p src/mastra/tools && touch src/mastra/tools/weather-tool.ts
+```
+
+次に、次のコードを `src/mastra/tools/weather-tool.ts` に追加します。
+
+`src/mastra/tools/weather-tool.ts`
+
+```typescript
+import { createTool } from "@mastra/core/tools";
+import { z } from "zod";
+
+interface WeatherResponse {
+  current: {
+    time: string;
+    temperature_2m: number;
+    apparent_temperature: number;
+    relative_humidity_2m: number;
+    wind_speed_10m: number;
+    wind_gusts_10m: number;
+    weather_code: number;
+  };
+}
+
+export const weatherTool = createTool({
+  id: "get-weather",
+  description: "特定の場所の現在の天気情報を取得します",
+  inputSchema: z.object({
+    location: z.string().describe("都市名"),
+  }),
+  outputSchema: z.object({
+    temperature: z.number(),
+    feelsLike: z.number(),
+    humidity: z.number(),
+    windSpeed: z.number(),
+    windGust: z.number(),
+    conditions: z.string(),
+    location: z.string(),
+  }),
+  execute: async ({ context }) => {
+    return await getWeather(context.location);
+  },
+});
+
+const getWeather = async (location: string) => {
+  const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;
+  const geocodingResponse = await fetch(geocodingUrl);
+  const geocodingData = await geocodingResponse.json();
+
+  if (!geocodingData.results?.[0]) {
+    throw new Error(`Location '${location}' not found`);
+  }
+
+  const { latitude, longitude, name } = geocodingData.results[0];
+
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code`;
+
+  const response = await fetch(weatherUrl);
+  const data: WeatherResponse = await response.json();
+
+  return {
+    temperature: data.current.temperature_2m,
+    feelsLike: data.current.apparent_temperature,
+    humidity: data.current.relative_humidity_2m,
+    windSpeed: data.current.wind_speed_10m,
+    windGust: data.current.wind_gusts_10m,
+    conditions: getWeatherCondition(data.current.weather_code),
+    location: name,
+  };
+};
+
+function getWeatherCondition(code: number): string {
+  const conditions: Record<number, string> = {
+    0: "晴天",
+    1: "主に晴れ",
+    2: "一部曇り",
+    3: "曇り",
+    45: "霧",
+    48: "霜を伴う霧",
+    51: "小雨",
+    53: "中程度の雨",
+    55: "濃い雨",
+    56: "小雨（凍結）",
+    57: "濃い雨（凍結）",
+    61: "小雨",
+    63: "中程度の雨",
+    65: "大雨",
+    66: "小雨（凍結）",
+    67: "大雨（凍結）",
+    71: "小雪",
+    73: "中程度の雪",
+    75: "大雪",
+    77: "雪あられ",
+    80: "小雨（にわか雨）",
+    81: "中程度の雨（にわか雨）",
+    82: "激しい雨（にわか雨）",
+    85: "小雪（にわか雪）",
+    86: "大雪（にわか雪）",
+    95: "雷雨",
+    96: "雷雨（小規模な雹を伴う）",
+    99: "雷雨（大規模な雹を伴う）",
+  };
+  return conditions[code] || "不明";
+}
+```
+
+**エージェントの作成**
+
+天気エージェントファイルを作成します。
+
+```bash
+mkdir -p src/mastra/agents && touch src/mastra/agents/weather.ts
+```
+
+次に、次のコードを `src/mastra/agents/weather.ts` に追加します。
+
+`src/mastra/agents/weather.ts`
+
+```typescript
+import { openai } from "@ai-sdk/openai";
+import { Agent } from "@mastra/core/agent";
+import { weatherTool } from "../tools/weather-tool";
+
+export const weatherAgent = new Agent({
+  name: "Weather Agent",
+  instructions: `あなたは、正確な天気情報を提供する役立つ天気アシスタントです。
+
+あなたの主な機能は、ユーザーが特定の場所の天気情報を取得するのを支援することです。応答する場合:
+- 場所が指定されていない場合は、必ず場所を尋ねてください
+- 湿度、風の状態、降水量などの関連情報を含めてください
+- 応答は簡潔かつ情報量豊かに保ってください
+
+weatherTool を使用して、現在の天気データを取得します。`,
+  model: openai("gpt-4o-mini"),
+  tools: { weatherTool },
+});
+```
+
+**エージェントの登録**
+
+最後に、`src/mastra/index.ts` に Mastra エントリポイントを作成し、エージェントを登録します。
+
+`src/mastra/index.ts`
+
+```typescript
+import { Mastra } from "@mastra/core";
+
+import { weatherAgent } from "./agents/weather";
+
+export const mastra = new Mastra({
+  agents: { weatherAgent },
+});
+```
+
+これにより、エージェントが Mastra に登録され、`mastra dev` がそれを検出して提供できるようになります。
+
+**既存のプロジェクトへのインストール**
+
+既存のプロジェクトに Mastra を追加するには、`mastra init` のローカル開発ドキュメントを参照してください。
+
+フレームワーク固有のドキュメント（例：Next.js）も確認できます。
+
+**Mastra サーバーの起動**
+
+Mastra は、REST エンドポイントを介してエージェントを提供するためのコマンドを提供します。
+
+**開発サーバー**
+
+次のコマンドを実行して、Mastra サーバーを起動します。
+
+```bash
+npm run dev
+```
+
+または、Mastra CLI がインストールされている場合は、以下を実行します。
+
+```bash
+mastra dev
+```
+
+このコマンドは、エージェントの REST API エンドポイントを作成します。
+
+**エンドポイントのテスト**
+
+curl または fetch を使用して、エージェントのエンドポイントをテストできます。
+
+```bash
+curl -X POST http://localhost:4111/api/agents/weatherAgent/generate \
+-H "Content-Type: application/json" \
+-d '{"messages": ["What is the weather in London?"]}'
+```
+
+**クライアントで Mastra を使用する**
+
+フロントエンドアプリケーションで Mastra を使用するには、タイプセーフなクライアント SDK を使用して、Mastra REST API と対話できます。
+
+詳細な使用方法については、クライアント SDK ドキュメントを参照してください。
+
+**コマンドラインからの実行**
+
+コマンドラインからエージェントを直接呼び出す場合は、スクリプトを作成してエージェントを取得し、呼び出すことができます。
+
+`src/index.ts`
+
+```typescript
+import { mastra } from "./mastra";
+
+async function main() {
+  const agent = await mastra.getAgent("weatherAgent");
+
+  const result = await agent.generate("What is the weather in London?");
+
+  console.log("Agent response:", result.text);
+}
+
+main();
+```
+
+次に、スクリプトを実行して、すべてが正しくセットアップされていることをテストします。
+
+```bash
+npx tsx src/index.ts
+```
+
+これにより、エージェントの応答がコンソールに出力されます。

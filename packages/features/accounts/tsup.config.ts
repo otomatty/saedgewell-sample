@@ -1,0 +1,35 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: [
+    'src/components/personal-account-dropdown.tsx',
+    'src/components/account-settings-container.tsx',
+    'src/components/index.ts',
+    'src/hooks/index.ts',
+    'src/server/api.ts',
+  ],
+  format: ['esm', 'cjs'],
+  dts: true,
+  noExternal: ['react-dom/server'],
+  clean: true,
+  external: [
+    'react',
+    'react-dom',
+    'next',
+    '@supabase/supabase-js',
+    '@kit/ui',
+    '@kit/shared',
+    '@kit/supabase',
+    '@kit/next',
+    'zod',
+    'react-hook-form',
+    '@hookform/resolvers',
+    '@radix-ui/react-icons',
+    'sonner',
+    'lucide-react',
+    'react-i18next',
+    '@tanstack/react-query',
+    'next-themes',
+    'nanoid',
+  ],
+});

@@ -1,0 +1,66 @@
+name: "📝 ドキュメント更新"
+description: ドキュメントの新規作成や既存ドキュメントの更新リクエストを作成します。
+title: "📝 [ドキュメント] - <タイトル>"
+labels: [
+  "documentation"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "概要"
+      description: 作成または更新が必要なドキュメントについて説明してください
+      placeholder: ドキュメントの目的や範囲について簡潔に記入してください...
+    validations:
+      required: true
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: "ドキュメントタイプ"
+      description: どのタイプのドキュメントですか？
+      options:
+        - ユーザーガイド
+        - 開発者ドキュメント
+        - API/機能リファレンス
+        - チュートリアル
+        - トラブルシューティングガイド
+        - その他
+    validations:
+      required: true
+  - type: dropdown
+    id: action_type
+    attributes:
+      label: "アクション"
+      description: 必要なアクションは何ですか？
+      options:
+        - 新規ドキュメント作成
+        - 既存ドキュメント更新
+        - ドキュメント修正（誤字・脱字等）
+        - ドキュメント翻訳
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: current_state
+    attributes:
+      label: "現状"
+      description: 既存ドキュメントの現状またはドキュメントが存在しない場合の問題点
+      placeholder: 現在のドキュメントの問題点や不足している情報について説明してください...
+    validations:
+      required: false
+  - type: textarea
+    id: proposed_changes
+    attributes:
+      label: "提案する変更"
+      description: 具体的にどのような内容を追加・更新すべきか
+      placeholder: 追加または更新すべき内容の詳細を記入してください...
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: "参考資料"
+      description: ドキュメント作成に役立つ参考資料やリンク
+      placeholder: 関連するコード、外部リソース、類似ドキュメントへのリンクなど...
+    validations:
+      required: false 

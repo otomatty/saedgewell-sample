@@ -1,0 +1,142 @@
+---
+title: Docker環境におけるネットワーク構成
+description: saedgewellプロジェクトのDocker環境におけるネットワーク構成と設定ガイド
+date: 2025-03-23
+author: AI Assistant
+tags: [docker, network, supabase, troubleshooting]
+---
+
+# Docker環境におけるネットワーク構成
+
+## 概要
+
+saedgewellプロジェクトでは、複数のサービス間の通信を実現するために複数のDockerネットワークを使用しています。各ネットワークには特定の役割があり、適切に設定することでマイクロサービスアーキテクチャが正常に機能します。
+
+## ネットワーク構成
+
+プロジェクトで使用している主なDockerネットワークは以下の通りです：
+
+| ネットワーク名 | 種類 | 目的 | 接続サービス |
+|--------------|------|------|-------------|
+| `saedgewell_net` | bridge | アプリケーションコンテナ間の基本通信 | web, docs, admin, nginx |
+| `supabase_network_saedgewell` | external | Supabaseサービスとの通信 | web, docs, admin, nginx, supabase_* |
+
+## ネットワーク設定
+
+### docker-compose.yml
+
+```yaml
+networks:
+  saedgewell_net:
+    driver: bridge
+  supabase_network_saedgewell:
+    external: true
+```
+
+各サービスのネットワーク設定例：
+
+```yaml
+services:
+  web:
+    # ... その他の設定 ...
+    networks:
+      - saedgewell_net
+      - supabase_network_saedgewell
+```
+
+### 外部ネットワークの作成
+
+外部ネットワークは、Docker Composeの実行前に手動で作成する必要があります：
+
+```bash
+docker network create supabase_network_saedgewell
+```
+
+## Supabase接続設定
+
+Supabaseとの通信には、環境に応じて適切なURLを使い分ける必要があります：
+
+1. **ホストマシンからの接続**：
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+   ```
+
+2. **Dockerコンテナ内からの接続**：
+   ```
+   NEXT_PUBLIC_SUPABASE_URL_DOCKER=http://supabase_kong_saedgewell:8000
+   ```
+
+### サーバーサイドクライアント設定
+
+`packages/supabase/src/clients/server-client.ts`では、Docker環境内からの接続とホスト環境からの接続を自動的に切り替えています：
+
+```typescript
+// Docker環境内での接続URLが設定されていれば使用、なければ通常のURLを使用
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER || keys.url;
+```
+
+## よくある問題と解決策
+
+### 問題: ネットワーク間の接続エラー
+
+**症状**: アプリケーションからSupabaseへの接続ができず、以下のようなエラーが表示される：
+
+```
+Error: Unable to connect. Is the computer able to access the url?
+```
+
+**原因**: アプリケーションコンテナとSupabaseコンテナが同じネットワークに属していない。
+
+**解決策**:
+1. すべてのアプリケーションコンテナに`supabase_network_saedgewell`ネットワークを追加
+2. 環境変数の`NEXT_PUBLIC_SUPABASE_URL_DOCKER`の値を`http://supabase_kong_saedgewell:8000`に設定
+
+### 問題: 外部ネットワークが見つからないエラー
+
+**症状**: Docker Composeの起動時に以下のエラーが表示される：
+
+```
+network supabase_network_saedgewell declared as external, but could not be found
+```
+
+**解決策**:
+```bash
+docker network create supabase_network_saedgewell
+```
+
+## デバッグ方法
+
+### ネットワーク一覧の確認
+
+```bash
+docker network ls
+```
+
+### ネットワーク詳細の確認
+
+```bash
+docker network inspect supabase_network_saedgewell
+```
+
+### コンテナ間の接続確認
+
+```bash
+# コンテナにping機能をインストール
+docker exec -it saedgewell-web-1 bash -c "apt-get update && apt-get install -y iputils-ping"
+
+# 接続確認
+docker exec -it saedgewell-web-1 bash -c "ping -c 2 supabase_kong_saedgewell"
+```
+
+## ベストプラクティス
+
+1. **明示的なネットワーク設定**: 各サービスが必要とするすべてのネットワークを明示的に設定する
+2. **環境変数による接続先の管理**: 環境変数を使ってホスト環境とDocker環境での接続先を適切に切り替える
+3. **接続確認の自動化**: 開発環境起動スクリプトに接続確認ステップを組み込む
+4. **サービス依存関係の管理**: `depends_on`を使って適切な起動順序を確保する
+
+## 参考リソース
+
+- [Docker Networking Guide](https://docs.docker.com/network/)
+- [Docker Compose Networking](https://docs.docker.com/compose/networking/)
+- [Supabase Docker デプロイガイド](https://supabase.com/docs/guides/self-hosting/docker)

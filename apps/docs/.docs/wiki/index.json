@@ -1,0 +1,7 @@
+{
+  "title": "Wiki",
+  "description": "技術用語や概念の解説",
+  "type": "category",
+  "icon": "/icons/book-open.svg",
+  "order": 2
+}

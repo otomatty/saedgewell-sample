@@ -1,0 +1,28 @@
+services:
+  # すべてのサービス共通の設定
+  web:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    environment:
+      # Apple Silicon向けの最適化フラグ
+      - BUN_RUNTIME=--smol
+  
+  docs:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    environment:
+      # Apple Silicon向けの最適化フラグ
+      - BUN_RUNTIME=--smol
+  
+  admin:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    environment:
+      # Apple Silicon向けの最適化フラグ
+      - BUN_RUNTIME=--smol 

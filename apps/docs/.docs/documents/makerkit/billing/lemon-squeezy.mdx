@@ -1,0 +1,89 @@
+---
+title: 'Next.js Supabase SaaS Starter KitでのLemon Squeezy課金の設定'
+description: 'SaaSプロダクトでLemon Squeezyを使用した課金システムの設定方法を学ぶ'
+icon: 'lemon'
+order: 4
+---
+
+# Next.js Supabase SaaS Starter KitでのLemon Squeezy課金の設定
+
+Lemon Squeezyは、SaaSプロダクトでユーザーに課金するためのペイメントプロセッサーです。Merchant of Record（販売代理店）として、すべての課金とコンプライアンスを代行します。
+
+## 基本設定
+
+まず、Lemon Squeezyをデフォルトの課金プロバイダーとして設定する必要があります：
+
+```bash
+NEXT_PUBLIC_BILLING_PROVIDER=lemon-squeezy
+```
+
+また、DBの設定もLemon Squeezyを使用するように変更する必要があります：
+
+```sql
+update config set billing_provider = 'lemon-squeezy';
+```
+
+次に、以下の環境変数を設定する必要があります：
+
+```bash
+LEMON_SQUEEZY_SECRET_KEY=
+LEMON_SQUEEZY_SIGNING_SECRET=
+LEMON_SQUEEZY_STORE_ID=
+```
+
+ご存知かと思いますが、これらの変数は`.env`ファイルには追加しないでください。代わりに、CI/CDシステムの環境変数として追加してください。
+
+ローカルでテストする場合は、`.env.local`ファイルに追加できます。このファイルはGitにコミットされないため、機密情報を安全に保存できます。
+
+## スキーマ定義
+
+Makerkitの課金設定では、1つのサブスクリプションに複数のラインアイテムを追加できます。例えば、定額料金、従量課金、シートごとの課金を組み合わせることができます。
+
+ただし、Lemon SqueezyはStripeのような複数のラインアイテムをサポートしていません。複数のラインアイテムを設定すると、課金スキーマのバリデーションが失敗するため、調整が必要です。
+
+Lemon Squeezyでは、柔軟性は限られますが、ニーズに合わせて様々なフィールドを調整できます。
+
+## 従量課金
+
+従量課金は、個別のラインアイテムではなく、サブスクリプション全体にのみ適用できます。例えば、1,000リクエストあたり$1を課金するプランの場合、`tiers`プロパティを使用して1,000リクエストあたり$1を課金するように設定できます。
+
+ただし、以下のような設定はできません：
+- 1つのラインアイテムで1,000リクエストあたり$1、別のラインアイテムで1,000リクエストあたり$2を課金
+- 1つのラインアイテムで定額料金、別のラインアイテムで従量課金を設定
+
+## セットアップ料金 + 従量課金
+
+Lemon Squeezyは`setupFee`プロパティをサポートしています。これにより、セットアップ料金付きの従量課金プランを作成できます。例えば、$10の定額料金と1,000リクエストあたり$1を課金するプランの場合、`setupFee`を10に設定し、`tiers`で1,000リクエストあたり$1を課金するように設定できます。
+
+**注意**: セットアップ料金は、サブスクリプション作成時に1回のみ課金されます。
+
+## ローカルでのテスト
+
+Lemon Squeezyからwebhookを受信するには、プロキシが必要です。ngrok（または他のサービス）を使用して無料で作成できます。設定後、Lemon Squeezyで`{proxy-url}/api/billing/webhook`を指すwebhookを作成します。ここで`{proxy-url}`はローカルマシンを指す有効なURLです。
+
+例えば、プロキシが`https://myawesomeproxy.com`の場合、Lemon Squeezyのエンドポイントとして`https://myawesomeproxy.com/api/billing/webhook`を使用します。
+
+## 本番環境
+
+本番環境に移行する際は、実際のアプリケーションURLを設定し、`{proxy-url}`は削除してください。
+
+Lemon Squeezyで以下のwebhookイベントを設定してください：
+
+- `order_created`
+- `subscription_created`
+- `subscription_updated`
+- `subscription_expired`
+
+## 実装のベストプラクティス
+
+1. **セキュリティ**
+   - 環境変数の適切な管理
+   - シークレットの安全な保管
+
+2. **スキーマ設定**
+   - 単一ラインアイテムの制限を考慮
+   - 適切な課金構造の設計
+
+3. **テストと検証**
+   - ローカル環境での十分なテスト
+   - webhookの正しい設定確認

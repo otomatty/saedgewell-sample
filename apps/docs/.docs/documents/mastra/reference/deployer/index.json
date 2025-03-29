@@ -1,0 +1,35 @@
+{
+  "title": "デプロイヤー",
+  "description": "デプロイツールリファレンス",
+  "order": 14,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "deployer",
+      "title": "Deployer",
+      "description": "Deployerクラスのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "cloudflare",
+      "title": "Cloudflare",
+      "description": "Cloudflareデプロイのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "netlify",
+      "title": "Netlify",
+      "description": "Netlifyデプロイのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "vercel",
+      "title": "Vercel",
+      "description": "Vercelデプロイのリファレンス",
+      "order": 4
+    }
+  ]
+}
