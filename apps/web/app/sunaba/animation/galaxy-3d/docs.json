@@ -1,0 +1,34 @@
+{
+	"id": "galaxy-3d",
+	"name": "Galaxy 3D",
+	"description": "3Dの銀河アニメーション",
+	"category": "animation",
+	"tags": ["3d", "animation", "three.js"],
+	"usage": {
+		"description": "Three.jsを使用した3D銀河アニメーションを表示します。パーティクルシステムを使用して、美しい銀河のアニメーションを生成します。",
+		"example": "```tsx\n<Galaxy3D />\n```",
+		"props": [
+			{
+				"name": "particleCount",
+				"type": "number",
+				"default": "10000",
+				"description": "銀河を構成するパーティクルの数"
+			},
+			{
+				"name": "size",
+				"type": "number",
+				"default": "0.01",
+				"description": "パーティクルのサイズ"
+			}
+		]
+	},
+	"implementation": {
+		"description": "Three.jsのPointsジオメトリを使用して、大量のパーティクルを効率的にレンダリングしています。カスタムシェーダーを使用して、パーティクルの色と透明度を制御しています。",
+		"features": [
+			"WebGLを使用した高速なレンダリング",
+			"カスタムシェーダーによる視覚効果",
+			"インタラクティブなカメラコントロール",
+			"パフォーマンス最適化"
+		]
+	}
+}

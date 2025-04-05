@@ -1,0 +1,509 @@
+# フェーズ5: 環境構築自動化
+
+このフェーズでは、Docker環境の構築と管理を自動化し、開発者の生産性を向上させます。特に、新規開発者のオンボーディングプロセスを簡素化し、環境構築の一貫性を確保します。
+
+## 目標
+
+- [ ] 環境構築プロセスの自動化
+- [ ] 開発環境の初期化スクリプトの作成
+- [ ] データベースのシード処理の自動化
+- [ ] 開発者ドキュメントの充実
+- [ ] CI/CD環境への統合準備
+
+## タスク
+
+### 5.1 環境構築自動化スクリプト
+
+- [ ] 開発環境初期化スクリプト (`scripts/setup.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== Saedgewell アプリケーション開発環境セットアップ ==="
+
+  # 必要なツールのチェック
+  check_requirements() {
+    echo "1/5: 必要なツールの確認..."
+    commands=("docker" "docker-compose" "git" "bun")
+    
+    for cmd in "${commands[@]}"; do
+      if ! command -v $cmd &> /dev/null; then
+        echo "❌ $cmd がインストールされていません"
+        case $cmd in
+          docker)
+            echo "Docker Desktopをインストールしてください: https://www.docker.com/products/docker-desktop"
+            ;;
+          bun)
+            echo "Bunをインストールしてください: curl -fsSL https://bun.sh/install | bash"
+            ;;
+        esac
+        exit 1
+      fi
+    done
+    
+    echo "✅ 必要なツールがすべてインストールされています"
+  }
+
+  # 環境設定
+  setup_environment() {
+    echo "2/5: 環境設定..."
+    
+    # .env.localファイルの作成
+    if [ ! -f .env.local ]; then
+      cp .env.example .env.local
+      echo "✅ .env.local ファイルを作成しました"
+    else
+      echo "✅ .env.local ファイルは既に存在します"
+    fi
+    
+    # 開発者用シークレットの生成
+    if [ ! -d ./secrets ]; then
+      mkdir -p ./secrets
+      echo "✅ secretsディレクトリを作成しました"
+    fi
+    
+    if [ ! -f ./secrets/db_password.txt ]; then
+      openssl rand -base64 32 > ./secrets/db_password.txt
+      echo "✅ データベースパスワードを生成しました"
+    fi
+    
+    if [ ! -f ./secrets/jwt_secret.txt ]; then
+      openssl rand -base64 64 > ./secrets/jwt_secret.txt
+      echo "✅ JWTシークレットを生成しました"
+    fi
+  }
+
+  # ホストファイルの設定
+  setup_hosts() {
+    echo "3/5: ホストファイル設定..."
+    
+    # スクリプトを実行
+    ./scripts/dev/setup-hosts.sh
+  }
+
+  # 依存関係のインストール
+  install_dependencies() {
+    echo "4/5: 依存関係のインストール..."
+    
+    bun install
+    echo "✅ 依存関係をインストールしました"
+  }
+
+  # Docker環境の構築
+  setup_docker() {
+    echo "5/5: Docker環境の構築..."
+    
+    # アーキテクチャの検出と最適化
+    ./scripts/dev/start-for-arch.sh
+    
+    echo "✅ Docker環境が正常に起動しました"
+  }
+
+  # メイン処理
+  main() {
+    check_requirements
+    setup_environment
+    setup_hosts
+    install_dependencies
+    setup_docker
+    
+    echo ""
+    echo "=== セットアップが完了しました ==="
+    echo "以下のURLでアプリケーションにアクセスできます:"
+    echo "- Web: http://web.saedgewell.test"
+    echo "- Docs: http://docs.saedgewell.test"
+    echo "- Admin: http://admin.saedgewell.test"
+    echo ""
+    echo "開発を始めるには:"
+    echo "1. データベースを初期化: ./scripts/dev/init-db.sh"
+    echo "2. 開発サーバーを起動: docker compose up"
+    echo ""
+  }
+
+  main
+  ```
+
+### 5.2 データベース初期化スクリプト
+
+- [ ] データベース初期化スクリプト (`scripts/dev/init-db.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== データベース初期化 ==="
+
+  # Supabaseが実行中か確認
+  if ! docker compose ps | grep -q "supabase.*running"; then
+    echo "⚠️ Supabaseが実行されていません。起動します..."
+    docker compose up -d supabase
+    
+    # Supabaseの起動を待機
+    echo "Supabaseの起動を待機しています..."
+    for i in {1..30}; do
+      if curl -s http://localhost:54321/health > /dev/null; then
+        echo "✅ Supabaseが起動しました"
+        break
+      fi
+      
+      if [ $i -eq 30 ]; then
+        echo "❌ Supabaseの起動がタイムアウトしました"
+        exit 1
+      fi
+      
+      echo -n "."
+      sleep 2
+    done
+    echo ""
+  fi
+
+  # マイグレーションの実行
+  echo "1/3: データベースマイグレーションを実行..."
+  docker compose exec supabase supabase db reset --yes
+  echo "✅ マイグレーションが完了しました"
+
+  # シードデータの投入
+  echo "2/3: シードデータを投入..."
+  docker compose exec supabase psql -f /app/seed.sql
+  echo "✅ シードデータが投入されました"
+
+  # 初期ユーザーの作成
+  echo "3/3: 開発用ユーザーを作成..."
+  # 初期ユーザーを作成するSQLコマンドを実行
+  docker compose exec supabase psql -c "
+  INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+  VALUES (
+    gen_random_uuid(),
+    'dev@example.com',
+    crypt('password123', gen_salt('bf')),
+    now(),
+    now(),
+    now(),
+    '{\"provider\":\"email\",\"providers\":[\"email\"]}',
+    '{\"name\":\"Developer\"}',
+    'authenticated',
+    'authenticated'
+  )
+  ON CONFLICT (email) DO NOTHING;
+  "
+  echo "✅ 開発用ユーザーが作成されました"
+  echo "   Email: dev@example.com"
+  echo "   Password: password123"
+
+  echo ""
+  echo "=== データベース初期化が完了しました ==="
+  ```
+
+### 5.3 開発者ドキュメント
+
+- [ ] README.mdの更新
+  ```markdown
+  # Saedgewell アプリケーション
+
+  ## 開発環境のセットアップ
+
+  ### 前提条件
+
+  - Docker Desktop (24.0.0以上)
+  - Bun (1.2.4以上)
+  - Git
+
+  ### 環境構築手順
+
+  1. リポジトリをクローン
+     ```bash
+     git clone git@github.com:yourorg/saedgewell.git
+     cd saedgewell
+     ```
+
+  2. セットアップスクリプトを実行
+     ```bash
+     ./scripts/setup.sh
+     ```
+     
+     このスクリプトは以下の処理を実行します:
+     - 必要なツールの確認
+     - 環境変数の設定
+     - ホストファイルの設定
+     - 依存関係のインストール
+     - Docker環境の構築
+
+  3. データベースの初期化
+     ```bash
+     ./scripts/dev/init-db.sh
+     ```
+
+  4. 開発サーバーの起動
+     ```bash
+     docker compose up
+     ```
+
+  5. ブラウザでアクセス
+     - Web: http://web.saedgewell.test
+     - Docs: http://docs.saedgewell.test
+     - Admin: http://admin.saedgewell.test
+
+  ### 開発用アカウント
+
+  初期セットアップ後、以下の開発用アカウントが使用可能です:
+
+  - Email: dev@example.com
+  - Password: password123
+
+  ### よく使うコマンド
+
+  - 開発環境の起動: `docker compose up`
+  - 開発環境の停止: `docker compose down`
+  - コンテナの再ビルド: `docker compose build`
+  - ログの確認: `docker compose logs -f [service]`
+  - データベースのリセット: `./scripts/dev/init-db.sh`
+  - 依存関係の更新: `bun update`
+
+  ## アーキテクチャ
+
+  このアプリケーションはモノレポ構造を採用し、以下のアプリケーションで構成されています:
+
+  - **Web**: メインのユーザー向けウェブアプリケーション
+  - **Docs**: ドキュメントサイト
+  - **Admin**: 管理者用ダッシュボード
+
+  すべてのアプリケーションは、共通のコンポーネントとロジックを共有しています。
+
+  ## 技術スタック
+
+  - フロントエンド: Next.js, React, TypeScript
+  - バックエンド: Supabase (PostgreSQL, Auth)
+  - 開発環境: Docker, Bun
+  - その他: Turborepo, Biome
+  ```
+
+### 5.4 CI/CD準備
+
+- [ ] GitHub Actions ワークフロー設定 (`.github/workflows/docker-build.yml`)
+  ```yaml
+  name: Docker Build & Test
+
+  on:
+    push:
+      branches: [ main, develop ]
+    pull_request:
+      branches: [ main, develop ]
+
+  jobs:
+    build-and-test:
+      runs-on: ubuntu-latest
+      
+      steps:
+        - uses: actions/checkout@v4
+        
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+          
+        - name: Build Docker images
+          run: |
+            docker compose build
+            
+        - name: Start containers
+          run: |
+            docker compose up -d
+            
+        - name: Wait for containers
+          run: |
+            sleep 20
+            
+        - name: Check container status
+          run: |
+            docker compose ps
+            
+        - name: Run tests
+          run: |
+            docker compose exec -T web bun test
+            
+        - name: Check API health
+          run: |
+            curl -s http://localhost:54321/health | grep -q "ok"
+            
+        - name: Stop containers
+          run: |
+            docker compose down
+  ```
+
+### 5.5 開発環境管理スクリプト
+
+- [ ] 開発環境管理スクリプト (`scripts/dev/manage.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  ENV_FILE=".env.local"
+  COMPOSE_FILE="docker-compose.yml"
+  ARCH=$(uname -m)
+
+  # アーキテクチャ別の設定
+  if [ "$ARCH" = "arm64" ]; then
+    COMPOSE_FILE_ARCH="docker-compose.apple-silicon.yml"
+  else
+    COMPOSE_FILE_ARCH=""
+  fi
+
+  # 使用方法の表示
+  usage() {
+    echo "使用方法: $0 [コマンド]"
+    echo ""
+    echo "利用可能なコマンド:"
+    echo "  start       開発環境を起動"
+    echo "  stop        開発環境を停止"
+    echo "  restart     開発環境を再起動"
+    echo "  rebuild     コンテナを再ビルド"
+    echo "  logs        ログを表示"
+    echo "  status      サービス状態を表示"
+    echo "  cleanup     未使用のリソースを削除"
+    echo "  reset-db    データベースをリセット"
+    echo "  shell       サービスのシェルを起動"
+    echo "  update      依存関係を更新"
+    echo "  optimize    環境最適化チェックを実行"
+    echo ""
+  }
+
+  # 開発環境の起動
+  start_env() {
+    echo "開発環境を起動しています..."
+    
+    if [ -n "$COMPOSE_FILE_ARCH" ]; then
+      docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ARCH up -d
+    else
+      docker compose up -d
+    fi
+    
+    echo "✅ 開発環境が起動しました"
+  }
+
+  # 開発環境の停止
+  stop_env() {
+    echo "開発環境を停止しています..."
+    docker compose down
+    echo "✅ 開発環境が停止しました"
+  }
+
+  # コンテナの再ビルド
+  rebuild_containers() {
+    echo "コンテナを再ビルドしています..."
+    
+    if [ -n "$COMPOSE_FILE_ARCH" ]; then
+      docker compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ARCH build
+    else
+      docker compose build
+    fi
+    
+    echo "✅ コンテナが再ビルドされました"
+  }
+
+  # ログの表示
+  show_logs() {
+    if [ -z "$1" ]; then
+      docker compose logs -f
+    else
+      docker compose logs -f $1
+    fi
+  }
+
+  # サービスの状態表示
+  show_status() {
+    echo "=== サービス状態 ==="
+    docker compose ps
+    
+    echo ""
+    echo "=== リソース使用状況 ==="
+    docker stats --no-stream
+  }
+
+  # 未使用リソースの削除
+  cleanup_resources() {
+    echo "未使用のリソースを削除しています..."
+    
+    # 停止コンテナの削除
+    docker container prune -f
+    
+    # 未使用イメージの削除
+    docker image prune -f
+    
+    # 未使用ボリュームの削除
+    docker volume prune -f
+    
+    echo "✅ リソースがクリーンアップされました"
+  }
+
+  # メイン処理
+  main() {
+    if [ $# -lt 1 ]; then
+      usage
+      exit 1
+    fi
+
+    case $1 in
+      start)
+        start_env
+        ;;
+      stop)
+        stop_env
+        ;;
+      restart)
+        stop_env
+        start_env
+        ;;
+      rebuild)
+        rebuild_containers
+        ;;
+      logs)
+        show_logs $2
+        ;;
+      status)
+        show_status
+        ;;
+      cleanup)
+        cleanup_resources
+        ;;
+      reset-db)
+        ./scripts/dev/init-db.sh
+        ;;
+      shell)
+        if [ -z "$2" ]; then
+          echo "サービス名を指定してください"
+          exit 1
+        fi
+        docker compose exec $2 /bin/sh
+        ;;
+      update)
+        bun update
+        ;;
+      optimize)
+        ./scripts/test/optimization-check.sh
+        ;;
+      *)
+        usage
+        exit 1
+        ;;
+    esac
+  }
+
+  main "$@"
+  ```
+
+## 検証ポイント
+
+- [ ] セットアップスクリプトが新規環境で正常に動作するか
+- [ ] データベース初期化が正常に行われるか
+- [ ] 開発者ドキュメントが分かりやすく、十分な情報を提供しているか
+- [ ] CI/CD設定が正常に機能するか
+- [ ] 管理スクリプトが開発作業を効率化するか
+
+## 今後の拡張
+
+1. コンテナ環境のさらなる最適化
+2. バックアップと復元の自動化
+3. 開発/ステージング/本番環境の一貫した管理
+4. マルチプラットフォーム対応の改善（Windows, Linux）
+5. デプロイパイプラインの完全自動化
+
+## 次のステップ
+
+フェーズ5を完了したら、[フェーズ6: 本番環境デプロイ](./phase6.md)に進みます。 

@@ -1,0 +1,10 @@
+{
+  "title": "Bun",
+  "description": "Bunのカスタマイズガイド",
+  "order": 7,
+  "thumbnail": "https://bun.sh",
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-10",
+  "maintainers": ["Akimasa Sugai"]
+}

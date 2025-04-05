@@ -1,0 +1,575 @@
+---
+title: '環境変数'
+description: 'Next.js Supabaseスターターキットでの環境変数の設定方法について学びます。'
+icon: 'settings'
+order: 1
+---
+
+# Next.js Supabaseスターターキットにおける環境変数
+
+環境変数は、apps/webパッケージのルートにある.envファイルで定義されています。
+
+- **共有環境変数**: 共有環境変数は.envファイルで定義されます。これらは環境間（開発、ステージング、本番など）で共有される環境変数です。
+- **環境固有の変数**: 特定の環境用の環境変数は、.env.developmentと.env.productionファイルで定義されます。これらは開発環境と本番環境に固有の環境変数です。
+- **シークレットキー**: シークレットキーや機密情報は.envファイルには保存されません。代わりに、CI/CDシステムの環境変数に保存されます。
+- **ローカルで使用するシークレットキー**: ローカルでシークレットキーを使用する必要がある場合は、.env.localファイルに保存できます。このファイルはGitにコミットされないため、機密情報を安全に保存できます。
+
+## コア設定変数(.env)
+
+アプリケーションの基本設定を定義する重要な変数：
+
+```
+NEXT_PUBLIC_SITE_URL=https://example.com
+NEXT_PUBLIC_PRODUCT_NAME=Your Product
+NEXT_PUBLIC_SITE_TITLE="Your Site Title"
+NEXT_PUBLIC_SITE_DESCRIPTION="Your site description"
+NEXT_PUBLIC_DEFAULT_LOCALE=ja
+```
+
+### NEXT_PUBLIC_SITE_URL(.env)
+
+サイトのURL。絶対URLの生成に使用されます。プロトコル（https://など）を含む有効なURLである必要があります。
+
+```
+NEXT_PUBLIC_SITE_URL=https://example.com
+```
+
+### NEXT_PUBLIC_PRODUCT_NAME(.env)
+
+製品名。アプリケーションインターフェース全体で一貫して使用されます。
+
+```
+NEXT_PUBLIC_PRODUCT_NAME=Makerkit
+```
+
+### NEXT_PUBLIC_SITE_TITLE(.env)
+
+サイトのタイトルタグの内容。SEOとブラウザ表示に重要です。
+
+```
+NEXT_PUBLIC_SITE_TITLE="Makerkit - The easiest way to start your next project"
+```
+
+### NEXT_PUBLIC_SITE_DESCRIPTION(.env)
+
+サイトのメタ説明。SEO最適化に重要です。
+
+```
+NEXT_PUBLIC_SITE_DESCRIPTION="Makerkit is the easiest way to start your next project"
+```
+
+### NEXT_PUBLIC_DEFAULT_THEME_MODE(.env)
+
+デフォルトのテーマ外観を制御します。オプション：light、dark、またはsystem。
+
+```
+NEXT_PUBLIC_DEFAULT_THEME_MODE=light
+```
+
+### NEXT_PUBLIC_DEFAULT_LOCALE(.env)
+
+アプリケーションのデフォルト言語を設定します。
+
+```
+NEXT_PUBLIC_DEFAULT_LOCALE=ja
+```
+
+## 認証設定(.env)
+
+ユーザー認証方法を制御する設定：
+
+```
+NEXT_PUBLIC_AUTH_PASSWORD=true
+NEXT_PUBLIC_AUTH_MAGIC_LINK=false
+NEXT_PUBLIC_CAPTCHA_SITE_KEY=
+CAPTCHA_SECRET_TOKEN=
+```
+
+### NEXT_PUBLIC_AUTH_PASSWORD(.env)
+
+パスワードベースの認証を有効または無効にします。
+
+```
+NEXT_PUBLIC_AUTH_PASSWORD=true
+```
+
+### NEXT_PUBLIC_AUTH_MAGIC_LINK(.env)
+
+マジックリンク認証を有効または無効にします。
+
+```
+NEXT_PUBLIC_AUTH_MAGIC_LINK=false
+```
+
+### NEXT_PUBLIC_CAPTCHA_SITE_KEY(.env)
+
+フォーム保護用のCloudflare Captchaサイトキー。
+
+```
+NEXT_PUBLIC_CAPTCHA_SITE_KEY=your-captcha-site-key
+```
+
+### CAPTCHA_SECRET_TOKEN(.env)
+
+バックエンド検証用のCloudflare Captchaシークレットトークン。
+
+```
+CAPTCHA_SECRET_TOKEN=your-captcha-secret-token
+```
+
+## ナビゲーションとレイアウト設定(.env)
+
+アプリケーションのナビゲーションとレイアウトを制御する設定：
+
+```
+NEXT_PUBLIC_USER_NAVIGATION_STYLE=sidebar
+NEXT_PUBLIC_HOME_SIDEBAR_COLLAPSED=false
+NEXT_PUBLIC_TEAM_NAVIGATION_STYLE=sidebar
+NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED=false
+NEXT_PUBLIC_SIDEBAR_COLLAPSIBLE_STYLE=icon
+```
+
+### NEXT_PUBLIC_USER_NAVIGATION_STYLE(.env)
+
+ユーザーナビゲーションのレイアウトを制御します。オプション：sidebar、header、またはcustom。
+
+```
+NEXT_PUBLIC_USER_NAVIGATION_STYLE=sidebar
+```
+
+### NEXT_PUBLIC_HOME_SIDEBAR_COLLAPSED(.env)
+
+ホームサイドバーのデフォルト状態を設定します。
+
+```
+NEXT_PUBLIC_HOME_SIDEBAR_COLLAPSED=false
+```
+
+### NEXT_PUBLIC_TEAM_NAVIGATION_STYLE(.env)
+
+チームナビゲーションのレイアウトを制御します。オプション：sidebar、header、またはcustom。
+
+```
+NEXT_PUBLIC_TEAM_NAVIGATION_STYLE=sidebar
+```
+
+### NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED(.env)
+
+チームサイドバーのデフォルト状態を設定します。
+
+```
+NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED=false
+```
+
+### NEXT_PUBLIC_SIDEBAR_COLLAPSIBLE_STYLE(.env)
+
+サイドバーの折りたたみ動作を定義します。オプション：offscreen、icon、またはnone。
+
+```
+NEXT_PUBLIC_SIDEBAR_COLLAPSIBLE_STYLE=icon
+```
+
+## UI/UX(.env)
+
+アプリケーションのUI/UXを制御する設定：
+
+```
+NEXT_PUBLIC_DEFAULT_THEME_MODE=light
+NEXT_PUBLIC_ENABLE_THEME_TOGGLE=true
+NEXT_PUBLIC_ENABLE_SIDEBAR_TRIGGER=true
+```
+
+### NEXT_PUBLIC_DEFAULT_THEME_MODE(.env)
+
+デフォルトのテーマ外観を制御します。オプション：light、dark、またはsystem。
+
+```
+NEXT_PUBLIC_DEFAULT_THEME_MODE=light
+```
+
+### NEXT_PUBLIC_ENABLE_THEME_TOGGLE(.env)
+
+テーマ切り替え機能の表示を制御します。
+
+```
+NEXT_PUBLIC_ENABLE_THEME_TOGGLE=true
+```
+
+### NEXT_PUBLIC_ENABLE_SIDEBAR_TRIGGER(.env)
+
+サイドバートリガー機能の表示を制御します。
+
+```
+NEXT_PUBLIC_ENABLE_SIDEBAR_TRIGGER=true
+```
+
+## 機能フラグ(.env)
+
+```
+NEXT_PUBLIC_ENABLE_THEME_TOGGLE=true
+NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION=true
+NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING=true
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS=true
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION=true
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION=true
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING=true
+NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
+NEXT_PUBLIC_REALTIME_NOTIFICATIONS=true
+```
+
+### NEXT_PUBLIC_ENABLE_THEME_TOGGLE(.env)
+
+テーマ切り替え機能の表示を制御します。
+
+```
+NEXT_PUBLIC_ENABLE_THEME_TOGGLE=true
+```
+
+### NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION(.env)
+
+ユーザーが個人アカウントを削除できるようにします。
+
+```
+NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_DELETION=true
+```
+
+### NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING(.env)
+
+個人アカウントの課金機能を有効にします。
+
+```
+NEXT_PUBLIC_ENABLE_PERSONAL_ACCOUNT_BILLING=true
+```
+
+### NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS(.env)
+
+チームアカウント機能のマスタースイッチ。
+
+```
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS=true
+```
+
+### NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION(.env)
+
+新しいチームアカウントを作成する機能を制御します。
+
+```
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_CREATION=true
+```
+
+### NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION(.env)
+
+チームアカウントの削除を許可します。
+
+```
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_DELETION=true
+```
+
+### NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING(.env)
+
+チームアカウントの課金機能を有効にします。
+
+```
+NEXT_PUBLIC_ENABLE_TEAM_ACCOUNTS_BILLING=true
+```
+
+## 通知(.env)
+
+通知の動作を制御します：
+
+```
+NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
+NEXT_PUBLIC_REALTIME_NOTIFICATIONS=true
+```
+
+### NEXT_PUBLIC_ENABLE_NOTIFICATIONS(.env)
+
+通知システムを制御します。
+
+```
+NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
+```
+
+### NEXT_PUBLIC_REALTIME_NOTIFICATIONS(.env)
+
+Supabase Realtimeを使用したリアルタイム通知を有効にします。
+
+```
+NEXT_PUBLIC_REALTIME_NOTIFICATIONS=true
+```
+
+## Supabase設定(.env or .env.local)
+
+Supabase統合に必要な変数：
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://yourproject.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_DB_WEBHOOK_SECRET=your-webhook-secret
+```
+
+### NEXT_PUBLIC_SUPABASE_URL(.env)
+
+SupabaseプロジェクトのURL。
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://yourproject.supabase.co
+```
+
+### NEXT_PUBLIC_SUPABASE_ANON_KEY(.env)
+
+Supabase匿名APIキー。
+
+```
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### SUPABASE_SERVICE_ROLE_KEY(.env.local)
+
+Supabaseサービスロールキー（これは秘密にしてください！）。
+
+```
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+### SUPABASE_DB_WEBHOOK_SECRET(.env.local)
+
+Supabaseウェブフック検証用のシークレットキー。
+
+```
+SUPABASE_DB_WEBHOOK_SECRET=your-webhook-secret
+```
+
+## 課金設定(.env.local)
+
+### NEXT_PUBLIC_BILLING_PROVIDER(.env.local)
+
+選択した課金プロバイダー。オプション：stripeまたはlemon-squeezy。
+
+```
+NEXT_PUBLIC_BILLING_PROVIDER=stripe
+```
+
+## Stripe設定(.env.local)
+
+Stripeを使用する場合に必要：
+
+```
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-publishable-key
+STRIPE_SECRET_KEY=your-secret-key
+STRIPE_WEBHOOK_SECRET=your-webhook-secret
+```
+
+### NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY(.env.local)
+
+Stripe公開可能キー。
+
+```
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+### STRIPE_SECRET_KEY(.env.local)
+
+Stripeシークレットキー。
+
+```
+STRIPE_SECRET_KEY=your-secret-key
+```
+
+### STRIPE_WEBHOOK_SECRET(.env.local)
+
+Stripeウェブフックシークレット。
+
+```
+STRIPE_WEBHOOK_SECRET=your-webhook-secret
+```
+
+## Lemon Squeezy設定(.env.local)
+
+Lemon Squeezyを使用する場合に必要：
+
+```
+LEMON_SQUEEZY_SECRET_KEY=your-secret-key
+LEMON_SQUEEZY_STORE_ID=your-store-id
+LEMON_SQUEEZY_SIGNING_SECRET=your-signing-secret
+```
+
+### LEMON_SQUEEZY_SECRET_KEY(.env.local)
+
+Lemon Squeezyシークレットキー。
+
+```
+LEMON_SQUEEZY_SECRET_KEY=your-secret-key
+```
+
+### LEMON_SQUEEZY_STORE_ID(.env.local)  
+
+Lemon SqueezyストアID。
+
+```
+LEMON_SQUEEZY_STORE_ID=your-store-id
+```
+
+### LEMON_SQUEEZY_SIGNING_SECRET(.env.local)
+
+Lemon Squeezy署名シークレット。
+
+```
+LEMON_SQUEEZY_SIGNING_SECRET=your-signing-secret
+```
+
+## メール設定(.env.local)
+
+メール機能のセットアップ：
+
+```
+MAILER_PROVIDER=nodemailer
+EMAIL_SENDER=info@yourapp.com
+CONTACT_EMAIL=contact@yourapp.com # お問い合わせフォーム用メール
+# Resend用
+RESEND_API_KEY=your-resend-api-key
+# Nodemailer用
+EMAIL_HOST=smtp.provider.com
+EMAIL_PORT=587
+EMAIL_USER=your-email-user
+EMAIL_PASSWORD=your-email-password
+EMAIL_TLS=true
+```
+
+### MAILER_PROVIDER(.env.local)
+
+メールサービスプロバイダー。オプション：nodemailerまたはresend。
+
+```
+MAILER_PROVIDER=nodemailer
+```
+
+### EMAIL_SENDER(.env.local)
+
+デフォルトの送信者メールアドレス。
+
+```
+EMAIL_SENDER=info@yourapp.com
+```
+
+### CONTACT_EMAIL(.env.local)
+
+お問い合わせフォーム送信用のメールアドレス。
+
+```
+CONTACT_EMAIL=contact@yourapp.com
+```
+
+## Resend設定(.env.local)
+
+Resendを使用する場合に必要：
+
+```
+RESEND_API_KEY=your-resend-api-key
+```
+
+## Nodemailer設定(.env.local)
+
+Nodemailerを使用する場合に必要：
+
+```
+EMAIL_HOST=smtp.provider.com
+EMAIL_PORT=587
+EMAIL_USER=your-email-user
+EMAIL_PASSWORD=your-email-password
+EMAIL_TLS=true
+```
+
+## CMS設定(.env.local)
+
+CMS機能のセットアップ：
+
+```
+CMS_CLIENT=keystatic
+```
+
+### CMS_CLIENT(.env.local)
+
+選択したCMSシステム。オプション：wordpressまたはkeystatic。
+
+```
+CMS_CLIENT=keystatic
+```
+
+## Keystatic設定
+
+```
+NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND=local # local, cloud, github
+KEYSTATIC_PATH_PREFIX=apps/web
+NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH=./content # apps/web/content
+# Githubモードの場合
+NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND=github
+NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO=makerkit/next-supabase-saas-kit-turbo-demo
+NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH=./content
+KEYSTATIC_GITHUB_TOKEN=github_**********************************************
+KEYSTATIC_PATH_PREFIX=apps/web
+```
+
+### NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND
+
+Keystaticストレージの種類。オプション：local、cloud、github。
+
+```
+NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND=local
+```
+
+### NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO
+
+Keystaticストレージリポジトリ。
+
+```
+NEXT_PUBLIC_KEYSTATIC_STORAGE_REPO=makerkit/next-supabase-saas-kit-turbo-demo
+```
+
+### KEYSTATIC_GITHUB_TOKEN
+
+Keystatic GitHubトークン。
+
+```
+KEYSTATIC_GITHUB_TOKEN=github_**********************************************
+```
+
+### KEYSTATIC_PATH_PREFIX
+
+Keystaticパスプレフィックス。
+
+```
+KEYSTATIC_PATH_PREFIX=apps/web
+```
+
+### NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH
+
+Keystaticコンテンツパス。
+
+```
+NEXT_PUBLIC_KEYSTATIC_CONTENT_PATH=./content
+```
+
+## WordPress設定
+
+### WORDPRESS_API_URL
+
+WordPressを使用する場合に必要：
+
+```
+WORDPRESS_API_URL=https://your-wordpress-site.com/wp-json
+```
+
+## ベストプラクティス 🔑
+
+### 環境ファイル構造
+- **.env**: 共有、非機密変数
+- **.env.development**: 開発環境固有の設定
+- **.env.production**: 本番環境固有の設定
+- **.env.local**: ローカルの機密変数（gitで無視される）
+
+### セキュリティに関する考慮事項
+- シークレットキーを絶対にコミットしない
+- 機密データにはCI/CD環境変数を使用する
+- 定期的にキーをローテーションする

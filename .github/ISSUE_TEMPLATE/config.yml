@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ドキュメントサイト
+    url: https://docs.saedgewell.net
+    about: ドキュメントサイト
+  - name: 管理リクエスト (ライセンス、等)
+    url: https://saedgewell.net/contact
+    about: 管理リクエストはこちら

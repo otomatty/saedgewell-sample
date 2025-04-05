@@ -1,0 +1,62 @@
+---
+title: '法的ページ'
+description: 'Next.js Supabase Turboスターターキットで法的ページを作成・更新する方法を学ぶ'
+icon: 'scale'
+order: 10
+---
+
+# Next.js Supabase Turboスターターキットの法的ページ
+
+法的ページは`apps/web/app/(marketing)/(legal)`ディレクトリで定義されています。
+
+Makerkitには以下の法的ページが含まれています：
+
+- 利用規約
+- プライバシーポリシー
+- Cookieポリシー
+
+明らかな理由から、これらのページは空であり、内容を自分で記入する必要があります。
+
+ChatGPTを使用してこれらのページを生成しないことをお勧めします。
+
+## 法的ページにCMSを使用する
+
+法的ページのコンテンツを管理するためにCMSを使用することができます。これを行うには、CMSクライアントを使用します：
+
+```tsx
+import { createCmsClient } from '@kit/cms';
+
+export async function MyPage() {
+  const cms = await createCmsClient();
+  const { title, content } = await cms.getContentBySlug({
+    slug: `slug`,
+    collection: `pages`
+  });
+  
+  return (
+    <div>
+      <h1>{title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: content }} />
+    </div>
+  );
+}
+```
+
+## 法的ページの重要性
+
+法的ページは単なる形式的なものではなく、ビジネスと顧客の両方を保護するために重要です。以下の点に注意してください：
+
+1. **専門家に相談する**: 法的ページの内容については、法律の専門家に相談することを強くお勧めします
+2. **地域の法律に準拠する**: 事業を展開する地域の法律に準拠していることを確認してください
+3. **定期的に更新する**: 法律や事業内容が変更された場合は、法的ページを更新してください
+4. **アクセスしやすくする**: 法的ページはウェブサイトのフッターなど、ユーザーが簡単に見つけられる場所に配置してください
+
+## カスタマイズ方法
+
+法的ページをカスタマイズするには、対応するファイルを編集します：
+
+- 利用規約: `apps/web/app/(marketing)/(legal)/terms/page.tsx`
+- プライバシーポリシー: `apps/web/app/(marketing)/(legal)/privacy/page.tsx`
+- Cookieポリシー: `apps/web/app/(marketing)/(legal)/cookies/page.tsx`
+
+各ページは通常のNext.jsページとして機能するため、必要に応じてスタイリングやレイアウトをカスタマイズできます。

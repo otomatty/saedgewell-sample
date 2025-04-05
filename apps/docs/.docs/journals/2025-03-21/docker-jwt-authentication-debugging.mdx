@@ -1,0 +1,371 @@
+---
+title: 'DockerコンテナにおけるJWT認証問題のデバッグと解決'
+description: 'DockerコンテナにおけるJWT認証問題のデバッグと解決'
+date: '2025-03-21'
+author: 'Akimasa Sugai'
+tags: ['jwt', 'supabase', 'docker', 'authentication', 'troubleshooting']
+---
+
+# DockerコンテナにおけるJWT認証問題のデバッグと解決
+
+## 概要
+
+Docker環境でNext.jsとSupabaseを使用している際に発生したJWT署名エラーの問題を診断し、解決する過程を記録しました。特に`apps/web/actions/metric/metrics.ts`ファイル内の`getMetrics()`関数でmetricsテーブルにアクセスする際に発生していた認証エラーとその解決方法について詳述します。
+
+## 発生していた問題
+
+Supabaseクライアントがデータベースにアクセスする際に、以下のJWT署名エラーが発生：
+
+```
+エラーコード: PGRST301
+メッセージ: JWSError JWSInvalidSignature
+ステータス: 401 Unauthorized
+```
+
+## デバッグの手順と発見
+
+### 1. 初期状態の確認
+
+まず最初にエラーの状況を詳細に調査するため、`getMetrics()`関数内にデバッグ用のコードを追加しました：
+
+```typescript
+// JWT検証の詳細ログ取得
+const logDebugInfo = async () => {
+  console.log('JWT DEBUG INFO: Environment Variables');
+  console.log(`NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
+  console.log(`SUPABASE_AUTH_JWT_SECRET: ${process.env.SUPABASE_AUTH_JWT_SECRET?.substring(0, 10)}...`);
+  
+  // セッション情報の取得と検証
+  console.log('JWT DEBUG INFO: Session Debug');
+  try {
+    const { data: sessionData } = await serverClient.auth.getSession();
+    if (sessionData.session) {
+      console.log('Session exists');
+      // セッショントークンの情報をデコード
+    } else {
+      console.log('No session found');
+    }
+  } catch (sessionError) {
+    console.error('JWT DEBUG INFO: Session error', sessionError);
+  }
+}
+```
+
+また、Dockerコンテナ内からのネットワーク接続状況を診断するための関数も実装しました：
+
+```typescript
+async function diagnoseNetworkConnection() {
+  console.log('========== 接続診断開始 ==========');
+  console.log('環境変数:');
+  console.log(`NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
+  console.log(`SITE_URL: ${process.env.NEXT_PUBLIC_SITE_URL}`);
+  console.log(`COOKIE_DOMAIN: ${process.env.COOKIE_DOMAIN || process.env.SUPABASE_AUTH_COOKIE_DOMAIN}`);
+
+  // 接続テスト: 直接HTTPリクエスト
+  try {
+    console.log('直接HTTPリクエストテスト:');
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const healthEndpoint = `${supabaseUrl}/health`;
+
+    console.log(`エンドポイント: ${healthEndpoint}`);
+    const response = await fetch(healthEndpoint, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    console.log(`ステータス: ${response.status}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`レスポンス: ${JSON.stringify(data)}`);
+    } else {
+      const text = await response.text();
+      console.log(`エラーレスポンス: ${text}`);
+    }
+  } catch (error) {
+    console.error('接続テスト失敗:', error);
+  }
+}
+```
+
+### 2. Dockerコンテナ内でのネットワーク問題調査
+
+Docker環境のネットワーク接続を詳細に調査するために、シェルスクリプトを作成しました：
+
+```bash
+#!/bin/bash
+set -e
+
+echo "=== Docker ネットワーク診断ツール ==="
+
+# 使用中のコンテナを確認
+echo "稼働中のコンテナ:"
+docker ps
+
+# webコンテナでネットワークテスト実行
+echo -e "\nwebコンテナからhost.docker.internalへのpingテスト:"
+docker exec -it saedgewell-web-1 sh -c "ping -c 4 host.docker.internal" || echo "pingコマンドが利用できないか、失敗しました"
+
+echo -e "\nwebコンテナからのcurlテスト (Supabase):"
+docker exec -it saedgewell-web-1 sh -c "curl -v http://host.docker.internal:54321/health" || echo "curlコマンドが失敗しました"
+
+# ネットワーク情報を表示
+echo -e "\nDockerネットワーク情報:"
+docker network ls
+docker network inspect saedgewell_saedgewell_net
+
+# 環境変数を確認
+echo -e "\nwebコンテナ内の環境変数:"
+docker exec -it saedgewell-web-1 sh -c "env | grep -E 'SUPABASE|SITE|COOKIE|HOST'"
+```
+
+しかし、このスクリプトでの確認では、Dockerコンテナ内に`ping`や`curl`コマンドがインストールされていないことが判明しました。
+
+### 3. Nodeを使用したネットワーク接続テスト
+
+より詳細なネットワーク接続を確認するために、Node.jsスクリプトを作成して実行しました：
+
+```javascript
+// apps/web/network-test.js
+const http = require('node:http');
+const https = require('node:https');
+
+console.log('=== Nodeネットワーク診断ツール ===');
+
+// 環境変数を出力
+console.log('環境変数:');
+console.log(`NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+
+// Supabaseへの接続テスト
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://host.docker.internal:54321';
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+console.log(`\nSupabaseサーバー接続テスト (${supabaseUrl}/rest/v1/metrics):`);
+
+// URLをパース
+const url = new URL(`${supabaseUrl}/rest/v1/metrics`);
+const protocol = url.protocol === 'https:' ? https : http;
+
+// リクエストを実行
+const req = protocol
+  .get(url.toString(), options, (res) => {
+    console.log(`ステータスコード: ${res.statusCode}`);
+    console.log(`ヘッダー: ${JSON.stringify(res.headers)}`);
+    
+    // レスポンスデータ読み取り
+  })
+  .on('error', (err) => {
+    console.error(`接続エラー: ${err.message}`);
+  });
+
+req.end();
+```
+
+このスクリプトをDockerコンテナ内で実行し、以下の結果を得ました：
+
+- `/health`エンドポイントには404エラーが返される
+- APIキーを使用した`/rest/v1/health`へのアクセスでは400エラーが返される
+- 最終的に`/rest/v1/metrics`へのアクセスでは「relation 'public.health' does not exist」というエラーが発生
+
+### 4. 解決への糸口：エンドポイント修正とサービスロールの活用
+
+調査の結果、以下の重要な発見がありました：
+
+1. Dockerコンテナ内からは`host.docker.internal`を使用してSupabaseに接続できているが、JWTトークンの検証に問題がある
+2. セッションが存在しない状態（`No session found`のログ）でSupabaseクライアントが実行されている
+3. サービスロールクライアントを使用した場合は認証バイパスにより正常に動作する
+
+以上の発見に基づき、以下の対応を実施しました：
+
+## 実装した解決策
+
+### 1. フォールバックメカニズムの実装
+
+標準クライアントでエラーが発生した場合に、サービスロールクライアントを使用するフォールバック機能を実装しました：
+
+```typescript
+export async function getMetrics() {
+  try {
+    // 接続診断の実行
+    await diagnoseNetworkConnection();
+
+    // デバッグ情報を出力
+    await logDebugInfo();
+
+    // まず通常のクライアントを試す
+    try {
+      console.log('標準クライアントでメトリクス取得を試行...');
+      const supabase = getSupabaseServerClient();
+      const result = await supabase
+        .from('metrics')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      metrics = result.data;
+      error = result.error;
+
+      // 成功した場合は結果を返す
+      if (!error) {
+        console.log('標準クライアントで成功しました');
+        return metrics as Metric[];
+      }
+
+      console.log('標準クライアントでエラー発生:', error);
+    } catch (e) {
+      console.error('標準クライアントでの例外:', e);
+    }
+
+    // 通常のクライアントでエラーが発生した場合はサービスロールクライアントを使用
+    console.log('サービスロールクライアントでメトリクス取得を試行...');
+
+    try {
+      const adminClient = getSupabaseServerAdminClient();
+      const result = await adminClient
+        .from('metrics')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      metrics = result.data;
+      error = result.error;
+
+      if (error) {
+        console.error('サービスロールクライアントエラー:', error);
+        throw new Error(error.message);
+      }
+
+      console.log('サービスロールクライアントで成功しました');
+      return metrics as Metric[];
+    } catch (error) {
+      console.error('サービスロールクライアント処理中のエラー:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('メトリクス取得中にエラーが発生しました:', error);
+    throw error;
+  }
+}
+```
+
+### 2. 環境変数の最適化
+
+Docker-compose.yml内の環境変数を整理し、Supabase接続に必要な設定を追加しました：
+
+```yaml
+web:
+  environment:
+    - NEXT_PUBLIC_SUPABASE_URL=http://host.docker.internal:54321
+    - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+    - NEXT_PUBLIC_SITE_URL=https://web.saedgewell.test
+    - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+    - SUPABASE_AUTH_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+    - SUPABASE_AUTH_COOKIE_SECURE=false
+    - SUPABASE_AUTH_COOKIE_SAME_SITE=lax
+    - SUPABASE_AUTH_COOKIE_DOMAIN=.saedgewell.test
+```
+
+### 3. 認証エラーの詳細なデバッグ
+
+より詳細なエラー情報を取得するため、ネットワーク診断テストを強化し、以下の点を確認しました：
+
+```javascript
+// network-test.js内のコード
+// 代替URLでのテスト
+const alternativeUrls = [
+  'http://127.0.0.1:54321',
+  'http://localhost:54321',
+  'http://172.20.0.1:54321', // Dockerゲートウェイ
+  'http://host.docker.internal:54321',
+];
+
+for (const testUrl of alternativeUrls) {
+  console.log(`\n${testUrl}へのアクセスを試みます...`);
+  const testReq = http
+    .get(`${testUrl}/rest/v1/health`, (testRes) => {
+      console.log(`${testUrl} ステータス: ${testRes.statusCode}`);
+    })
+    .on('error', (testErr) => {
+      console.log(`${testUrl} エラー: ${testErr.message}`);
+    });
+
+  testReq.end();
+}
+```
+
+### 4. 直接API呼び出しによる最終的なフォールバック
+
+最後の手段として、Supabase SDKではなく直接RESTful APIを呼び出す方法も実装しました：
+
+```typescript
+// 最後の手段として直接フェッチを使ってみる
+console.log('直接フェッチによるメトリクス取得を試行...');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (supabaseUrl && serviceRoleKey) {
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/metrics?select=*&order=sort_order`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+    }
+  );
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log('直接フェッチで成功しました');
+    return data as Metric[];
+  }
+
+  console.error('直接フェッチエラー:', response.status, await response.text());
+  throw new Error(`メトリクス取得エラー: ${response.status}`);
+}
+```
+
+## 根本原因と発見
+
+調査の結果、以下の複合的な問題が特定されました：
+
+1. **認証フローの問題**:
+   - Dockerコンテナ内からNext.jsサーバーコンポーネントが実行される際、セッションが正しく初期化されない
+   - 認証トークンが存在しない状態で実行されるため、JWT署名エラーが発生する
+
+2. **Docker環境特有の接続問題**:
+   - `host.docker.internal`によるホスト名解決は機能するが、JWT検証に問題がある
+   - APIキーを使った直接アクセスでも認証関連のエラーが発生
+
+3. **RLSポリシーとの相互作用**:
+   - サービスロールクライアントはRow Level Security（RLS）をバイパスするため動作する
+   - 標準クライアントはRLSの制約を受けるが、認証トークンが無効なため権限エラーが発生
+
+## 最終的な実装状態と今後の課題
+
+現在は以下の状態で動作しています：
+
+1. **現状の動作状況**:
+   - サービスロールクライアントへのフォールバックにより、アプリケーションは正常に動作
+   - デバッグ情報を出力するコードを維持し、問題の監視を継続
+   - 環境変数の設定を最適化し、Cookie関連の設定を追加
+
+2. **今後取り組むべき課題**:
+   - JWT検証の詳細なログを取得し、認証フローの問題を解決
+   - RLSポリシーの見直し、特に匿名ユーザーに対する権限設定の最適化
+   - 本番環境に向けた認証設計の見直し
+
+3. **長期的な解決策**:
+   - Supabase環境の完全な再構築を検討
+   - JWT設定の見直しと標準化
+   - サービスロールによるフォールバックを段階的に削除し、標準クライアントのみの実装へ
+
+## 学んだこと
+
+この問題のデバッグと解決を通じて、以下の重要な点を学びました：
+
+1. Docker環境における認証の複雑さと、コンテナ間通信の特性
+2. JWTトークンの検証メカニズムとデバッグ手法
+3. 段階的なフォールバック戦略の重要性
+4. サーバーコンポーネントにおける認証フローの特性
+
+問題は完全に解決したわけではないものの、現在の実装でアプリケーションは正常に動作しており、開発作業を継続することができます。今後、JWT認証の問題を根本的に解決するために、さらなる調査と改善を続けていく予定です。 

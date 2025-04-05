@@ -1,0 +1,136 @@
+---
+title: 'APIルートのCAPTCHA保護'
+description: 'APIルートにCAPTCHA保護を設定する方法を学ぶ'
+icon: 'robot'
+order: 6
+---
+
+# APIルートのCAPTCHA保護
+
+APIルートにCAPTCHA保護を設定する方法を学びましょう。
+
+## 設定
+
+CAPTCHA保護には、Cloudflare Turnstileを使用しています。有効にするには、以下の環境変数を設定する必要があります：
+
+```bash
+CAPTCHA_SECRET_TOKEN=
+NEXT_PUBLIC_CAPTCHA_SITE_KEY=
+```
+
+`CAPTCHA_SECRET_TOKEN`はTurnstileの設定で確認できます。`NEXT_PUBLIC_CAPTCHA_SITE_KEY`は公開しても安全な公開キーです。一方、`CAPTCHA_SECRET_TOKEN`は秘密にしておく必要があります。
+
+このガイドは、Turnstileの設定が正しく完了していることを前提としています。設定が完了していない場合は、Turnstileのドキュメントを参照してください。
+
+## 認証
+
+環境変数にトークンを設定すると、キットは自動的にAPIルートをCAPTCHAで保護します。
+
+**注意**: Supabaseダッシュボードでもトークンを設定する必要があります！
+
+## トークンの取得
+
+CAPTCHAトークンを取得するには、`@kit/auth/captcha/client`から`useCaptchaToken`関数を使用できます：
+
+```tsx
+import { useCaptchaToken } from '@kit/auth/captcha/client';
+
+function MyComponent() {
+  const { captchaToken } = useCaptchaToken();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const response = await fetch('/my-endpoint', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-captcha-token': captchaToken,
+      },
+      body: JSON.stringify({ message: 'Hello, world!' }),
+    });
+  };
+
+  // コンポーネントのコード
+}
+```
+
+Server Actionsを使用する場合は、`@kit/next/actions`から`enhanceAction`を使用します：
+
+```tsx
+const MySchema = z.object({
+  message: z.string(),
+  captchaToken: z.string().min(1),
+});
+
+export const myServerAction = enhanceAction(async (data) => {
+  // アクションのコード
+}, {
+  captcha: true,
+  schema: MySchema
+});
+```
+
+サーバーアクションを呼び出す際は、CAPTCHAを渡す必要があります：
+
+```tsx
+function MyForm() {
+  const { captchaToken, resetCaptchaToken } = useCaptchaToken();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await myServerAction({
+        message: 'Hello, world!',
+        captchaToken,
+      });
+    } finally {
+      // 必ずトークンをリセットしてください！
+      resetCaptchaToken();
+    }
+  };
+
+  // コンポーネントのコード
+}
+```
+
+トークンは1回のリクエストでのみ有効です。リクエストごとにトークンをリセットする必要があります。
+
+ライブラリは必要に応じて自動的にトークンを更新しますが、トークンを使用する際は手動でリセットする必要があります。
+
+## トークンのリセット
+
+基盤となるReact Turnstileライブラリは自動的にトークンをリセットしますが、トークンは1回のリクエストでのみ有効なため、実際にトークンを使用する際は手動でリセットする必要があります。
+
+トークンをリセットするには、上記の例のように、`useCaptchaToken`フックから`resetCaptchaToken`を呼び出してください。
+
+リクエストが成功したかどうかに関わらず、必ずリセットを行う必要があります。
+
+## トークンの検証
+
+サーバーサイドで手動でCAPTCHAを検証するには、以下のコードを使用します：
+
+```tsx
+import { verifyCaptchaToken } from '@kit/auth/captcha/server';
+
+function assertCaptchaValidity(request: Request) {
+  const token = request.headers.get('x-captcha-token');
+  await verifyCaptchaToken(token);
+}
+```
+
+キットが提供する`enhanceAction`と`enhanceRouteHandler`ユーティリティを使用する場合、キットが自動的にCAPTCHAトークンを検証するため（トークンが渡される限り）、この作業を心配する必要はありません。
+
+## 実装のベストプラクティス
+
+1. **トークン管理**
+   - トークンは1回のリクエストでのみ使用
+   - リクエスト後は必ずリセット
+   - 環境変数の適切な管理
+
+2. **エラーハンドリング**
+   - CAPTCHA検証失敗時の適切な処理
+   - ユーザーフレンドリーなエラーメッセージ
+
+3. **セキュリティ**
+   - シークレットトークンの安全な管理
+   - 適切なヘッダーの使用

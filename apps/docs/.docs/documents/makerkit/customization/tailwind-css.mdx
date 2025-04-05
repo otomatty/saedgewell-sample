@@ -1,0 +1,78 @@
+---
+title: 'Tailwind CSS Shadcnテーマの更新'
+description: 'MakerkitアプリケーションでのタイルウィンドCSSテーマの更新方法'
+icon: 'palette'
+order: 1
+---
+
+# Tailwind CSS Shadcnテーマの更新
+
+MakerkitはアプリケーションのスタイリングにTailwind CSSを使用しています。
+
+## Tailwind CSS (v4) 設定
+
+Tailwind CSS v4を使用している場合は、`apps/web/styles/global.css`ファイルで設定を更新できます。
+
+このファイルは以下のTailwind CSS設定ファイルをインポートしています：
+
+- `apps/web/styles/global.css` - アプリケーションのメイングローバルスタイル（他のファイルをインポート）
+- `apps/web/styles/theme.css` - Tailwind CSS v4用のShadcn UIテーマを保存する場所
+- `apps/web/styles/shadcn-ui.css` - デフォルトのスタイルをオーバーライドする場所。独自の色を定義するか、Shadcn UIテーマページからテーマを選択できます
+- `apps/web/styles/markdoc.css` - markdocコンテンツ用
+- `apps/web/styles/makerkit.css` - makerkit固有のスタイル用
+- `apps/web/styles/theme.utilities.css` - ユーティリティクラス用
+
+## Tailwind CSS (v3) 設定
+
+古いデフォルト設定は`tooling/tailwind/index.ts`にあります。ここでデフォルトの色、フォントなどを設定できます。
+
+新しいパッケージを追加する際は、Tailwind設定ファイルを更新し、contentグロブにパスを追加することを忘れないでください。
+
+```ts
+content: [
+  '../../packages/ui/src/**/*.tsx',
+  '../../packages/billing/gateway/src/**/*.tsx',
+  '../../packages/features/auth/src/**/*.tsx',
+  '../../packages/features/notifications/src/**/*.tsx',
+  '../../packages/features/admin/src/**/*.tsx',
+  '../../packages/features/accounts/src/**/*.tsx',
+  '../../packages/features/team-accounts/src/**/*.tsx',
+  '../../packages/plugins/testimonial/src/**/*.tsx',
+  '../../packages/plugins/roadmap/src/**/*.tsx',
+  '../../packages/plugins/kanban/src/**/*.tsx',
+  // contentグロブにパスを追加
+  '!**/node_modules',
+],
+```
+
+## Shadcn UIテーマ
+
+MakerkitはShadcn UIを使用し、そのガイドラインに従ってテーマを定義しています。
+
+デフォルトのテーマは`apps/web/styles/global.css`にあります。
+
+デフォルトのスタイルをオーバーライドしたい場合は、独自の色を定義するか、[Shadcn UIテーマページ](https://ui.shadcn.com/themes)からテーマを選択し、このファイルにコピー＆ペーストしてください。
+
+## JSXファイルの使用
+
+JSXファイルを使用する予定がある場合は、Tailwind設定ファイルのcontentグロブでグローバルパスを更新してください。
+
+TSXとJSXファイルの両方をターゲットにするには、contentグロブパスを`{tsx,jsx}`に更新します。例：
+
+```ts
+content: [
+  '../../packages/ui/src/**/*.{tsx,jsx}',
+  '../../packages/billing/gateway/src/**/*.{tsx,jsx}',
+  '../../packages/features/auth/src/**/*.{tsx,jsx}',
+  '../../packages/features/notifications/src/**/*.{tsx,jsx}',
+  '../../packages/features/admin/src/**/*.{tsx,jsx}',
+  '../../packages/features/accounts/src/**/*.{tsx,jsx}',
+  '../../packages/features/team-accounts/src/**/*.{tsx,jsx}',
+  '../../packages/plugins/testimonial/src/**/*.{tsx,jsx}',
+  '../../packages/plugins/roadmap/src/**/*.{tsx,jsx}',
+  '../../packages/plugins/kanban/src/**/*.{tsx,jsx}',
+  '!**/node_modules',
+],
+```
+
+`apps/web/tailwind.config.ts`でも同様の変更が必要です。

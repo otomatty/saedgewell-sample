@@ -1,0 +1,107 @@
+{
+  "title": "RAG",
+  "description": "RAG (検索拡張生成) APIリファレンス",
+  "order": 9,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "chunk",
+      "title": ".chunk()",
+      "description": "chunk()メソッドのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "embed",
+      "title": ".embed()",
+      "description": "embed()メソッドのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "extract-params",
+      "title": "ExtractParams",
+      "description": "ExtractParamsインターフェイスのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "rerank",
+      "title": "rerank()",
+      "description": "rerank()関数のリファレンス",
+      "order": 4
+    },
+    {
+      "name": "mdocument",
+      "title": "MDocument",
+      "description": "MDocumentクラスのリファレンス",
+      "order": 5
+    },
+    {
+      "name": "metadata-filters",
+      "title": "Metadata Filters",
+      "description": "メタデータフィルターのリファレンス",
+      "order": 6
+    },
+    {
+      "name": "graph-rag",
+      "title": "GraphRAG",
+      "description": "GraphRAGのリファレンス",
+      "order": 7
+    },
+    {
+      "name": "astra-vector",
+      "title": "AstraVector",
+      "description": "AstraVectorストアのリファレンス",
+      "order": 8
+    },
+    {
+      "name": "chroma-vector",
+      "title": "ChromaVector",
+      "description": "ChromaVectorストアのリファレンス",
+      "order": 9
+    },
+    {
+      "name": "cloudflare-vector",
+      "title": "CloudflareVector",
+      "description": "CloudflareVectorストアのリファレンス",
+      "order": 10
+    },
+    {
+      "name": "pg-vector",
+      "title": "PgVector",
+      "description": "PgVectorストアのリファレンス",
+      "order": 11
+    },
+    {
+      "name": "libsql-vector",
+      "title": "LibSQLVector",
+      "description": "LibSQLVectorストアのリファレンス",
+      "order": 12
+    },
+    {
+      "name": "pinecone-vector",
+      "title": "PineconeVector",
+      "description": "PineconeVectorストアのリファレンス",
+      "order": 13
+    },
+    {
+      "name": "qdrant-vector",
+      "title": "QdrantVector",
+      "description": "QdrantVectorストアのリファレンス",
+      "order": 14
+    },
+    {
+      "name": "upstash-vector",
+      "title": "UpstashVector",
+      "description": "UpstashVectorストアのリファレンス",
+      "order": 15
+    },
+    {
+      "name": "turbopuffer-vector-store",
+      "title": "Reference: Turbopuffer Vector Store",
+      "description": "Turbopuffer Vector Storeのリファレンス",
+      "order": 16
+    }
+  ]
+}

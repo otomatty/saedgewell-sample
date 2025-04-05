@@ -1,0 +1,72 @@
+---
+title: GitHub Personal Access Token の設定手順
+description: GitHub Personal Access Token を使用して公開リポジトリとの同期を行うための手順を記載します。
+status: draft
+tags: ['github', 'token', 'sync']
+---
+
+# GitHub Personal Access Token の設定手順
+
+## 概要
+
+GitHub Personal Access Token (PAT) は、GitHub API やコマンドラインでの認証に使用される安全なトークンです。
+このドキュメントでは、PAT の作成方法と、それを使用して公開リポジトリとの同期を行う方法について説明します。
+
+## PAT の作成
+
+1. GitHub にログインします。
+2. 右上のユーザーアイコンをクリックし、「Settings」を選択します。
+3. 左側のサイドバーで「Developer settings」をクリックします。
+4. 「Personal access tokens」を選択し、「Tokens (classic)」をクリックします。
+5. 「Generate new token」をクリックし、「Generate new token (classic)」を選択します。
+6. トークンの説明を入力します（例：「Sync Repository」）。
+7. トークンの有効期限を選択します（セキュリティのため、できるだけ短い期間を選択することをお勧めします）。
+8. 以下のスコープを選択します：
+   - `repo`（公開リポジトリへのフルアクセス）
+   - `workflow`（GitHub Actions ワークフローの管理）
+9. 「Generate token」をクリックします。
+10. トークンが生成されたら、必ず安全な場所にコピーして保存してください。トークンはこの画面を離れると二度と表示されません。
+
+## トークンの保存
+
+生成したトークンは、以下のいずれかの方法で安全に保存してください：
+
+- パスワード管理ツール（1Password, LastPass など）
+- .env ファイル（git にコミットしないよう、.gitignore に追加）
+- GitHub Actions のシークレット
+
+## トークンの使用
+
+### 環境変数として設定
+
+```bash
+export GITHUB_TOKEN=your_token_here
+```
+
+### GitHub CLI での使用
+
+```bash
+gh auth login --with-token < token_file
+```
+
+### Git 操作での使用
+
+```bash
+git clone https://username:your_token_here@github.com/username/repo.git
+```
+
+## セキュリティ上の注意点
+
+- トークンは定期的に更新してください。
+- 必要最小限のスコープのみを付与してください。
+- トークンを公開リポジトリにコミットしないでください。
+- トークンが漏洩した場合は、即座に無効化してください。
+
+## トラブルシューティング
+
+- トークンが認識されない場合は、有効期限が切れていないか確認してください。
+- スコープが足りない場合は、新しいトークンを生成して適切なスコープを付与してください。
+
+---
+
+詳細は [GitHub のドキュメント](https://docs.github.com/ja/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) を参照してください。 

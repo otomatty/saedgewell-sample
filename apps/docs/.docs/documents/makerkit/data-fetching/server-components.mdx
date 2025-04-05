@@ -1,0 +1,80 @@
+---
+title: 'Server Components'
+description: 'Next.js Supabase SaaS KitでServer Componentsを使用してデータをフェッチする方法を学ぶ'
+icon: 'server'
+order: 1
+---
+
+
+Next.js Supabase SaaS KitでServer Componentsを使用してデータをフェッチする方法を学びましょう。
+
+# Server Componentsとは
+
+Server Componentsは、Next.js Supabase SaaS Kitでデータのフェッチとレンダリングを行う主要な方法です。
+
+新しいページを作成してデータをフェッチする必要がある場合、Server Componentsは最適な場所です：
+
+- ページのレンダリング時にデータフェッチが行われるため、追加のラウンドトリップが不要です
+- データはクライアントにストリーミングされるため、非常に高速です
+
+Next.jsでは、`use client`を指定しない限り、すべてのコンポーネントはServer Componentです。Client Componentsもサーバーでレンダリングされますが、クライアントでも再度レンダリングされます。一方、Server Componentsはサーバーでのみレンダリングされます - そのため、データフェッチメソッド（この場合はSupabaseを使用）を使用して、特定のレイアウトやページに必要なすべてのデータをフェッチできます。
+
+# 使用例
+
+例えば、tasksテーブルからタスクのリストを表示するページがあるとします。これはNext.jsのページであり、したがってServer Componentです。つまり、サーバーでのみ実行され、データをフェッチしてクライアントにストリーミングしてレンダリングします。クライアントはこのコンポーネントのReactコードを実行することはありません：受け取ってレンダリングするだけです。
+
+```tsx
+export default async function TasksPage() {}
+```
+
+次に、Supabaseからデータをフェッチしてみましょう。そのために、サーバーコンポーネントクライアントを使用します：
+
+```tsx
+const supabase = getSupabaseServerClient();
+const { data, error } = await supabase.from('tasks').select('*');
+```
+
+これらを組み合わせると：
+
+```tsx
+export default async function TasksPage() {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase.from('tasks').select('*');
+
+  if (error) {
+    return <p>エラーが発生しました :(</p>;
+  }
+
+  return <TasksList data={data} />;
+}
+```
+
+ご覧の通り、データのフェッチとTasksListでのレンダリングがすべてサーバー上で行われます。
+
+# Server Componentsの利点
+
+1. **パフォーマンス**
+   - サーバーサイドでのデータフェッチにより、クライアントへのラウンドトリップが削減されます
+   - ストリーミングによる高速なデータ配信が可能です
+
+2. **セキュリティ**
+   - センシティブなデータやAPIキーをクライアントに露出させることなく、サーバーサイドで処理できます
+   - データベースクエリやビジネスロジックをサーバーサイドに集中させることができます
+
+3. **開発体験**
+   - データフェッチとレンダリングロジックを同じ場所に記述できます
+   - 非同期処理が自然に組み込めます
+
+# ベストプラクティス
+
+1. **エラーハンドリング**
+   - データフェッチ時のエラーを適切に処理し、ユーザーフレンドリーなエラーメッセージを表示します
+   - 必要に応じてエラーバウンダリーを使用します
+
+2. **型安全性**
+   - Supabaseの型定義を活用して、データの型安全性を確保します
+   - コンポーネントのpropsに適切な型を定義します
+
+3. **コンポーネントの分割**
+   - データフェッチとプレゼンテーションロジックを適切に分離します
+   - 再利用可能なコンポーネントを作成します

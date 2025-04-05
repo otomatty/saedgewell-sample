@@ -1,0 +1,81 @@
+---
+title: 'APIルートのCSRF保護'
+description: 'APIルートをCSRF攻撃から保護する方法を学ぶ'
+icon: 'shield'
+order: 5
+---
+
+# APIルートのCSRF保護
+
+APIルートをCSRF攻撃から保護する方法を学びましょう。
+
+## 概要
+
+デフォルトでは、APIルートへのすべてのPOST、PUT、PATCH、DELETEリクエストはCSRF攻撃から保護されています。これは、リクエストと共にCSRFトークンを送信する必要があることを意味し、送信しない場合はリクエストが拒否されます。
+
+## 例外ケース
+
+この保護ルールには2つの例外があります：
+
+1. **Server Actionsを使用する場合**
+   - 保護が組み込まれているため、追加の対応は不要です
+
+2. **`api`パスの下にあるルートの場合**
+   - このプレフィックスはWebhookや外部サービスがAPIにアクセスするために使用されるため、CSRF保護は無効になっています
+
+## CSRFトークンの使用
+
+APIルートハンドラーに対してリクエストを行う場合、ミドルウェアがリクエストを拒否しないように、CSRFトークンを渡す必要があります。
+
+CSRFトークンを取得するには、`@kit/shared/hooks`から`useGetCsrfToken`関数を使用できます：
+
+```tsx
+'use client';
+
+function MyComponent() {
+  const csrfToken = useGetCsrfToken();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const response = await fetch('/my-endpoint', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({ message: 'Hello, world!' }),
+    });
+  };
+
+  // コンポーネントのコード
+}
+```
+
+## セキュリティのベストプラクティス
+
+1. **トークンの管理**
+   - CSRFトークンは安全に保管し、必要な場合にのみ使用します
+   - トークンの有効期限を適切に設定します
+
+2. **ヘッダーの設定**
+   - CSRFトークンは必ず`X-CSRF-Token`ヘッダーで送信します
+   - Content-Typeヘッダーを適切に設定します
+
+3. **エラーハンドリング**
+   - CSRF検証エラーを適切に処理します
+   - ユーザーフレンドリーなエラーメッセージを表示します
+
+## 実装時の注意点
+
+1. **Server Actionsとの使い分け**
+   - 可能な限りServer Actionsを優先して使用します
+   - APIルートは外部サービスとの連携時に使用します
+
+2. **APIパスの設計**
+   - CSRF保護が必要なエンドポイントは`/api`以外のパスに配置します
+   - Webhook用のエンドポイントは`/api`パス配下に配置します
+
+3. **テスト**
+   - CSRF保護が正しく機能していることを確認するテストを実装します
+   - 異なるHTTPメソッドでの動作を確認します

@@ -1,0 +1,131 @@
+---
+title: 'AI機能拡張'
+description: 'ドキュメントサイトにおけるAI機能拡張の全体実装計画と技術スタック'
+---
+
+# AI機能拡張
+
+## 1. フェーズ分け
+
+### フェーズ1: 基盤構築と最優先機能（4週間）
+- AI機能連携の共通基盤構築
+- インタラクティブハイライト機能の基本実装
+- インテリジェントQ&A機能の基本実装
+
+### フェーズ2: 追加機能実装（4週間）
+- 振り返り問題自動生成機能
+- Mermaid図解生成機能
+- 既存機能の拡張と改良
+
+### フェーズ3: 統合と最適化（2週間）
+- 全機能の統合とUIの一貫性確保
+- パフォーマンス最適化
+- フィードバックに基づく調整
+
+## 2. 共通コンポーネントと基盤
+
+- **AIServiceProvider**: Gemini API接続の共通レイヤー
+- **ContentProcessor**: ドキュメント解析と前処理の共通ロジック
+- **UIStateManager**: 複数AI機能間の状態管理と調整
+- **SettingsManager**: ユーザー設定の保存と適用
+
+## 3. 技術スタック
+
+- **フロントエンド**: 
+  - Next.js 15
+  - React 19
+  - Tailwind CSS v4
+  - shadcn/ui
+- **状態管理**: 
+  - Jotai
+- **API連携**: 
+  - Axios
+  - SWR
+- **UI/UXライブラリ**: 
+  - shadcn/ui
+  - Lucide Icons
+- **テスト**: 
+  - Vitest
+  - React Testing Library
+
+## 4. 共通APIインターフェース
+
+```typescript
+// AIService.ts - 共通AIサービスインターフェース
+import { atom } from 'jotai';
+
+interface AIServiceConfig {
+  apiKey: string;
+  model: string;
+  temperature?: number;
+  maxOutputTokens?: number;
+}
+
+interface AIRequestBase {
+  prompt: string;
+  maxTokens?: number;
+}
+
+interface AIResponseBase {
+  content: string;
+  finishReason: string;
+  error?: string;
+}
+
+// Jotaiを使用した状態管理
+export const aiConfigAtom = atom<AIServiceConfig>({
+  apiKey: process.env.GEMINI_API_KEY || '',
+  model: 'gemini-1.5-pro',
+  temperature: 0.2,
+  maxOutputTokens: 2048,
+});
+
+export const aiLoadingAtom = atom<boolean>(false);
+export const aiErrorAtom = atom<string | null>(null);
+
+// 基本AIリクエスト関数
+export async function processAIRequest<T extends AIRequestBase, R extends AIResponseBase>(
+  endpoint: string,
+  request: T,
+  config?: Partial<AIServiceConfig>
+): Promise<R>;
+```
+
+## 5. デプロイメント計画
+
+- 開発環境: ローカル開発 + Vercel Preview
+- ステージング環境: Vercel (development ブランチ)
+- 本番環境: Vercel (main ブランチ)
+- CI/CD: GitHub Actions + Vercel Integration
+
+## 6. モニタリングと分析
+
+- エラー追跡: Sentry
+- 使用状況分析: Vercel Analytics
+- パフォーマンス監視: Lighthouse CI
+- API使用量追跡: カスタムダッシュボード
+
+## 7. リスク管理
+
+| リスク領域 | 監視指標 | 対応策 |
+|-----------|---------|-------|
+| API コスト | 日次/月次使用量、機能別使用量 | 使用量制限、キャッシュ強化 |
+| パフォーマンス | ページロード時間、API応答時間 | コード最適化、プログレッシブローディング |
+| 精度問題 | ユーザーフィードバック、エラー率 | プロンプト最適化、フォールバックメカニズム |
+| アクセシビリティ | Lighthouse スコア、ユーザーテスト | WCAG ガイドライン準拠、代替インターフェース |
+
+## 8. 成功指標
+
+- ドキュメント滞在時間の増加
+- ユーザーフィードバックスコアの向上
+- AI機能使用率
+- ドキュメント理解度テストの改善
+
+## 9. 各機能の詳細計画
+
+各機能の詳細な実装計画は以下のドキュメントを参照してください：
+
+- [インタラクティブハイライト機能](/docs/implementation/ai/highlight-explanation)
+- [インテリジェントQ&A機能](/docs/implementation/ai/intelligent-qa)
+- [振り返り問題自動生成機能](/docs/implementation/ai/quiz-generator)
+- [Mermaid図解生成機能](/docs/implementation/ai/mermaid-diagram)

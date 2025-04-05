@@ -1,0 +1,172 @@
+---
+title: "VSCodeにおけるGitHubを便利に使うためのベストプラクティス"
+description: "VSCodeでGitHubのIssueやPull Requestを管理するための拡張機能のガイドです。"
+date: 2025-03-22
+---
+
+## はじめに
+
+### 拡張機能導入の背景と目的
+
+VSCodeでのコーディング作業中に、GitHub上のIssueやPull Requestを管理するために頻繁にブラウザに切り替える必要がありました。「GitHub Pull Requests and Issues」拡張機能を導入することで、以下のメリットを得ることを期待していました：
+
+- VSCodeを離れることなくIssue作成・確認ができる
+- Pull Request作成からレビュー、マージまでをIDE内で完結させる
+- コードの文脈を保ったままIssueやPRの参照・作成が可能になる
+- 開発ワークフローの効率化とコンテキストスイッチの削減
+
+### 遭遇した問題
+
+拡張機能を導入して使用する中で、以下の問題に遭遇しました：
+
+1. **Issueテンプレートが表示されない**：
+   - `.github/ISSUE_TEMPLATE/`ディレクトリにYAML形式（`.yml`）のテンプレートを用意していたが、VSCode拡張機能上では選択肢として表示されなかった
+   - 追加でMarkdown形式（`.md`）のテンプレートを作成したところ正しく表示された
+
+2. **Pull Requestテンプレートの選択ができない**：
+   - `.github/PULL_REQUEST_TEMPLATE/`ディレクトリに複数のテンプレートを用意していたが、VSCode拡張機能では選択UIが表示されなかった
+   - 拡張機能は`.github/pull_request_template.md`の単一テンプレートのみを認識した
+
+3. **GitHub Webとの機能差異**：
+   - フォーム形式の入力、必須フィールドの指定など、GitHub Webで利用できる高度な機能が拡張機能では利用できなかった
+
+これらの問題に対処するため、VSCode拡張機能とGitHub Webの両方の特性を理解し、適切に併用するための調査を行いました。
+
+このドキュメントは、VSCodeの「GitHub Pull Requests and Issues」拡張機能の特徴と、GitHub Webインターフェースと併用するためのベストプラクティスをまとめたものです。
+
+## 拡張機能の特徴と制限
+
+### Issue機能
+
+1. **テンプレートサポートの制限**
+   - **YAML形式非対応**: 拡張機能は`.github/ISSUE_TEMPLATE/`ディレクトリ内の`.yml`形式のIssueテンプレートをサポートしていません
+   - **Markdown形式対応**: `.md`形式のテンプレートは正しく表示・使用できます
+   - **テンプレート選択**: 複数のMarkdownテンプレートがある場合は選択UIが表示されます
+
+2. **テンプレート配置場所**
+   - **ルートテンプレート**: `.github/issue_template.md`（単一のデフォルトテンプレート）
+   - **複数テンプレート**: `.github/ISSUE_TEMPLATE/*.md`（複数の選択可能なテンプレート）
+   - **デフォルトブランチ**: テンプレートはリポジトリのデフォルトブランチに配置する必要があります
+
+3. **config.yml**
+   - 拡張機能は`.github/ISSUE_TEMPLATE/config.yml`の設定を部分的にしかサポートしていません
+
+### Pull Request機能
+
+1. **テンプレートサポート**
+   - **単一テンプレートのみ**: 拡張機能は`.github/pull_request_template.md`の単一テンプレートのみサポート
+   - **テンプレート選択不可**: 複数のPull Requestテンプレートから選択する機能はサポートされていません
+   - **クエリパラメータ非対応**: GitHub Webで使用できる`?template=xxx.md`形式のURLパラメータは機能しません
+
+2. **テンプレート配置場所**
+   - **デフォルトテンプレート**: `.github/pull_request_template.md`のみが認識されます
+   - **ディレクトリ内テンプレート**: `.github/PULL_REQUEST_TEMPLATE/`ディレクトリ内のテンプレートは自動選択されません
+
+## GitHub WebとVSCode拡張機能の併用方法
+
+### Issue作成
+
+1. **両形式の併用（推奨）**
+   - **YAML形式**: GitHub Webでのフォーム表示用（`.github/ISSUE_TEMPLATE/*.yml`）
+   - **Markdown形式**: VSCode拡張機能用（`.github/ISSUE_TEMPLATE/*.md`）
+   - **維持方法**: 両形式のファイルを同期して更新する
+
+2. **使い分け**
+   - **構造化データ入力**: GitHub Webインターフェースを使用（YAMLテンプレート）
+   - **シンプルな入力**: VSCode拡張機能を使用（Markdownテンプレート）
+   - **特殊なフィールド**: 必須フィールドなどの高度な機能はGitHub Webでのみ利用可能
+
+### Pull Request作成
+
+1. **マスターテンプレートの使用**
+   - **汎用テンプレート**: `.github/pull_request_template.md`に各種PRタイプに対応する汎用テンプレートを配置
+   - **VSCode利用**: 拡張機能ではこのテンプレートが自動的に使用されます
+   - **不要項目の削除**: 該当しない項目は使用時に削除
+
+2. **特定テンプレートが必要な場合**
+   - **GitHub Web利用**: 特化したテンプレートが必要な場合はGitHub Webを使用
+   - **手動URL構成**: `https://github.com/owner/repo/compare/base...branch?template=template_name.md`形式のURLでアクセス
+   - **案内リンク**: マスターテンプレート内にGitHub Web用の特化テンプレートリンクを記載
+
+## 実装例
+
+### Issueテンプレート
+
+```
+# .github/ISSUE_TEMPLATE/
+├── BUG-REPORT.md       # VSCode用
+├── BUG-REPORT.yml      # GitHub Web用
+├── FEATURE-REQUEST.md  # VSCode用
+├── FEATURE-REQUEST.yml # GitHub Web用
+└── config.yml          # テンプレート設定
+```
+
+### Pull Requestテンプレート
+
+```
+# .github/
+├── pull_request_template.md             # 汎用テンプレート（VSCode用）
+└── PULL_REQUEST_TEMPLATE/               # 特化テンプレート（GitHub Web用）
+    ├── feature.md
+    ├── bugfix.md
+    └── refactoring.md
+```
+
+## 現時点のベストプラクティス
+
+現時点での拡張機能の制限を踏まえて、以下のベストプラクティスを推奨します：
+
+1. **テンプレート管理**
+   - YAML形式とMarkdown形式の内容を同期して維持する
+   - テンプレートの更新時は両形式を同時に更新する
+   - Markdown形式では必須フィールドなどの高度な機能は使用できないため、説明文で必須であることを明記する
+
+2. **ワークフロー選択**
+   - **VSCode拡張機能の利用ケース**:
+     - 単純なIssue作成やコードに直接関連するIssueの報告
+     - 基本的なPull Request作成（汎用テンプレート使用）
+     - コードコンテキストを維持したままのIssue/PR管理
+   
+   - **GitHub Webの利用ケース**:
+     - 詳細なフォーム入力が必要なIssue作成
+     - 特化したPull Requestテンプレートの使用
+     - 複雑なレビュープロセスや高度な操作
+
+3. **開発者向けドキュメント**
+   - リポジトリのWikiやREADMEにテンプレート使用方法を記載
+   - VSCode拡張機能とGitHub Webの使い分けを説明
+   - 新規参加者向けにこのガイドへのリンクを提供
+
+4. **リポジトリ構成の最適化**
+   - 両方のインターフェースでスムーズに使えるように、ファイル構造を最適化
+   - 汎用性の高いマスターテンプレートを`.github/pull_request_template.md`に配置
+   - 特殊なテンプレートは`.github/PULL_REQUEST_TEMPLATE/`ディレクトリに配置し、Web用のリンクを提供
+
+## 結論
+
+「GitHub Pull Requests and Issues」拡張機能は、VSCodeでの開発ワークフローを効率化するための強力なツールですが、GitHub Webインターフェースと比較すると一部機能制限があります。特にテンプレート処理においては、YAML形式のサポート欠如や複数PRテンプレート選択機能の欠如が顕著です。
+
+本ドキュメントで示したような両環境の特性を理解し、適切に使い分けることで、開発プロセスを最適化できます。特に、Markdownテンプレートとの併用戦略を採用することで、VSCodeとGitHub Webの両方での快適な操作が可能になります。
+
+拡張機能の進化に伴い、将来的にはこれらの制限が解消される可能性もありますが、現時点では両環境の長所を活かした併用アプローチが最も効果的です。
+
+## 将来的な展望
+
+VSCodeのGitHub拡張機能は継続的に開発されており、将来的にはYAMLテンプレートや複数PRテンプレートのサポートが追加される可能性があります。最新情報は拡張機能のリリースノートを確認してください。
+
+## 関連するGitHubイシュー
+
+この文書で説明している制限の一部については、すでに公式の機能リクエストとして開発チームに認識されています：
+
+1. **複数のPull Requestテンプレートサポート**:
+   - [Issue #6454: Support multiple PR templates](https://github.com/microsoft/vscode-pull-request-github/issues/6454)
+   - ステータス: オープン (2024年11月5日に作成)
+   - マイルストーン: バックログに追加済み
+   - 内容: PRの目的によって選択できる複数のPRテンプレートをサポートし、UIで説明を入力する前にどのテンプレートを使用するかを選択できるようにするリクエスト
+
+2. **Issueテンプレート関連の問題**:
+   - [Issue #6709: NewIssue.md template doesn't autocomplete Assignees anymore](https://github.com/microsoft/vscode-pull-request-github/issues/6709)
+   - ステータス: オープン (2025年3月11日に作成)
+   - 内容: Issueテンプレートの自動補完機能に関する問題
+
+これらの機能リクエストが実装されれば、本文書で説明している多くの制限が解消される可能性があります。それまでの間は、本文書で提案した回避策を活用することをお勧めします。 

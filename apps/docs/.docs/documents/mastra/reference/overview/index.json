@@ -1,0 +1,17 @@
+{
+  "title": "概要",
+  "description": "リファレンスドキュメントの概要",
+  "order": 1,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "index",
+      "title": "リファレンス概要",
+      "description": "Mastra APIリファレンスの概要",
+      "order": 1
+    }
+  ]
+}

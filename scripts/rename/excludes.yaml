@@ -1,0 +1,22 @@
+# 除外設定ファイル
+# このファイルでは、変換対象から除外するパターンを定義します
+
+# ファイル名の除外パターン（Next.jsの特殊ファイルなど）
+exclude_files:
+  - page.tsx
+  - layout.tsx
+  - loading.tsx
+  - error.tsx
+  - not-found.tsx
+  - route.ts
+
+# インポートパスの除外パターン
+# 以下のパターンに一致するインポートパスを持つファイルは変換対象から除外されます
+exclude_imports:
+
+# 除外ディレクトリ（完全一致）
+exclude_directories:
+  - "node_modules"
+  - "dist"
+  - "build"
+  - ".next" 

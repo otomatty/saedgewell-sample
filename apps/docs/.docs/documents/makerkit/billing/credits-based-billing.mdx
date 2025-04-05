@@ -1,0 +1,239 @@
+---
+title: 'クレジットベースの課金をMakerkitに追加する | Next.js Supabase'
+description: 'Next.js Supabaseアプリケーションでクレジットベースの使用量課金を実装する方法を学ぶ'
+icon: 'coins'
+order: 8
+---
+
+# クレジットベースの課金の実装
+
+クレジットベースの課金は、ユーザーが消費したクレジット数に基づいて課金するモデルです。このモデルは、ユーザーがアプリケーション内で実行するアクション数に基づいて課金したい場合に有用です。
+
+ご存知の通り、このモデルはAI SaaS製品で非常に人気があります。ユーザーがLLMからデータを要求するなどのアクションを実行するために、限られた数のトークン（またはクレジット）を持つような場合に使用されます。
+
+Makerkitには組み込みのクレジットベース課金システムはありませんが、既存の課金システムを使用して簡単に実装することができます。
+
+## このサンプルはStripeサブスクリプション向け
+以下の例は、Stripeサブスクリプションに特化したものです。
+
+## クレジットベース課金の実装方法
+
+実装するために、データベースに`plans`と`credits`という2つの新しいテーブルを導入します。`plans`テーブルは各プランの価格情報を保存し、`credits`テーブルは各ユーザーが消費したクレジットを保存します。
+
+以下が設定手順です：
+
+### ステップ1：plansテーブルの作成
+
+まず、各プランの価格情報を保存するための`plans`テーブルを作成します：
+
+```sql
+create table public.plans (
+  id serial primary key,
+  name text not null,
+  variant_id text not null
+);
+alter table public.plans enable row level security;
+-- 認証済みユーザーにプランの読み取りを許可
+create policy read_plans
+  on public.plans
+  for select
+  to authenticated
+  using (true);
+```
+
+`plans`テーブルには`name`と`variant_id`の2つのカラムを作成しました。`name`カラムにはプラン名を、`variant_id`カラムにはプランバリアントのIDを保存します。
+
+また、テーブルに行レベルセキュリティを有効にし、認証済みユーザーがプランを読み取れるようにポリシーを作成しました。
+
+### ステップ2：creditsテーブルの作成
+
+次に、各ユーザーが消費したクレジットを保存するための`credits`テーブルを作成します：
+
+```sql
+create table public.credits (
+  account_id uuid not null references public.accounts(id),
+  tokens integer not null
+);
+alter table public.credits enable row level security;
+-- 認証済みユーザーに自身のクレジットの読み取りを許可
+create policy read_credits
+  on public.credits
+  for select
+  to authenticated
+  using (
+    account_id = (select auth.uid())
+  );
+```
+
+### ステップ3：クレジット管理用の関数作成
+
+次に、クレジットを管理するための関数を作成します。`has_credits`と`consume_credits`という関数を作成します：
+
+```sql
+create or replace function public.has_credits(account_id uuid, tokens integer)
+  returns boolean
+  set search_path = ''
+  as $$
+  begin
+    return (select tokens >= tokens from public.credits where account_id = account_id);
+  end;
+  $$ language plpgsql;
+grant execute on function public.has_credits to authenticated, service_role;
+```
+
+`has_credits`関数は、ユーザーがアクションを実行するのに十分なクレジットを持っているかどうかをチェックします。
+
+```sql
+create or replace function public.consume_credits(account_id uuid, tokens integer)
+  returns void
+  set search_path = ''
+  as $$
+  begin
+    update public.credits set tokens = tokens - tokens where account_id = account_id;
+  end;
+  $$ language plpgsql;
+grant execute on function public.has_credits to service_role;
+```
+
+これらの関数は、RLSポリシーやアプリケーションコードでクレジットを管理するために使用できます。
+
+注意：認証済みユーザーには自身のクレジットの読み取りのみを許可しています。クレジットの更新には、service roleキーを使用します。
+
+### ステップ4：アプリケーションでのクレジットの使用
+
+`plans`テーブルと`credits`テーブルを設定したら、アプリケーションでクレジットを管理するために使用できます。
+
+例えば、ユーザーがクレジットを消費するアクションを実行する際に、`consume_credits`関数を呼び出してユーザーのアカウントからクレジットを差し引くことができます：
+
+```typescript
+export function async consumeApi(accountId: string) {
+  // OpenAI APIを呼び出して使用量を取得
+  const { usage, data } = await callOpenAIApi();
+  const client = getSupabaseRouteHandlerClient({
+    admin: true,
+  });
+  await client.rpc('consume_credits', {
+    account_id: accountId,
+    tokens: usage,
+  });
+  return data;
+}
+```
+
+また、`has_credits`関数をRLSポリシーの一部として使用して、ユーザーのクレジットに基づいて特定のリソースへのアクセスを制限することもできます：
+
+```sql
+create policy tasks_write_policy
+  on public.tasks
+  for select
+  using (
+    (select auth.uid()) === account_id and
+    public.has_credits((select auth.uid()), 1)
+  );
+```
+
+### ステップ5：クレジットのチャージ
+
+課金プロバイダーからのWebhookを使用して、ユーザーが支払いを行った際にクレジットをチャージできます。以下の例では、Webhookハンドラーを拡張して`onInvoicePaid`イベントをリッスンし、クレジットテーブルを更新します：
+
+```typescript
+import { getBillingEventHandlerService } from '@kit/billing-gateway';
+import { enhanceRouteHandler } from '@kit/next/routes';
+import { getLogger } from '@kit/shared/logger';
+import { getSupabaseServerAdminClient } from '@kit/supabase/server-admin-client';
+import billingConfig from '~/config/billing.config';
+import { Database } from '~/lib/database.types';
+
+export const POST = enhanceRouteHandler(
+  async ({ request }) => {
+    const provider = billingConfig.provider;
+    const logger = await getLogger();
+    const ctx = {
+      name: 'billing.webhook',
+      provider,
+    };
+    logger.info(ctx, `Received billing webhook. Processing...`);
+
+    const supabaseClientProvider = () =>
+      getSupabaseServerAdminClient();
+
+    const service = await getBillingEventHandlerService(
+      supabaseClientProvider,
+      provider,
+      billingConfig,
+    );
+
+    try {
+      await service.handleWebhookEvent(request, {
+        onInvoicePaid: async (data) => {
+          const accountId = data.target_account_id;
+          const lineItems = data.line_items;
+          const variantId = lineItems[0]?.variant_id;
+
+          if (!variantId) {
+            logger.error(
+              {
+                accountId,
+              },
+              'Variant ID not found in line items',
+            );
+            throw new Error('Variant ID not found in invoice');
+          }
+
+          await updateMessagesCountQuota({
+            variantId,
+            accountId,
+          });
+        },
+      });
+
+      logger.info(ctx, `Successfully processed billing webhook`);
+      return new Response('OK', { status: 200 });
+    } catch (error) {
+      logger.error({ ...ctx, error }, `Failed to process billing webhook`);
+      return new Response('Failed to process billing webhook', {
+        status: 500,
+      });
+    }
+  },
+  {
+    auth: false,
+  },
+);
+
+async function updateMessagesCountQuota(params: {
+  variantId: string;
+  accountId: string;
+}) {
+  const client = getSupabaseRouteHandlerClient<Database>({ admin: true });
+
+  // プランのトークン数を取得
+  const plan = await client
+    .from('plans')
+    .select('tokens_quota')
+    .eq('variant_id', params.variantId)
+    .single();
+
+  if (plan.error) {
+    throw plan.error;
+  }
+
+  const { tokens_quota } = plan.data;
+
+  // アカウントのクレジットを更新
+  const response = await client
+    .from('credits')
+    .update({
+      tokens_quota,
+    })
+    .eq('account_id', params.accountId);
+
+  if (response.error) {
+    throw response.error;
+  }
+}
+```
+
+この実装では、`plans`テーブルに各プランの価格情報が、`credits`テーブルに各ユーザーのクレジット情報が保存されていることを前提としています。`credits`テーブルには`tokens_quota`カラムがあり、ユーザーが利用可能なクレジット数を保存します。
+
+`onInvoicePaid`イベントハンドラーでは、請求書の品目からバリアントIDを取得し、クレジットテーブルを新しいクレジットで更新します。

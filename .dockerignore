@@ -1,0 +1,26 @@
+# 開発環境の一時ファイル
+**/.git
+**/.gitignore
+**/.env*
+**/.next
+**/node_modules
+**/dist
+**/.turbo
+**/.cache
+
+# ログとデバッグファイル
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# テストとドキュメント
+**/coverage
+# apps/docsは除外しない
+# **/docs
+**/*.test.ts
+**/*.spec.ts
+
+# OS固有のファイル
+.DS_Store
+Thumbs.db

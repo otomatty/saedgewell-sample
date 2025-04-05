@@ -1,0 +1,51 @@
+name: Update Journal Commits
+
+on:
+  push:
+    branches:
+      - main  # メインブランチへのプッシュ時に実行
+  schedule:
+    - cron: '0 0 * * *'  # 毎日午前0時（UTC）に実行
+  workflow_dispatch:  # 手動実行も可能にする
+
+jobs:
+  update-commits:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # すべての履歴を取得
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          cd apps/docs
+          npm ci
+      
+      - name: List directory structure
+        run: |
+          echo "リポジトリのディレクトリ構造:"
+          find .docs -type d | sort
+          echo "現在の作業ディレクトリ:"
+          pwd
+      
+      - name: Update journal commits
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_PRIVATE_REPOS }}  # プライベートリポジトリにアクセス可能なトークン
+        run: |
+          cd apps/docs
+          npx ts-node scripts/update-journal-commits.ts --user ${{ github.repository_owner }}
+      
+      - name: Commit and push if changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 自動更新: 日記のコミット情報を更新" && git push) 

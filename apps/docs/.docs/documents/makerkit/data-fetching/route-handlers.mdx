@@ -1,0 +1,192 @@
+---
+title: 'API Route Handlersの使用'
+description: 'Next.js Supabase SaaS Kitでデータのフェッチと書き込みを行うためのRoute Handlersの書き方を学ぶ'
+icon: 'route'
+order: 3
+---
+
+# Next.js Supabase SaaS KitでのAPI Route Handlersの使用
+
+Next.js Supabase SaaS Kitでデータのフェッチと書き込みを行うためのRoute Handlersの書き方を学びましょう。
+
+API Route handlersは、`route.ts`という規約を使用して追加され、1つまたは複数のHTTPメソッド（例：GET、POST、PUT、DELETE）をエクスポートします。
+
+あまり多くのAPI route handlersを書くことはないでしょう（変更にはServer Actionsを優先してください）が、以下のことを手助けする`enhanceRouteHandler`ユーティリティを使用できます：
+
+- ユーザーの状態をチェックします（ユーザーが認証されているかどうか）
+- Zodスキーマを与えると、リクエストボディを検証します
+- CAPTCHAサイトキーを与えると、CAPTCHAトークンを検証します
+- 監視プロバイダーに未捕捉の例外を報告します（設定されている場合）
+
+素晴らしいですね。使い方を見てみましょう。
+
+```tsx
+import { z } from 'zod';
+import { enhanceRouteHandler } from '@kit/next/routes';
+import { NextResponse } from 'next/server';
+
+const ZodSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export const POST = enhanceRouteHandler(
+  async function({ body, user, request }) {
+    // 1. "body"はZodスキーマに対して検証済みで、安全に使用できます
+    // 2. "user"は認証されたユーザーです
+    // 3. "request"はヘッダー、クエリなどを含むリクエストオブジェクトです
+    // ... ここにコードを書く
+    return NextResponse.json({
+      success: true,
+    });
+  },
+  {
+    schema: ZodSchema,
+  },
+);
+```
+
+## CAPTCHAトークン保護の使用
+
+API route handlersをCAPTCHAトークンで保護したい場合は、`enhanceRouteHandler`関数にCAPTCHAサイトトークンを渡し、CAPTCHAフラグを`true`に設定することでできます。
+
+```tsx
+import { enhanceRouteHandler } from '@kit/next/routes';
+
+export const POST = enhanceRouteHandler(
+  async function({ body, user, request }) {
+    // ... ここにコードを書く
+    return NextResponse.json({
+      success: true,
+    });
+  },
+  {
+    captcha: true,
+    schema: ZodSchema,
+  },
+);
+```
+
+API route handlerを呼び出す際には、リクエストボディにCAPTCHAトークンを提供する必要があります。
+
+CAPTCHAトークンは、パッケージ`@kit/auth/captcha/client`の`useCaptchaToken`フックから取得できます。
+
+```tsx
+import { useCaptchaToken } from '@kit/auth/captcha/client';
+
+function Component() {
+  const captchaToken = useCaptchaToken();
+  
+  // ... ここにコードを書く
+}
+```
+
+これで、API route handlerを呼び出す際にCAPTCHAとCSRFトークンを渡すことができます。
+
+注意：CSRFトークンは、`/api/*`以外のルートで変更を行うすべてのAPIルートに追加する必要があります。`/api/*`内のルートはデフォルトでは保護されていません。これらは外部で使用されることを意図しているためです。
+
+```tsx
+import { useCaptchaToken } from '@kit/auth/captcha/client';
+import { useCsrfToken } from '@kit/shared/hooks';
+
+function Component() {
+  const captchaToken = useCaptchaToken();
+  const csrfToken = useCsrfToken();
+  
+  const onSubmit = async (params: {
+    email: string;
+    password: string;
+  }) => {
+    const response = await fetch('/my-api-route', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-csrf-token': csrfToken,
+        'x-captcha-token': captchaToken,
+      },
+      body: JSON.stringify(params),
+    });
+    
+    // ... ここにコードを書く
+  };
+  
+  // ... ここにコードを書く
+}
+```
+
+React Queryを使用して上記を改善することができます：
+
+```tsx
+import { useMutation } from '@tanstack/react-query';
+import { useCaptchaToken } from '@kit/auth/captcha/client';
+
+function Component() {
+  const captchaToken = useCaptchaToken();
+  const mutation = useMutateData();
+  
+  const onSubmit = async (params: {
+    email: string;
+    password: string;
+  }) => {
+    await mutation.mutateAsync(params);
+  };
+  
+  // ... ここにコードを書く
+}
+
+function useMutateData() {
+  return useMutation({
+    mutationKey: 'my-mutation',
+    mutationFn: async (params: { email: string; password: string }) => {
+      const response = await fetch('/my-api-route', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-captcha-token': captchaToken,
+        },
+        body: JSON.stringify(params),
+      });
+      
+      if (!response.ok) {
+        throw new Error('エラーが発生しました');
+      }
+      return response.json();
+    },
+  });
+}
+```
+
+注意：CAPTCHA保護を使用するには、環境変数にCAPTCHAトークンを設定する必要があります。
+
+```
+CAPTCHA_SECRET_TOKEN=
+NEXT_PUBLIC_CAPTCHA_SITE_KEY=
+```
+
+シークレット環境変数として、`.env`ファイルには追加しないでください。代わりに、CI/CDシステムの環境変数に追加してください。
+
+サポートされているCAPTCHAプロバイダーは、Cloudflare Turnstileのみです。
+
+## 例外のキャプチャ
+
+この関数は、監視プロバイダーを設定している場合、未捕捉の例外を自動的に報告します。監視プロバイダーは環境変数`MONITORING_PROVIDER`で設定されます。
+
+これを無効にするには、`enhanceAction`関数に`captureException: false`を渡します。
+
+```tsx
+import { enhanceRouteHandler } from '@kit/next/routes';
+
+export const POST = enhanceRouteHandler(
+  async function({ body, user, request }) {
+    // ... ここにコードを書く
+    return NextResponse.json({
+      success: true,
+    });
+  },
+  {
+    captcha: true,
+    captureException: false,
+    schema: ZodSchema,
+  },
+);
+```

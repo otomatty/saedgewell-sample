@@ -1,0 +1,27 @@
+{
+  "exports": {
+    "./if": "./src/makerkit/if/index.tsx",
+    "./trans": "./src/makerkit/trans/index.tsx",
+    "./makerkit-sidebar": "./src/makerkit/sidebar/index.tsx",
+    "./navigation-schema": "./src/makerkit/navigation-config/schema.ts",
+    "./bordered-navigation-menu": "./src/makerkit/bordered-navigation-menu/index.tsx",
+    "./spinner": "./src/makerkit/spinner/index.tsx",
+    "./page": "./src/makerkit/page/index.tsx",
+    "./image-uploader": "./src/makerkit/image-uploader/index.tsx",
+    "./global-loader": "./src/makerkit/global-loader/index.tsx",
+    "./auth-change-listener": "./src/makerkit/auth-change-listener/index.tsx",
+    "./loading-overlay": "./src/makerkit/loading-overlay/index.tsx",
+    "./profile-avatar": "./src/makerkit/profile-avatar/index.tsx",
+    "./mode-toggle": "./src/makerkit/mode-toggle/index.tsx",
+    "./enhanced-data-table": "./src/makerkit/data-table/index.tsx",
+    "./language-selector": "./src/makerkit/language-selector/index.tsx",
+    "./stepper": "./src/makerkit/stepper/index.tsx",
+    "./cookie-banner": "./src/makerkit/cookie-banner/index.tsx",
+    "./card-button": "./src/makerkit/card-button/index.tsx",
+    "./version-updater": "./src/makerkit/version-updater/index.tsx",
+    "./multi-step-form": "./src/makerkit/multi-step-form/index.tsx",
+    "./app-breadcrumbs": "./src/makerkit/app-breadcrumbs/index.tsx",
+    "./empty-state": "./src/makerkit/empty-state/index.tsx",
+    "./marketing": "./src/makerkit/(marketing)/index.tsx"
+  }
+}

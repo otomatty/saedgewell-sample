@@ -1,0 +1,83 @@
+---
+title: 'ユーザーワークスペースAPI'
+description: 'ユーザーワークスペースAPIを使用して現在のユーザーに関連するデータを取得する方法'
+icon: 'layout-dashboard'
+order: 4
+---
+
+# ユーザーワークスペースAPI
+
+ユーザーワークスペースAPIを使用すると、現在のユーザーに関連するすべてのデータを取得することができます。
+`/home/(user)`レイアウト内では、ユーザーワークスペースAPIから取得したデータにアクセスできます。
+
+このレイアウト内のデータには、現在選択されているアカウントとユーザーに関する必要な情報のほとんどが含まれています。
+
+データにアクセスするには、`loadUserWorkspace`ローダー関数を使用できます。この関数はリクエストごとにキャッシュされるため、パフォーマンスを気にすることなく複数回呼び出すことができます。
+
+この関数への複数の呼び出しは単一のリクエスト内で重複排除されますが、このリクエストはページに移動するときに呼び出されることに注意してください。データの一部のみが必要な場合は、より細かいリクエストを行うことをお勧めします。
+
+```tsx
+import { loadUserWorkspace } from '~/home/(user)/_lib/server/load-user-workspace';
+
+export default async function SomeUserPage() {
+  const data = await loadUserWorkspace();
+  // データを使用する
+}
+```
+
+`loadUserWorkspace`関数から返されるデータは、以下のプロパティを持つオブジェクトです：
+
+- `user`: Supabase Authから取得したユーザーオブジェクト
+- `workspace`: ユーザーのアカウントオブジェクト
+- `accounts`: ユーザーがメンバーであるすべてのアカウントの配列
+
+以下はデータ構造の例です：
+
+```tsx
+import type { User } from '@supabase/supabase-js';
+
+{
+  workspace: {
+    id: string | null;
+    name: string | null;
+    picture_url: string | null;
+    public_data: Json | null;
+    subscription_status: string | null;
+  };
+  user: User;
+  accounts: Array<{
+    id: string | null;
+    name: string | null;
+    picture_url: string | null;
+    role: string | null;
+    slug: string | null;
+  }>;
+}
+```
+
+`workspace`オブジェクトには以下のプロパティが含まれています：
+
+- `id`: アカウントID
+- `name`: アカウント名
+- `picture_url`: アカウント画像のURL
+- `public_data`: アカウントの公開データ
+- `subscription_status`: アカウントのサブスクリプションステータス。これは 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused' のいずれかです。
+
+## クライアントコンポーネントでのユーザーワークスペースデータへのアクセス
+
+ユーザーワークスペースAPIから取得したデータはコンテキストで利用可能です。`useUserWorkspace`フックを使用してこのデータにアクセスできます。
+
+```tsx
+'use client';
+
+import { useUserWorkspace } from '@kit/accounts/hooks/use-user-workspace';
+
+export default function SomeComponent() {
+  const { workspace, user, accounts } = useUserWorkspace();
+  // アカウント、ユーザー、アカウントを使用する
+}
+```
+
+`useUserWorkspace`フックは`loadUserWorkspace`関数と同じデータ構造を返します。
+
+注意：このフックはサーバーコンポーネントではなく、クライアントコンポーネントでのみ使用できます。さらに、これは`/home/(user)`レイアウト配下のページでのみ利用可能です。

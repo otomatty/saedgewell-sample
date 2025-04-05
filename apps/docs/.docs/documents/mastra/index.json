@@ -1,0 +1,27 @@
+{
+  "title": "Mastra",
+  "description": "Mastraのカスタマイズガイド",
+  "order": 4,
+  "thumbnail": "https://mastra.ai/",
+  "icon": "https://mastra.ai/favicon.ico",
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2025-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "tags": {
+    "type": ["template", "boilerplate"],
+    "tech": ["nextjs", "react", "supabase", "tailwindcss"]
+  },
+  "links": {
+    "website": "https://mastra.ai/",
+    "github": "https://github.com/mastra-ai/mastra",
+    "docs": "https://mastra.ai/docs"
+  },
+  "features": [
+    "認証システム",
+    "サブスクリプション管理",
+    "マルチテナント",
+    "ダッシュボード",
+    "管理者パネル"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "title": "リファレンス",
+  "description": "Mastra APIとコンポーネントの詳細リファレンス",
+  "order": 12,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "subdirectories": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "リファレンスドキュメントの概要",
+      "order": 1
+    },
+    {
+      "name": "core",
+      "title": "コア",
+      "description": "Mastraコアモジュールのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "cli",
+      "title": "CLI",
+      "description": "Mastraコマンドラインインターフェースのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "agents",
+      "title": "エージェント",
+      "description": "エージェントAPIリファレンス",
+      "order": 4
+    },
+    {
+      "name": "tools",
+      "title": "ツール",
+      "description": "ツールAPIリファレンス",
+      "order": 5
+    },
+    {
+      "name": "workflows",
+      "title": "ワークフロー",
+      "description": "ワークフローAPIリファレンス",
+      "order": 6
+    },
+    {
+      "name": "memory",
+      "title": "メモリ",
+      "description": "メモリAPIリファレンス",
+      "order": 7
+    },
+    {
+      "name": "storage",
+      "title": "ストレージ",
+      "description": "ストレージAPIリファレンス",
+      "order": 8
+    },
+    {
+      "name": "rag",
+      "title": "RAG",
+      "description": "RAG (検索拡張生成) APIリファレンス",
+      "order": 9
+    },
+    {
+      "name": "evals",
+      "title": "Evals",
+      "description": "評価システムAPIリファレンス",
+      "order": 10
+    },
+    {
+      "name": "voice",
+      "title": "音声",
+      "description": "音声APIリファレンス",
+      "order": 11
+    },
+    {
+      "name": "observability",
+      "title": "可観測性",
+      "description": "可観測性APIリファレンス",
+      "order": 12
+    },
+    {
+      "name": "client-sdk-js",
+      "title": "Client SDK - JS",
+      "description": "JavaScript用クライアントSDKリファレンス",
+      "order": 13
+    },
+    {
+      "name": "deployer",
+      "title": "デプロイヤー",
+      "description": "デプロイツールリファレンス",
+      "order": 14
+    }
+  ]
+}

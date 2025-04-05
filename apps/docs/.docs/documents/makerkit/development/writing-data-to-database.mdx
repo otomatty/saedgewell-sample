@@ -1,0 +1,268 @@
+---
+title: 'Supabaseデータベースにデータを書き込む方法を学ぶ'
+description: 'このページではNext.jsアプリでSupabaseデータベースにデータを書き込む方法を学びます'
+icon: 'database-out'
+order: 6
+---
+
+# Supabaseデータベースにデータを書き込む方法
+
+このページでは、Next.jsアプリでSupabaseデータベースにデータを書き込む方法を学びます。
+
+## タスクを追加するためのサーバーアクションを作成する
+
+サーバーアクションは、関数またはファイルの先頭に`use server`を追加することで定義されます。関数をサーバーアクションとして定義すると、サーバーサイドで実行されます。
+
+これは様々な理由で役立ちます：
+
+- サーバーアクションを使用することで、サーバーコンポーネントを通じてフェッチされたデータを再検証できます
+- クライアント側から関数を呼び出すだけで、サーバーサイドのコードを実行できます
+
+この例では、データベースにタスクを追加するためのサーバーアクションを作成します。
+
+## タスクのスキーマを定義する
+
+サーバーアクションに渡されるデータを検証するためにZodを使用します。これにより、データがデータベースに書き込まれる前に正しい形式であることが保証されます。
+
+Makerkitの慣例では、スキーマを別のファイルで定義し、必要な場所でインポートします。スキーマを定義するために`file.schema.ts`という慣例を使用します。
+
+```tsx
+import { z } from 'zod';
+
+export const WriteTaskSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().nullable(),
+});
+```
+
+## タスクを追加するためのサーバーアクションを作成する
+
+この例では、データベースにタスクを追加するためのサーバーアクションを作成します。タスクが追加された後に`/home`ページを再検証するために`revalidatePath`関数を使用します。
+
+```tsx
+'use server';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
+import { getLogger } from '@kit/shared/logger';
+import { requireUser } from '@kit/supabase/require-user';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { WriteTaskSchema } from '~/(dashboard)/home/(user)/_lib/schema/write-task.schema';
+
+export async function addTaskAction(params: z.infer<typeof WriteTaskSchema>) {
+  'use server';
+  const task = WriteTaskSchema.parse(params);
+  const logger = await getLogger();
+  const client = getSupabaseServerClient();
+  const auth = await requireUser(client);
+
+  if (!auth.data) {
+    redirect(auth.redirectTo);
+  }
+
+  logger.info(task, `Adding task...`);
+
+  const { data, error } = await client
+    .from('tasks')
+    .insert({ ...task, account_id: auth.data.id });
+
+  if (error) {
+    logger.error(error, `Failed to add task`);
+    throw new Error(`Failed to add task`);
+  }
+
+  logger.info(data, `Task added successfully`);
+  revalidatePath('/home', 'page');
+  return null;
+}
+```
+
+この部分に少し注目してみましょう：
+
+```tsx
+const { data, error } = await client
+    .from('tasks')
+    .insert({ ...task, account_id: auth.data.id });
+```
+
+`account_id`フィールドが見えますか？これはタスクをそれを作成したユーザーにリンクする外部キーです。これはデータベース設計における一般的なパターンです。
+
+タスクを追加するためのサーバーアクションを作成したので、クライアント側からこの関数を呼び出すことができます。しかし、次のセクションで定義するフォームが必要です。
+
+## タスクを追加するためのフォームを作成する
+
+タスクを追加するためのフォームを作成します。フォームは`SubmitButton`プロップと`onSubmit`プロップを受け取るReactコンポーネントです。
+
+```tsx
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@kit/ui/form';
+import { Input } from '@kit/ui/input';
+import { Textarea } from '@kit/ui/textarea';
+import { Trans } from '@kit/ui/trans';
+import { WriteTaskSchema } from '../_lib/schema/write-task.schema';
+
+export function TaskForm(props: {
+  task?: z.infer<typeof WriteTaskSchema>;
+  onSubmit: (task: z.infer<typeof WriteTaskSchema>) => void;
+  SubmitButton: React.ComponentType;
+}) {
+  const form = useForm({
+    resolver: zodResolver(WriteTaskSchema),
+    defaultValues: props.task,
+  });
+
+  return (
+    <Form {...form}>
+      <form
+        className={'flex flex-col space-y-4'}
+        onSubmit={form.handleSubmit(props.onSubmit)}
+      >
+        <FormField
+          render={(item) => {
+            return (
+              <FormItem>
+                <FormLabel>
+                  <Trans i18nKey={'tasks:taskTitle'} />
+                </FormLabel>
+                <FormControl>
+                  <Input required {...item.field} />
+                </FormControl>
+                <FormDescription>
+                  <Trans i18nKey={'tasks:taskTitleDescription'} />
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+          name={'title'}
+        />
+
+        <FormField
+          render={(item) => {
+            return (
+              <FormItem>
+                <FormLabel>
+                  <Trans i18nKey={'tasks:taskDescription'} />
+                </FormLabel>
+                <FormControl>
+                  <Textarea {...item.field} />
+                </FormControl>
+                <FormDescription>
+                  <Trans i18nKey={'tasks:taskDescriptionDescription'} />
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+          name={'description'}
+        />
+
+        <props.SubmitButton />
+      </form>
+    </Form>
+  );
+}
+```
+
+## フォームを表示するためのダイアログコンポーネントを使用する
+
+フォームをダイアログで表示するために、`@kit/ui/dialog`パッケージの`Dialog`コンポーネントを使用します。ダイアログはユーザーがボタンをクリックすると開きます。
+
+```tsx
+'use client';
+import { useState, useTransition } from 'react';
+import { PlusCircle } from 'lucide-react';
+import { Button } from '@kit/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@kit/ui/dialog';
+import { Trans } from '@kit/ui/trans';
+import { TaskForm } from '../_components/task-form';
+import { addTaskAction } from '../_lib/server/server-actions';
+
+export function NewTaskDialog() {
+  const [pending, startTransition] = useTransition();
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <PlusCircle className={'mr-1 h-4'} />
+          <span>
+            <Trans i18nKey={'tasks:addNewTask'} />
+          </span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            <Trans i18nKey={'tasks:addNewTask'} />
+          </DialogTitle>
+          <DialogDescription>
+            <Trans i18nKey={'tasks:addNewTaskDescription'} />
+          </DialogDescription>
+        </DialogHeader>
+
+        <TaskForm
+          SubmitButton={() => (
+            <Button>
+              {pending ? (
+                <Trans i18nKey={'tasks:addingTask'} />
+              ) : (
+                <Trans i18nKey={'tasks:addTask'} />
+              )}
+            </Button>
+          )}
+          onSubmit={(data) => {
+            startTransition(async () => {
+              await addTaskAction(data);
+              setIsOpen(false);
+            });
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+これで`NewTaskDialog`を`/home`ページにインポートし、ユーザーがボタンをクリックしたときにダイアログを表示できるようになりました。
+
+ホームページに戻り、入力フィルターの隣にコンポーネントを追加しましょう：
+
+```tsx
+<div className={'flex items-center justify-between'}>
+  <div>
+    <Heading level={4}>
+      <Trans i18nKey={'tasks:tasksTabLabel'} defaults={'Tasks'} />
+    </Heading>
+  </div>
+  <div className={'flex items-center space-x-2'}>
+    <form className={'w-full'}>
+      <Input
+        name={'query'}
+        defaultValue={query}
+        className={'w-full lg:w-[18rem]'}
+        placeholder={'Search tasks'}
+      />
+    </form>
+    <NewTaskDialog />
+  </div>
+</div>
+```

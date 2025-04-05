@@ -1,0 +1,130 @@
+---
+title: 'チームアカウントAPI'
+description: 'Next.js Supabase SaaS KitにおけるチームアカウントAPIの簡単な紹介'
+icon: 'users'
+order: 2
+---
+
+# チームアカウントAPI
+
+Next.js Supabase SaaS KitにおけるチームアカウントAPIの簡単な紹介です。チームアカウントAPIを使用して、チームアカウントに関する情報を取得することができます。
+
+## チームアカウントAPIの使用方法
+
+チームアカウントAPIを使用するには、`@kit/team-account/api`から`createTeamAccountsApi`関数をインポートする必要があります。
+
+この関数には有効な`SupabaseClient`を渡す必要があります - これによりサーバーからデータベースと対話することができます。
+
+```tsx
+import { createTeamAccountsApi } from '@kit/team-accounts/api';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+async function ServerComponent() {
+  const client = getSupabaseServerClient();
+  const api = createTeamAccountsApi(client);
+  // apiを使用する
+}
+```
+
+Server Actionのコンテキストでは、以下のように使用します：
+
+```tsx
+'use server';
+
+import { createTeamAccountsApi } from '@kit/team-accounts/api';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+export async function myServerAction() {
+  const client = getSupabaseServerClient();
+  const api = createTeamAccountsApi(client);
+  // apiを使用する
+}
+```
+
+## メソッド
+
+チームアカウントAPIは以下のメソッドを提供しています：
+
+### IDによるチームアカウントの取得
+
+`getTeamAccountById`メソッドを使用してIDによりチームアカウントを取得します。
+
+このメソッドを使用して、ユーザーがすでにアカウントに所属しているかどうかを確認することもできます。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const account = await api.getTeamAccountById('account-id');
+```
+
+### チームアカウントのサブスクリプション取得
+
+`getSubscription`メソッドを使用してアカウントのサブスクリプションデータを取得します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const subscription = await api.getSubscription('account-id');
+```
+
+### チームアカウントの注文取得
+
+`getOrder`メソッドを使用して指定されたアカウントの注文データを取得します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const order = await api.getOrder('account-id');
+```
+
+### アカウントワークスペースデータの取得
+
+アカウントワークスペースデータを取得します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const workspace = await api.getAccountWorkspace('account-slug');
+```
+
+このメソッドはすでにアカウントレイアウトで呼び出されており、他のコンテキストで使用される可能性は低いです。これはコンテキスト内のワークスペースデータをハイドレートするために使用されます。
+
+すでに読み込まれているため、コンテキストからデータを使用することができます。
+
+### アカウント内でのユーザー権限の確認
+
+`hasPermission`メソッドを使用して、ユーザーがアカウント内で特定のアクションを実行する権限を持っているかどうかを確認します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const hasPermission = await api.hasPermission({
+  accountId: 'account-id',
+  userId: 'user-id',
+  permission: 'billing.manage',
+});
+```
+
+### アカウント内のメンバー数の取得
+
+`getMembersCount`メソッドを使用してアカウント内のメンバー数を取得します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const membersCount = await api.getMembersCount('account-id');
+```
+
+### 課金顧客IDの取得
+
+`getCustomerId`メソッドを使用して、指定されたアカウントの課金顧客IDを取得します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const customerId = await api.getCustomerId('account-id');
+```
+
+### 招待の取得
+
+招待トークンから招待データを取得します。
+
+```tsx
+const api = createTeamAccountsApi(client);
+const invitation = await api.getInvitation(adminClient, 'invite-token');
+```
+
+このメソッドは招待トークンから招待データを取得するために使用されます。ユーザーがまだアカウントの一部ではなく、招待される必要がある場合に使用されます。`adminClient`は保留中のメンバーシップを読み取るために使用されます。このメソッドは招待データが存在する場合はそのデータを返し、存在しない場合は`null`を返します。

@@ -1,0 +1,211 @@
+---
+title: 'データベーススキーマの作成・更新'
+description: 'Next.js Supabaseアプリケーションで新しいマイグレーションを作成しデータベーススキーマを更新する方法を学ぶ'
+icon: 'table'
+order: 3
+---
+
+# Next.js Supabaseアプリケーションでデータベーススキーマを作成・更新する方法
+
+マイグレーションを作成した後は、必要なコードを追加する時です。
+
+この例では、シンプルなタスクアプリケーションのスキーマを作成します。
+
+## 権限
+
+Makerkitは`public.app_permissions`という名前の列挙型でデフォルトの権限セットを定義しています。
+
+アプリにさらに権限を追加するには、列挙型を更新してください：
+
+```sql
+-- 新しい権限を挿入
+alter type public.app_permissions add value 'tasks.write';
+alter type public.app_permissions add value 'tasks.delete';
+commit;
+```
+
+上記の場合、`tasks.write`と`tasks.delete`の権限を追加しました。これらをRLSルールで使用して、権限がアクセスを制限できるようにします。
+
+## タスクテーブル
+
+次に、新しいタスクテーブルを追加しましょう：
+
+```sql
+-- タスクテーブルを作成
+create table if not exists public.tasks (
+  id uuid primary key default gen_random_uuid(),
+  title varchar(500) not null,
+  description varchar(50000),
+  done boolean not null default false,
+  account_id uuid not null references public.accounts(id),
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now()
+);
+grant select, insert, update, delete on table public.tasks to
+    authenticated, service_role;
+```
+
+説明：
+- `uuid`は自動生成される主キーです
+- `title`は500文字に制限されたテキストフィールドです。`not null`はnullにできないことを保証します
+- `description`は50000文字に制限されたテキストフィールドです
+- `done`はブールフィールドです
+- `account_id`はタスクを所有するアカウントです
+
+次に、`authenticated`と`service_role`のロールに必要な権限を追加します。
+
+匿名ユーザーはこのテーブルにアクセスできません。
+
+## アカウント
+
+アカウントはスキーマの主要なエンティティです。アカウントはユーザーまたはチームになります。
+
+外部キーを使用して、エンティティをそれを所有するアカウントに接続できます：
+
+```sql
+account_id uuid not null references public.accounts(id)
+```
+
+## RLSの有効化
+
+新しいテーブルを作成するときは、常にRLSを有効にしてください。
+
+```sql
+-- 行レベルセキュリティを有効にする
+alter table tasks enable row level security;
+```
+
+## RLSポリシー
+
+RLSポリシーは、テーブルを保護するために不可欠です。
+
+各アクション（select、insert、update、delete）に対してRLSポリシーを挿入します。
+
+### タスクの選択
+
+タスクテーブルからデータを選択するためのRLSポリシーを作成する場合、ユーザーがタスクの所有者であるか、必要な権限を持っていることを確認する必要があります。
+
+一般的に、エンティティは`public.accounts`に属しており、`account_id`を使用してユーザーが所有者であるかどうかを確認できます。
+
+```sql
+create policy select_tasks on public.tasks
+    for select
+    to authenticated
+    using (
+      account_id = auth.uid() or
+      public.has_role_on_account(account_id)
+    );
+```
+
+アカウントはユーザーまたはチームになることをご存知でしたか？`public.has_role_on_account`関数を使用して、ユーザーがアカウントに対してロールを持っているかどうかを確認できます。
+
+したがって、このRLSポリシーは両方の方法で機能します：
+- ユーザーがタスクの所有者である場合 - `account_id`が`auth.uid()`と等しいことを確認します
+- ユーザーがアカウントに対してロールを持っている場合 - ユーザーがアカウントに対してロールを持っていることを確認します
+
+### タスクの挿入
+
+タスクテーブルにデータを挿入するためのRLSポリシーを作成する場合、ユーザーがタスクの所有者であるか、必要な権限を持っていることを確認する必要があります。
+
+```sql
+create policy insert_tasks on public.tasks
+    for insert
+    with check (
+        account_id = auth.uid() or
+        public.has_permission(auth.uid(), account_id, 'tasks.write'::app_permissions)
+    );
+```
+
+上記では、ユーザーがタスクの所有者であるか、`tasks.write`権限を持っているかを確認します。
+- `account_id`が`auth.uid()`と等しい場合 - アカウントは個人のものなので、権限は必要ありません
+- ユーザーが`tasks.write`権限を持っている場合 - ユーザーはタスクを挿入できます
+
+### タスクの更新
+
+タスクテーブルのデータを更新するためのRLSポリシーを作成する場合、ユーザーがタスクの所有者であるか、必要な権限を持っていることを確認する必要があります。
+
+```sql
+create policy update_tasks on public.tasks
+    for update
+    using (
+        account_id = auth.uid() or
+        public.has_permission(auth.uid(), account_id, 'tasks.write'::app_permissions)
+    )
+    with check (
+        account_id = auth.uid() or
+        public.has_permission(auth.uid(), account_id, 'tasks.write'::app_permissions)
+    );
+```
+
+`using`と`with check`句を追加する必要があることをご存知でしたか？
+- `using`はユーザーが更新できる行をフィルタリングするために使用されます
+- `with check`はユーザーが行を更新できるかどうかを確認するために使用されます
+
+上記では、ユーザーがタスクの所有者であるか、`tasks.write`権限を持っているかを確認します。
+
+### タスクの削除
+
+タスクテーブルからデータを削除するためのRLSポリシーを作成する場合、ユーザーがタスクの所有者であるか、必要な権限を持っていることを確認する必要があります。
+
+```sql
+create policy delete_tasks on public.tasks
+    for delete
+    using (
+        account_id = auth.uid() or
+        public.has_permission(auth.uid(), account_id, 'tasks.delete'::app_permissions)
+    );
+```
+
+上記では、ユーザーがタスクの所有者であるか、`tasks.delete`権限を持っているかを確認します。
+
+これでスキーマは完成です！やったね！🎉
+
+## MFAコンプライアンスの有効化
+
+`public.is_mfa_compliant`関数を使用して、アプリケーションのMFAコンプライアンスを強制できます。
+
+```sql
+create policy restrict_mfa_tasks
+    on public.tasks
+    as restrictive
+    to authenticated
+    using (public.is_mfa_compliant());
+```
+
+上記では、MFAに準拠しているユーザーにタスクテーブルへのアクセスを制限します。MFAを有効にしたユーザーは、テーブルにアクセスするためにMFAでサインインする必要があります。
+
+代わりに、MFAを有効にしていないユーザーは、MFAなしでテーブルにアクセスし続けることができます。
+
+## スーパー管理者のみにアクセスを制限する
+
+`public.is_super_admin`関数を使用して、スーパー管理者のみにアクセスを制限できます。
+
+`logs`という名前のテーブルを保護し、スーパー管理者のみに選択アクセスを許可すると仮定します。
+
+```sql
+create policy restrict_logs_super_admins
+    on public.logs
+    as restrictive
+    for select
+    to authenticated
+    using (public.is_super_admin());
+```
+
+- `public.is_super_admin`関数を使用することで、スーパー管理者のみがlogsテーブルにアクセスできるようにします。
+- 制限的なポリシーを使用することで、他のポリシーに関係なく、このアクセス制限が強制されるようにします。
+
+## マイグレーションのリセット
+
+新しいスキーマを追加する場合、マイグレーションをリセットする必要があります。
+
+```bash
+pnpm run supabase:web:reset
+```
+
+次に、以下のコマンドを使用して新しい型を生成します：
+
+```bash
+pnpm run supabase:web:typegen
+```
+
+これで、Supabaseクライアントを使用する際に、アプリケーションで新しい型を使用できるようになりました。

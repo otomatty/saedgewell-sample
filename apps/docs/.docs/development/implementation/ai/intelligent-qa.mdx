@@ -1,0 +1,522 @@
+---
+title: 'インテリジェントQ&A機能'
+description: 'ドキュメントの内容に基づいた質問応答システムの実装計画'
+---
+
+# インテリジェントQ&A機能
+## 1. 機能概要
+
+ドキュメントの内容に基づいた質問応答システム。ユーザーがドキュメントに関する質問を入力または音声で行うと、AIがドキュメントの内容を参照して回答を生成する。
+
+### 主要な特徴:
+- テキストおよび音声による質問入力
+- ドキュメント内容を文脈として考慮した回答生成
+- 関連質問のサジェスト
+- 回答の根拠となるドキュメント部分の強調表示
+
+## 2. 技術要件
+
+- **フロントエンド**: 
+  - Next.js 15
+  - React 19
+  - Tailwind CSS v4
+  - shadcn/ui
+- **状態管理**: 
+  - Jotai
+- **API**: 
+  - Gemini API
+- **音声認識**: 
+  - Web Speech API
+- **音声合成**: 
+  - Web Speech API または Gemini API
+- **パッケージ**:
+  - @google/generative-ai
+  - react-speech-recognition (音声入力用)
+
+## 3. ユーザーストーリー
+
+- ユーザーとして、ドキュメントの内容について質問し、即座に回答を得たい
+- ユーザーとして、手を使わずに音声で質問できるようにしたい
+- ユーザーとして、質問に関連する追加の質問を提案してほしい
+- ユーザーとして、回答の根拠となるドキュメント部分がわかるようにしてほしい
+
+## 4. アーキテクチャ
+
+### コンポーネント構成:
+1. **QuestionInput**: テキスト・音声入力を処理するコンポーネント
+2. **AnswerGenerator**: Gemini APIを使用して回答を生成
+3. **AnswerDisplay**: 回答と関連情報を表示
+4. **SuggestionGenerator**: 関連質問を生成・表示
+
+### データフロー:
+1. ユーザー質問入力 → QuestionInput処理
+2. 質問 + ドキュメントコンテキスト → AnswerGenerator
+3. Gemini API → 回答生成
+4. 回答表示 + 関連質問生成
+
+## 5. APIインターフェース
+
+```typescript
+// lib/ai/qa-service.ts
+import { atom } from 'jotai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+export interface QuestionRequest {
+  question: string;            // ユーザーの質問
+  documentContent: string;     // ドキュメント内容
+  previousQuestions?: string[]; // 過去の質問（文脈のため）
+  previousAnswers?: string[];   // 過去の回答（文脈のため）
+}
+
+export interface SourceSegment {
+  text: string;
+  position: number;
+}
+
+export interface AnswerResponse {
+  answer: string;              // 生成された回答
+  relatedQuestions: string[];  // 関連質問
+  sourceSegments?: SourceSegment[];  // 回答の根拠となるドキュメント部分
+  confidence: number;          // 回答の確信度
+}
+
+// Jotaiを使用した状態管理
+export const currentQuestionAtom = atom<string>('');
+export const documentContentAtom = atom<string>('');
+export const isProcessingAtom = atom<boolean>(false);
+export const answerResponseAtom = atom<AnswerResponse | null>(null);
+export const questionHistoryAtom = atom<{question: string, answer: string}[]>([]);
+export const speechRecognitionActiveAtom = atom<boolean>(false);
+
+// 回答を生成する関数
+export async function generateAnswer(request: QuestionRequest): Promise<AnswerResponse> {
+  // 実装
+}
+
+// 関連質問を生成する関数
+export async function generateRelatedQuestions(question: string, answer: string): Promise<string[]> {
+  // 実装
+}
+```
+
+## 6. UIコンポーネント
+
+### 1. QAPanel
+
+Q&A機能全体を包含するパネル
+
+```tsx
+// components/ai/QAPanel.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAtom, useAtomValue } from 'jotai';
+import { 
+  currentQuestionAtom, 
+  answerResponseAtom, 
+  isProcessingAtom,
+  questionHistoryAtom,
+  generateAnswer
+} from '@/lib/ai/qa-service';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { QuestionInput } from './QuestionInput';
+import { AnswerDisplay } from './AnswerDisplay';
+import { RelatedQuestions } from './RelatedQuestions';
+
+interface QAPanelProps {
+  documentContent: string;
+  className?: string;
+}
+
+export function QAPanel({ documentContent, className }: QAPanelProps) {
+  const [question, setQuestion] = useAtom(currentQuestionAtom);
+  const [isProcessing, setIsProcessing] = useAtom(isProcessingAtom);
+  const [answer, setAnswer] = useAtom(answerResponseAtom);
+  const questionHistory = useAtomValue(questionHistoryAtom);
+  
+  const handleSubmit = async () => {
+    if (!question.trim() || isProcessing) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      const previousQuestions = questionHistory.map(item => item.question);
+      const previousAnswers = questionHistory.map(item => item.answer);
+      
+      const response = await generateAnswer({
+        question,
+        documentContent,
+        previousQuestions,
+        previousAnswers
+      });
+      
+      setAnswer(response);
+    } catch (error) {
+      console.error('Error generating answer:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>ドキュメントについて質問する</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <QuestionInput 
+          value={question} 
+          onChange={setQuestion} 
+          onSubmit={handleSubmit} 
+          isProcessing={isProcessing} 
+        />
+        
+        {answer && (
+          <>
+            <AnswerDisplay answer={answer} />
+            <RelatedQuestions questions={answer.relatedQuestions} />
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 2. QuestionInput
+
+質問入力フォーム
+
+```tsx
+// components/ai/QuestionInput.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAtom } from 'jotai';
+import { speechRecognitionActiveAtom } from '@/lib/ai/qa-service';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Mic, Send, Loader2 } from 'lucide-react';
+
+interface QuestionInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  isProcessing: boolean;
+}
+
+export function QuestionInput({ 
+  value, 
+  onChange, 
+  onSubmit, 
+  isProcessing 
+}: QuestionInputProps) {
+  const [isSpeechSupported, setIsSpeechSupported] = useState<boolean>(false);
+  const [isListening, setIsListening] = useAtom(speechRecognitionActiveAtom);
+  
+  // Web Speech APIのサポート確認
+  useEffect(() => {
+    setIsSpeechSupported('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
+  }, []);
+  
+  // 音声認識の開始/停止
+  const toggleSpeechRecognition = () => {
+    if (!isSpeechSupported) return;
+    
+    if (isListening) {
+      // 音声認識停止処理
+      setIsListening(false);
+    } else {
+      // 音声認識開始処理
+      setIsListening(true);
+      
+      // Web Speech APIの初期化と設定
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        onChange(transcript);
+        setIsListening(false);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognition.start();
+    }
+  };
+  
+  return (
+    <div className="flex items-center space-x-2">
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="このドキュメントについて質問してください..."
+        className="flex-1"
+        onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+        disabled={isProcessing}
+      />
+      
+      {isSpeechSupported && (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={toggleSpeechRecognition}
+          disabled={isProcessing}
+          className={isListening ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300' : ''}
+        >
+          <Mic className="h-4 w-4" />
+        </Button>
+      )}
+      
+      <Button 
+        type="button" 
+        onClick={onSubmit} 
+        disabled={!value.trim() || isProcessing}
+      >
+        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+      </Button>
+    </div>
+  );
+}
+```
+
+### 3. AnswerDisplay
+
+回答表示領域
+
+```tsx
+// components/ai/AnswerDisplay.tsx
+'use client';
+
+import { useState } from 'react';
+import { AnswerResponse } from '@/lib/ai/qa-service';
+import { Button } from '@/components/ui/button';
+import { Volume2 } from 'lucide-react';
+
+interface AnswerDisplayProps {
+  answer: AnswerResponse;
+}
+
+export function AnswerDisplay({ answer }: AnswerDisplayProps) {
+  const [isReading, setIsReading] = useState<boolean>(false);
+  
+  // 回答の音声読み上げ
+  const readAnswer = () => {
+    if (!('speechSynthesis' in window)) return;
+    
+    if (isReading) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      return;
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(answer.answer);
+    utterance.lang = 'ja-JP';
+    
+    // 日本語音声の設定
+    const voices = window.speechSynthesis.getVoices();
+    const japaneseVoice = voices.find(voice => voice.lang === 'ja-JP');
+    if (japaneseVoice) {
+      utterance.voice = japaneseVoice;
+    }
+    
+    utterance.onend = () => {
+      setIsReading(false);
+    };
+    
+    setIsReading(true);
+    window.speechSynthesis.speak(utterance);
+  };
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">回答</h3>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={readAnswer}
+          className={isReading ? 'text-blue-600 dark:text-blue-400' : ''}
+        >
+          <Volume2 className="h-4 w-4 mr-2" />
+          {isReading ? '停止' : '読み上げ'}
+        </Button>
+      </div>
+      
+      <div className="p-4 bg-muted rounded-md">
+        <p className="whitespace-pre-line">{answer.answer}</p>
+      </div>
+      
+      {answer.sourceSegments && answer.sourceSegments.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-muted-foreground">参照箇所:</h4>
+          <ul className="mt-2 space-y-2">
+            {answer.sourceSegments.map((segment, index) => (
+              <li key={index} className="text-sm border-l-2 border-primary pl-2">
+                {segment.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      <div className="text-xs text-muted-foreground">
+        信頼度: {Math.round(answer.confidence * 100)}%
+      </div>
+    </div>
+  );
+}
+```
+
+### 4. RelatedQuestions
+
+関連質問一覧
+
+```tsx
+// components/ai/RelatedQuestions.tsx
+'use client';
+
+import { useAtom } from 'jotai';
+import { currentQuestionAtom } from '@/lib/ai/qa-service';
+import { Button } from '@/components/ui/button';
+
+interface RelatedQuestionsProps {
+  questions: string[];
+}
+
+export function RelatedQuestions({ questions }: RelatedQuestionsProps) {
+  const [_, setCurrentQuestion] = useAtom(currentQuestionAtom);
+  
+  if (!questions.length) return null;
+  
+  return (
+    <div className="mt-4">
+      <h3 className="text-sm font-medium text-muted-foreground mb-2">関連する質問:</h3>
+      <div className="flex flex-wrap gap-2">
+        {questions.map((question, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentQuestion(question)}
+            className="text-xs"
+          >
+            {question}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## 7. 実装ステップ
+
+### フェーズ1: 基本Q&A機能（2週間）
+- テキスト質問入力と回答表示の実装
+- Gemini APIとの基本連携
+- シンプルなUIの構築
+
+```tsx
+// TODO: Gemini APIとの基本連携
+async function setupGeminiAPI() {
+  // 実装
+}
+
+// TODO: 基本的な回答生成ロジック
+async function implementBasicAnswerGeneration() {
+  // 実装
+}
+```
+
+### フェーズ2: 拡張機能（2週間）
+- 音声入力・出力の実装
+- 関連質問生成機能の追加
+- 回答ソースのハイライト表示
+
+```tsx
+// TODO: 音声入力の実装
+function implementSpeechRecognition() {
+  // 実装
+}
+
+// TODO: 関連質問生成ロジック
+async function implementRelatedQuestionGeneration() {
+  // 実装
+}
+
+// TODO: 回答ソースのハイライト表示
+function implementSourceHighlighting() {
+  // 実装
+}
+```
+
+### フェーズ3: 高度化とUX改善（1週間）
+- 対話履歴の管理と文脈考慮
+- UIの洗練と使いやすさ向上
+- パフォーマンス最適化
+
+```tsx
+// TODO: 対話履歴の管理
+function implementConversationHistory() {
+  // 実装
+}
+
+// TODO: 文脈を考慮した回答生成
+async function implementContextAwareAnswers() {
+  // 実装
+}
+```
+
+## 8. テスト計画
+
+- 単体テスト: 各コンポーネントの機能検証
+- 統合テスト: Q&Aフロー全体のテスト
+- ユーザビリティテスト: 実際のシナリオでの質問応答精度評価
+- ブラウザ互換性テスト: 主要ブラウザでの動作確認
+
+```tsx
+// TODO: テストケースの実装
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+
+describe('QuestionInput', () => {
+  it('should submit question on Enter key press', () => {
+    // テスト実装
+  });
+});
+
+describe('QAPanel', () => {
+  it('should display answer after submission', async () => {
+    // テスト実装
+  });
+});
+```
+
+## 9. リスクと緩和策
+
+| リスク | 緩和策 |
+|-------|--------|
+| 質問に対する不適切または誤った回答 | プロンプト最適化、信頼度が低い場合の表示調整 |
+| 音声認識の精度問題 | テキスト確認ステップの追加、認識結果の編集機能 |
+| 複雑な質問への対応 | 質問の分解と段階的処理、明確化質問の生成 |
+| APIコストの増加 | キャッシング、使用量の監視とリミット設定 |
+
+## 10. パフォーマンス考慮事項
+
+- 長文ドキュメントの効率的な処理（要約または分割）
+- 回答生成の遅延とUXのバランス（ローディング表示の最適化）
+- 頻出質問のキャッシング
+- 処理の非同期化によるUI応答性の維持
