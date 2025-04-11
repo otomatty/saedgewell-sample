@@ -1,0 +1,141 @@
+---
+title: 'React Queryの使用'
+description: 'Next.js Supabaseアプリケーションで非同期データフェッチを管理するためのReact Queryの使用方法を学ぶ'
+icon: 'database'
+order: 4
+---
+React Queryは、アプリケーションでの非同期データフェッチを管理するための最高のReactライブラリです。Next.js Supabaseでの使用方法を学びましょう。
+
+# 概要
+
+MakerkitではクライアントサイドのデータフェッチにReact Queryを使用しています。これにより、人間工学に基づいたAPIを使用して、Supabaseデータベースからデータをフェッチし、クライアントサイドで表示することができます。
+
+**注意**: React Hooksを使用するため、コンポーネントの先頭に`use client`ディレクティブを記述する必要があります。このコードをページ内で使用する場合は、別のコンポーネント（`use client`付き）を作成し、ページにインポートしてください。
+
+# データの取得
+
+以下は、React Queryを使用してタスクリストを取得する例です：
+
+```tsx
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+
+function TasksList(accountId: string) {
+  const client = useSupabase();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['tasks', accountId],
+    queryFn: async () => {
+      const { data, error } = await client
+        .from('tasks')
+        .select('*')
+        .eq('account_id', accountId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    }
+  });
+
+  if (isLoading) {
+    return <div>読み込み中...</div>;
+  }
+
+  if (error) {
+    return <div>タスクの読み込みに失敗しました</div>;
+  }
+
+  return (
+    <ul>
+      {data.map(task => (
+        <li key={task.id}>{task.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+`useSupabase`フックを活用することで、ReactコンポーネントからSupabase DBのデータに直接アクセスできます。
+
+# データの更新
+
+同様に、React Queryを使用してデータの更新（ミューテーション）も行えます：
+
+```tsx
+import { useMutation } from '@tanstack/react-query';
+import { useSupabase } from '@kit/supabase/hooks/use-supabase';
+
+function CreateTaskForm() {
+  const client = useSupabase();
+  const mutation = useMutation({
+    mutationFn: async (data) => {
+      const { data: result, error } = await client
+        .from('tasks')
+        .insert({
+          title: data.title,
+          description: data.description,
+          account_id: data.accountId,
+        })
+        .select('*')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return result;
+    },
+  });
+
+  const handleSubmit = async (data) => {
+    try {
+      await mutation.mutateAsync(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="text" name="title" />
+      <input type="text" name="description" />
+      <button type="submit">タスクを作成</button>
+    </form>
+  );
+}
+```
+
+# React Queryの利点
+
+1. **キャッシュ管理**
+   - データの自動キャッシュ
+   - キャッシュの自動更新
+   - キャッシュの無効化と再検証
+
+2. **ローディング状態の管理**
+   - `isLoading`、`isFetching`などの状態フラグ
+   - エラー状態の自動管理
+
+3. **最適化**
+   - 重複リクエストの自動排除
+   - バックグラウンドでの更新
+   - リトライ機能
+
+# ベストプラクティス
+
+1. **クエリキーの管理**
+   - 一意で予測可能なクエリキーを使用
+   - 依存関係を含めたクエリキーの設計
+
+2. **エラーハンドリング**
+   - エラーバウンダリーの使用
+   - ユーザーフレンドリーなエラーメッセージの表示
+
+3. **パフォーマンス最適化**
+   - 適切なキャッシュ設定
+   - 不要なリフェッチの防止
+   - 必要に応じたプリフェッチの活用

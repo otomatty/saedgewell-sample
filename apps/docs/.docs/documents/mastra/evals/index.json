@@ -1,0 +1,35 @@
+{
+  "title": "評価 (Evals)",
+  "description": "AIモデルとシステムの評価",
+  "order": 10,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "Mastraの評価システムの概要",
+      "order": 1
+    },
+    {
+      "name": "textual-evals",
+      "title": "テキスト評価",
+      "description": "テキスト出力の評価方法",
+      "order": 2
+    },
+    {
+      "name": "custom-evals",
+      "title": "カスタム評価",
+      "description": "独自の評価メトリクスの作成",
+      "order": 3
+    },
+    {
+      "name": "running-in-ci",
+      "title": "CIでの実行",
+      "description": "CI/CDパイプラインでの評価の実行",
+      "order": 4
+    }
+  ]
+}

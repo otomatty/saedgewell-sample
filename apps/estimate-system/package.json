@@ -1,0 +1,29 @@
+{
+  "name": "estimate-system",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "mastra dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.10",
+    "@google/generative-ai": "^0.24.0",
+    "@kit/supabase": "workspace:*",
+    "@mastra/core": "^0.8.2",
+    "@mastra/deployer-vercel": "^0.1.17",
+    "@supabase/supabase-js": "^2.49.4",
+    "mastra": "^0.4.8",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

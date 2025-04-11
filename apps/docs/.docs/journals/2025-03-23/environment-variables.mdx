@@ -1,0 +1,127 @@
+---
+title: モノレポにおける環境変数管理
+date: '2024-03-23'
+authors: ['saedgewell-team']
+tags: ['環境変数', 'モノレポ', 'Next.js', 'Turbo']
+---
+
+# モノレポにおける環境変数管理
+
+## 環境変数ファイルの読み込み順序
+
+Turboを使用したモノレポでは、環境変数は以下の順序で読み込まれます：
+
+1. **ルートの環境変数ファイル**（`./.env`, `./.env.local`, `./.env.[環境名]`）
+2. **各ワークスペース（アプリ）の環境変数ファイル**（`./apps/web/.env`など）
+
+同じ名前の環境変数がある場合、後から読み込まれたものが優先されます。
+
+### Next.jsの環境変数ファイル優先順位
+
+プロジェクト内の各Next.jsアプリ（web, docs, adminなど）では、次の優先順位で環境変数が読み込まれます：
+
+```
+1. process.env（OSレベルで設定された環境変数）
+2. .env.development.local, .env.production.local など
+3. .env.development, .env.production など
+4. .env.local
+5. .env
+```
+
+## 環境変数ファイルの種類と役割
+
+```
+.env                  → 全環境共通、GitHubに公開可能な値
+.env.local            → 全環境共通、秘密情報（Git管理外）
+.env.development      → 開発環境のみ、公開可能な値
+.env.development.local → 開発環境のみ、秘密情報（Git管理外）
+.env.production       → 本番環境のみ、公開可能な値
+.env.production.local → 本番環境のみ、秘密情報（Git管理外）
+.env.docker           → Docker環境用
+```
+
+## 現在のプロジェクト構成
+
+現在のプロジェクトでは以下のような構成になっています：
+
+- **ルートレベル**：`.env`, `.env.development`, `.env.local`, `.env.production`, `.env.docker`
+- **web**：`.env`, `.env.development`, `.env.local`, `.env.production`, `.env.docker`
+- **docs**：`.env`, `.env.development`, `.env.local`, `.env.production`
+- **admin**：`.env`, `.env.development`, `.env.local`, `.env.production`
+
+## 環境変数の読み込み方法
+
+現在のプロジェクトでは、環境変数は以下の方法で読み込まれています：
+
+```json
+// package.json の例
+"dev": "bun run with-env next dev --turbo | pino-pretty -c",
+"with-env": "dotenv -e ./.env.local --",
+```
+
+これにより：
+1. `with-env`スクリプトが`.env.local`を読み込む
+2. その環境でNext.jsの開発サーバーを起動
+3. 開発/本番環境に応じて`.env.development`または`.env.production`も読み込まれる
+
+## 共通変数の配置について
+
+複数のアプリケーションで共通の環境変数は**ルートの環境変数ファイルに配置**するのがベストプラクティスです。
+
+### メリット
+- 重複の排除：各アプリで同じ変数を複数回定義する必要がなくなる
+- 一貫性の確保：すべてのアプリが同じ値を使用することを保証できる
+- 管理の容易さ：変更が必要な場合、1箇所だけ修正すれば良い
+
+### 実装例
+
+```bash
+# ルートの.env.development（共通変数）
+NEXT_PUBLIC_API_BASE_URL=https://api-dev.example.com
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# apps/web/.env.development（Webアプリ固有の変数）
+NEXT_PUBLIC_WEB_FEATURE_FLAG=true
+
+# apps/admin/.env.development（管理画面固有の変数）
+NEXT_PUBLIC_ADMIN_FEATURE_FLAG=true
+```
+
+## ベストプラクティス
+
+1. **共通変数はルートに**：すべてのアプリで共通の変数はルートの`.env`ファイルに配置
+2. **アプリ固有の変数**：各アプリディレクトリの`.env`ファイルに配置
+3. **秘密情報は`.env.local`**：API keyなどの秘密情報は`.env.*.local`に配置（Git管理外）
+4. **クライアント側で使用する変数**：Next.jsでは`NEXT_PUBLIC_`プレフィックスが必要
+
+## 特殊なケース：Docker環境
+
+プロジェクトでは、Docker環境用に特別な設定があります。例として、以下のようなコードが使用されています：
+
+```typescript
+const url = isBrowser
+  ? process.env.NEXT_PUBLIC_SUPABASE_URL
+  : process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+```
+
+これはブラウザ環境とサーバー環境（特にDocker環境）で異なるURLを使い分けるための工夫です。
+
+## 環境変数のデバッグ方法
+
+環境変数が正しく読み込まれているか確認するには：
+
+```js
+// 一時的なデバッグコード（pages/_app.js などに追加）
+console.log('環境変数確認:', {
+  NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_VARS: Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC_'))
+});
+```
+
+または、スクリプトで確認：
+
+```bash
+echo 'console.log("環境変数テスト:", process.env.NODE_ENV); console.log("NEXT_PUBLIC変数一覧:", Object.keys(process.env).filter(key => key.startsWith("NEXT_PUBLIC")));' > env-test.js && bun run env-test.js
+```

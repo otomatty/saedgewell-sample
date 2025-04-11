@@ -1,0 +1,109 @@
+---
+title: '外部マーケティングウェブサイト'
+description: 'Next.js Supabase Turboスターターキットで外部マーケティングウェブサイトと連携するようMakerkitを設定する方法を学ぶ'
+icon: 'external-link'
+order: 11
+---
+
+# Next.js Supabase Turboスターターキットの外部マーケティングウェブサイト
+
+多くのチームは、SaaSアプリケーション用に外部マーケティングウェブサイトを作成することを好みます。これにより、ウェブサイトのデザインとコンテンツをより細かく制御できます。例えば、Framer、Webflow、WordPressなどのサービスを使用する場合です。
+
+この場合、すべてのマーケティングページを外部マーケティングウェブサイトにリダイレクトする必要があります。`apps/web/middleware.ts`ファイルのミドルウェアを調整することでこれを行うことができます。
+
+すべてのマーケティングページのリストを取得し、それらのページをすべて外部マーケティングウェブサイトにリダイレクトするミドルウェアを追加します。
+
+```tsx
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  if (isMarketingPage(req)) {
+    return NextResponse.redirect('https://your-external-website.com' + req.nextUrl.pathname);
+  }
+  // ミドルウェアの残りの部分は変更しないでください
+}
+
+function isMarketingPage(req: NextRequest) {
+  const marketingPages = [
+    '/pricing',
+    '/faq',
+    '/contact',
+    '/about',
+    '/home',
+    '/privacy-policy',
+    '/terms-and-conditions',
+    '/cookie-policy',
+  ];
+  return marketingPages.includes(req.nextUrl.pathname);
+}
+```
+
+新しいマーケティングページを追加する場合は、新しいページパスで`isMarketingPage`関数を更新する必要があります。
+
+## 外部マーケティングウェブサイトの利点
+
+外部マーケティングウェブサイトを使用する主な利点は以下の通りです：
+
+1. **専門的なマーケティングツールの活用**: Webflow、WordPress、Framerなどの専門的なツールを使用して、より魅力的なマーケティングサイトを構築できます
+2. **マーケティングチームの自律性**: 技術チームに依存せずに、マーケティングチームがコンテンツを更新できます
+3. **パフォーマンスの最適化**: マーケティングサイトとアプリケーションを分離することで、それぞれを個別に最適化できます
+4. **異なる技術スタックの使用**: アプリケーションとは異なる技術スタックを使用して、マーケティングサイトを構築できます
+
+## 認証フローの考慮事項
+
+外部マーケティングウェブサイトを使用する場合、認証フローに注意する必要があります。ユーザーが外部サイトからアプリケーションにシームレスに移行できるようにするために、以下の点を考慮してください：
+
+1. **ログインリンク**: 外部マーケティングサイトからアプリケーションのログインページへの明確なリンクを提供します
+2. **サインアップリンク**: 外部マーケティングサイトからアプリケーションのサインアップページへの明確なリンクを提供します
+3. **一貫したブランディング**: 外部マーケティングサイトとアプリケーションの間で一貫したブランディングを維持し、ユーザーエクスペリエンスを向上させます
+
+## 実装例
+
+以下は、より複雑なリダイレクトロジックの実装例です：
+
+```tsx
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(req: NextRequest) {
+  // 認証関連のパスはリダイレクトしない
+  if (isAuthPath(req)) {
+    return;
+  }
+  
+  // マーケティングページをリダイレクト
+  if (isMarketingPage(req)) {
+    const externalUrl = new URL(req.nextUrl.pathname, 'https://your-external-website.com');
+    
+    // クエリパラメータを保持
+    const searchParams = req.nextUrl.searchParams;
+    searchParams.forEach((value, key) => {
+      externalUrl.searchParams.append(key, value);
+    });
+    
+    return NextResponse.redirect(externalUrl);
+  }
+  
+  // ミドルウェアの残りの部分は変更しないでください
+}
+
+function isAuthPath(req: NextRequest) {
+  const authPaths = ['/auth', '/api/auth'];
+  return authPaths.some(path => req.nextUrl.pathname.startsWith(path));
+}
+
+function isMarketingPage(req: NextRequest) {
+  const marketingPages = [
+    '/pricing',
+    '/faq',
+    '/contact',
+    '/about',
+    '/home',
+    '/privacy-policy',
+    '/terms-and-conditions',
+    '/cookie-policy',
+  ];
+  return marketingPages.includes(req.nextUrl.pathname);
+}
+```
+
+この例では、認証関連のパスはリダイレクトせず、マーケティングページのみをリダイレクトします。また、クエリパラメータも保持されます。

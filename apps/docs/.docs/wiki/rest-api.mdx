@@ -1,0 +1,45 @@
+---
+title: REST API
+description: RESTful APIの概念と設計原則
+tags: technical
+---
+
+# REST API
+
+REST（Representational State Transfer）は、Webサービスを設計するためのアーキテクチャスタイルです。RESTful APIは、HTTPプロトコルを使用してリソースにアクセスし、操作するためのインターフェースを提供します。
+
+## 主な特徴
+
+- **ステートレス**: 各リクエストは独立しており、サーバーはクライアントの状態を保持しません。
+- **リソース指向**: すべてのリソースは一意のURIで識別されます。
+- **HTTPメソッド**: GET, POST, PUT, DELETE などのHTTPメソッドを使用してリソースを操作します。
+- **表現**: リソースはJSON, XML, HTMLなど様々な形式で表現できます。
+
+## RESTful APIの設計原則
+
+1. **URIでリソースを表現する**
+   ```
+   /users           # ユーザーリソースのコレクション
+   /users/123       # ID 123のユーザーリソース
+   ```
+
+2. **HTTPメソッドでアクションを表現する**
+   - GET: リソースの取得
+   - POST: リソースの作成
+   - PUT: リソースの更新
+   - DELETE: リソースの削除
+
+3. **適切なHTTPステータスコードを返す**
+   - 200: OK
+   - 201: Created
+   - 400: Bad Request
+   - 404: Not Found
+   - 500: Internal Server Error
+
+## RESTful APIの利点
+
+- シンプルで理解しやすい
+- スケーラブル
+- キャッシュ可能
+- プラットフォーム非依存
+- 広く採用されている標準 

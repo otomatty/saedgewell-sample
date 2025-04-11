@@ -1,0 +1,13 @@
+{
+  "exports": {
+    "./page-header": "./src/custom/page-header/index.tsx",
+    "./section-title": "./src/custom/section-title/index.tsx",
+    "./basic-hero": "./src/custom/basic-hero/index.tsx",
+    "./back-link": "./src/custom/back-link/index.tsx",
+    "./responsive-dialog": "./src/custom/responsive-dialog/index.tsx",
+    "./markdown": "./src/custom/markdown/index.tsx",
+    "./icons": "./src/custom/icons/index.tsx",
+    "./theme-toggle": "./src/custom/theme-toggle/index.tsx",
+    "./pagination": "./src/custom/pagination/index.tsx"
+  }
+}

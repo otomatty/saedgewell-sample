@@ -1,0 +1,29 @@
+{
+  "title": "使い方",
+  "description": "Mastraの使い方に関するガイド",
+  "order": 2,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "installation",
+      "title": "ローカルインストール",
+      "description": "Mastra を実行するには、LLM (大規模言語モデル) へのアクセスが必要です。通常、OpenAI、Anthropic、Google Gemini などの LLM プロバイダーから API キーを取得します。Ollama を使用してローカル LLM で Mastra を実行することもできます。",
+      "order": 1
+    },
+    {
+      "name": "project-structure",
+      "title": "プロジェクト構成",
+      "description": "Mastra でフォルダとファイルを整理するためのガイド",
+      "order": 2
+    },
+    {
+      "name": "agent-code-editor-tools",
+      "title": "エージェントコードエディタツール",
+      "description": "Mastraのエージェントコードエディタツール",
+      "order": 3
+    }
+  ]
+}

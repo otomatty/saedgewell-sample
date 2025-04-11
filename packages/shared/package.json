@@ -1,0 +1,41 @@
+{
+  "name": "@kit/shared",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "build:vercel": "tsup",
+    "dev": "tsup --watch",
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "format": "biome format .",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    "./logger": "./src/logger/index.ts",
+    "./utils": "./src/utils/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./events": "./src/events/index.tsx"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@kit/tsconfig": "workspace:*",
+    "@types/react": "19.0.11",
+    "@types/react-dom": "19.0.4",
+    "tsup": "8.4.0",
+    "typescript": "5.8.2"
+  },
+  "dependencies": {
+    "pino": "9.6.0",
+    "@kit/types": "workspace:*",
+    "@supabase/supabase-js": "2.49.3"
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["src/*"]
+    }
+  }
+}

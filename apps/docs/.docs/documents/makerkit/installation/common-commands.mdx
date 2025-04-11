@@ -1,0 +1,139 @@
+---
+title: '一般的なコマンド'
+description: 'Next.js Supabase Turboスターターキットで作業するために知っておくべき一般的なコマンドについて学びます'
+icon: 'terminal'
+order: 6
+---
+
+# Next.js Supabase Turboスターターキットで知っておくべき一般的なコマンド
+
+Next.js Supabase Turboスターターキットで作業するために知っておくべき一般的なコマンドについて学びます。
+
+以下は、Next.js Supabase Turboスターターキットで作業する際に知っておくべき一般的なコマンドです。
+
+注意：プロジェクトを開始するためにこれらのコマンドは必要ありませんが、必要なときのために存在することを知っておくと便利です。
+
+## 依存関係のインストール
+
+依存関係をインストールするには、以下のコマンドを実行します：
+
+```bash
+pnpm i
+```
+
+このコマンドはプロジェクトに必要なすべての依存関係をインストールします。
+
+## 開発サーバーの起動
+
+Webアプリケーションの開発サーバーを起動するには：
+
+```bash
+pnpm run dev
+```
+
+## Supabase CLIコマンドの実行
+
+Supabaseは`apps/web`フォルダにインストールされています。Supabase CLIでコマンドを実行するには、以下を使用します：
+
+```bash
+pnpm run --filter web supabase <command>
+```
+
+例えば、Supabaseのドキュメントが以下のようなコマンドを推奨している場合：
+
+```bash
+supabase db link
+```
+
+以下のように実行します：
+
+```bash
+pnpm run --filter web supabase db link
+```
+
+## Supabaseの起動
+
+Supabaseを起動するには、以下を実行します：
+
+```bash
+pnpm run supabase:web:start
+```
+
+このコマンドはSupabase Webサーバーを起動します。
+
+## Stripeの起動
+
+課金システムをテストするには、以下のコマンドでStripeを起動します：
+
+```bash
+pnpm run stripe:listen
+```
+
+これによりWebhookがローカルマシンにルーティングされます。
+
+## Supabaseのリセット
+
+スキーマを更新した場合や新しく始める必要がある場合など、Supabaseデータベースをリセットするには、以下を実行します：
+
+```bash
+pnpm run supabase:web:reset
+```
+
+## Supabase型の生成
+
+Supabaseスキーマを更新した場合、以下を実行してクライアント用の最新の型を生成します：
+
+```bash
+pnpm run supabase:web:typegen
+```
+
+これはSupabaseスキーマが更新されるたびに行う必要があります。
+
+## テストの実行
+
+プロジェクトのテストを実行するには、以下を使用します：
+
+```bash
+pnpm run test
+```
+
+## プロジェクトのクリーニング
+
+プロジェクトをクリーニングするには、以下を実行します：
+
+```bash
+pnpm run clean:workspaces
+pnpm run clean
+```
+
+その後、依存関係を再インストールします：
+
+```bash
+pnpm i
+```
+
+## プロジェクトの型チェック
+
+プロジェクトの型チェックを行うには、以下を使用します：
+
+```bash
+pnpm run typecheck
+```
+
+## プロジェクトのリンティング
+
+ESLintを使用してプロジェクトをリンティングするには、以下を実行します：
+
+```bash
+pnpm run lint:fix
+```
+
+## プロジェクトのフォーマット
+
+Prettierを使用してプロジェクトをフォーマットするには、以下を実行します：
+
+```bash
+pnpm run format:fix
+```
+
+これらのコマンドは、プロジェクトを効率的に管理・維持するのに役立ちます。

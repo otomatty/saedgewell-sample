@@ -1,0 +1,107 @@
+{
+  "title": "Evals",
+  "description": "評価システムAPIリファレンス",
+  "order": 10,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "answer-relevancy",
+      "title": "AnswerRelevancy",
+      "description": "AnswerRelevancy評価のリファレンス",
+      "order": 1
+    },
+    {
+      "name": "bias",
+      "title": "Bias",
+      "description": "Bias評価のリファレンス",
+      "order": 2
+    },
+    {
+      "name": "completeness",
+      "title": "Completeness",
+      "description": "Completeness評価のリファレンス",
+      "order": 3
+    },
+    {
+      "name": "content-similarity",
+      "title": "ContentSimilarity",
+      "description": "ContentSimilarity評価のリファレンス",
+      "order": 4
+    },
+    {
+      "name": "context-position",
+      "title": "ContextPosition",
+      "description": "ContextPosition評価のリファレンス",
+      "order": 5
+    },
+    {
+      "name": "context-precision",
+      "title": "ContextPrecision",
+      "description": "ContextPrecision評価のリファレンス",
+      "order": 6
+    },
+    {
+      "name": "context-relevancy",
+      "title": "ContextRelevancy",
+      "description": "ContextRelevancy評価のリファレンス",
+      "order": 7
+    },
+    {
+      "name": "contextual-recall",
+      "title": "ContextualRecall",
+      "description": "ContextualRecall評価のリファレンス",
+      "order": 8
+    },
+    {
+      "name": "faithfulness",
+      "title": "Faithfulness",
+      "description": "Faithfulness評価のリファレンス",
+      "order": 9
+    },
+    {
+      "name": "hallucination",
+      "title": "Hallucination",
+      "description": "Hallucination評価のリファレンス",
+      "order": 10
+    },
+    {
+      "name": "keyword-coverage",
+      "title": "KeywordCoverage",
+      "description": "KeywordCoverage評価のリファレンス",
+      "order": 11
+    },
+    {
+      "name": "prompt-alignment",
+      "title": "PromptAlignment",
+      "description": "PromptAlignment評価のリファレンス",
+      "order": 12
+    },
+    {
+      "name": "summarization",
+      "title": "Summarization",
+      "description": "Summarization評価のリファレンス",
+      "order": 13
+    },
+    {
+      "name": "textual-difference",
+      "title": "TextualDifference",
+      "description": "TextualDifference評価のリファレンス",
+      "order": 14
+    },
+    {
+      "name": "tone-consistency",
+      "title": "ToneConsistency",
+      "description": "ToneConsistency評価のリファレンス",
+      "order": 15
+    },
+    {
+      "name": "toxicity",
+      "title": "Toxicity",
+      "description": "Toxicity評価のリファレンス",
+      "order": 16
+    }
+  ]
+}

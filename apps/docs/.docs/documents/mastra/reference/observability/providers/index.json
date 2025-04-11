@@ -1,0 +1,65 @@
+{
+  "title": "プロバイダー",
+  "description": "可観測性プロバイダー",
+  "order": 1,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "可観測性プロバイダーの概要",
+      "order": 1
+    },
+    {
+      "name": "signoz",
+      "title": "SigNoz",
+      "description": "SigNozプロバイダーのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "braintrust",
+      "title": "Braintrust",
+      "description": "Braintrustプロバイダーのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "langsmith",
+      "title": "LangSmith",
+      "description": "LangSmithプロバイダーのリファレンス",
+      "order": 4
+    },
+    {
+      "name": "langfuse",
+      "title": "Langfuse",
+      "description": "Langfuseプロバイダーのリファレンス",
+      "order": 5
+    },
+    {
+      "name": "langwatch",
+      "title": "LangWatch",
+      "description": "LangWatchプロバイダーのリファレンス",
+      "order": 6
+    },
+    {
+      "name": "new-relic",
+      "title": "New Relic",
+      "description": "New Relicプロバイダーのリファレンス",
+      "order": 7
+    },
+    {
+      "name": "traceloop",
+      "title": "Traceloop",
+      "description": "Traceloopプロバイダーのリファレンス",
+      "order": 8
+    },
+    {
+      "name": "laminar",
+      "title": "Laminar",
+      "description": "Laminarプロバイダーのリファレンス",
+      "order": 9
+    }
+  ]
+}

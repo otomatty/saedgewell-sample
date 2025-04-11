@@ -1,0 +1,35 @@
+{
+  "title": "CLI",
+  "description": "Mastraコマンドラインインターフェースのリファレンス",
+  "order": 3,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "mastra-init",
+      "title": "mastra init",
+      "description": "mastra initコマンドのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "mastra-dev",
+      "title": "mastra dev",
+      "description": "mastra devコマンドのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "mastra-deploy",
+      "title": "mastra deploy",
+      "description": "mastra deployコマンドのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "mastra-build",
+      "title": "mastra build",
+      "description": "mastra buildコマンドのリファレンス",
+      "order": 4
+    }
+  ]
+}

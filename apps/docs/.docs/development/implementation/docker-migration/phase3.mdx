@@ -1,0 +1,309 @@
+# フェーズ3: アプリケーション移行とNginx設定
+
+このフェーズでは、モノレポ内の各Next.jsアプリケーションをDockerコンテナ化し、Nginxを使用してサブドメインルーティングを設定します。
+
+## 目標
+
+- [x] Next.jsアプリケーション用のDockerfile作成
+- [x] Turborepoキャッシュの最適化
+- [x] Nginxによるサブドメインルーティングの実装
+- [x] 認証統合とセッション管理の設定
+- [x] 開発環境と本番環境の両方に対応
+
+## タスク
+
+### 1. アプリケーションのコンテナ化
+
+- [x] Webアプリ用Dockerfile (`docker/web/Dockerfile`)
+  ```dockerfile
+  # Web アプリケーション用 Dockerfile
+  FROM oven/bun:1 AS base
+
+  # ベースイメージの設定
+  WORKDIR /app
+
+  # 依存関係のファイルをコピー
+  COPY package.json bun.lock tsconfig.json ./
+
+  # アプリケーションディレクトリの作成とpackage.jsonのコピー
+  RUN mkdir -p apps/docs apps/web apps/admin
+  COPY apps/docs/package.json ./apps/docs/
+  COPY apps/web/package.json ./apps/web/
+  COPY apps/admin/package.json ./apps/admin/
+
+  # 共有パッケージのコピー
+  COPY packages ./packages/
+  COPY tooling ./tooling/
+
+  # 依存関係をインストールする前にpreinstallスクリプトをスキップ
+  ENV BUN_INSTALL_SKIP_PREINSTALL=true
+
+  # 依存関係をインストール
+  RUN bun install
+
+  # 全てのソースコードをコピー
+  COPY . .
+
+  # 開発モードでの起動
+  ENV PORT=7510
+  EXPOSE 7510
+
+  CMD ["bun", "run", "dev:web"]
+  ```
+
+- [x] Docker Compose設定の更新 (`docker-compose.yml`)
+  ```yaml
+  version: '3.8'
+  
+  services:
+    web:
+      build:
+        context: .
+        dockerfile: docker/web/Dockerfile
+      environment:
+        - NEXT_PUBLIC_SUPABASE_URL=http://supabase:54321
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+        - NEXT_PUBLIC_SITE_URL=http://web.saedgewell.test
+      volumes:
+        - .:/app
+        - node_modules:/app/node_modules
+        - turbo_cache:/app/.turbo
+        - bun_cache:/app/.bun-cache
+      networks:
+        - saedgewell_net
+    
+    docs:
+      build:
+        context: .
+        dockerfile: docker/docs/Dockerfile
+      environment:
+        - NEXT_PUBLIC_SUPABASE_URL=http://supabase:54321
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+        - NEXT_PUBLIC_SITE_URL=http://docs.saedgewell.test
+      volumes:
+        - .:/app
+        - node_modules:/app/node_modules
+        - turbo_cache:/app/.turbo
+        - bun_cache:/app/.bun-cache
+      networks:
+        - saedgewell_net
+    
+    admin:
+      build:
+        context: .
+        dockerfile: docker/admin/Dockerfile
+      environment:
+        - NEXT_PUBLIC_SUPABASE_URL=http://supabase:54321
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+        - NEXT_PUBLIC_SITE_URL=http://admin.saedgewell.test
+      volumes:
+        - .:/app
+        - node_modules:/app/node_modules
+        - turbo_cache:/app/.turbo
+        - bun_cache:/app/.bun-cache
+      networks:
+        - saedgewell_net
+    
+    nginx:
+      image: nginx:alpine
+      ports:
+        - "80:80"
+      volumes:
+        - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+        - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      depends_on:
+        - web
+        - docs
+        - admin
+        - supabase
+      networks:
+        - saedgewell_net
+  
+  networks:
+    saedgewell_net:
+      driver: bridge
+  
+  volumes:
+    node_modules:
+    turbo_cache:
+    bun_cache:
+    supabase_data:
+    postgres_data:
+  ```
+
+### 2. Nginxの設定
+
+- [x] Nginxの基本設定 (`docker/nginx/conf.d/default.conf`)
+  ```nginx
+  # 共通のアップストリーム設定
+  upstream web_upstream {
+    server web:7510;
+  }
+  
+  upstream docs_upstream {
+    server docs:7511;
+  }
+  
+  upstream admin_upstream {
+    server admin:7512;
+  }
+  
+  # 共通のプロキシ設定
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+  
+  # WebSocket用の共通設定
+  proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection $connection_upgrade;
+  proxy_set_header Host $host;
+  proxy_cache_bypass $http_upgrade;
+  
+  # Webアプリケーション
+  server {
+    listen 80;
+    server_name web.saedgewell.test;
+  
+    location / {
+      proxy_pass http://web_upstream;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Host $host;
+  
+      # WebSocket設定
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }
+  
+  # ドキュメントサイト
+  server {
+    listen 80;
+    server_name docs.saedgewell.test;
+  
+    location / {
+      proxy_pass http://docs_upstream;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Host $host;
+  
+      # WebSocket設定
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }
+  
+  # 管理パネル
+  server {
+    listen 80;
+    server_name admin.saedgewell.test;
+  
+    location / {
+      proxy_pass http://admin_upstream;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Host $host;
+  
+      # WebSocket設定
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }
+  ```
+
+### 3. 認証統合
+
+- [x] 認証ミドルウェアの設定 (`apps/shared/middleware/auth.ts`)
+  ```typescript
+  import { NextResponse, type NextRequest } from 'next/server'
+  import { createServerSupabaseClient } from '@/packages/supabase/auth/client'
+  
+  export async function middleware(request: NextRequest) {
+    const response = NextResponse.next()
+    const supabase = createServerSupabaseClient()
+  
+    try {
+      // セッションの更新
+      const { data: { session } } = await supabase.auth.getSession()
+  
+      // セッションが存在する場合、認証ヘッダーを設定
+      if (session) {
+        response.headers.set('X-Auth-Token', session.access_token)
+      }
+  
+      return response
+    } catch (error) {
+      console.error('Auth middleware error:', error)
+      return response
+    }
+  }
+  
+  export const config = {
+    matcher: [
+      // 静的ファイルを除外
+      '/((?!_next/static|_next/image|favicon.ico).*)',
+    ],
+  }
+  ```
+
+### 4. 開発環境スクリプト
+
+- [x] アプリケーション起動スクリプト (`scripts/dev/start-apps.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+  
+  echo "アプリケーションを起動しています..."
+  
+  # 既存のプロセスをチェック
+  ./scripts/dev/check-supabase.sh
+  
+  # Docker環境を起動
+  docker compose up -d
+  
+  # ヘルスチェック
+  echo "サービスの起動を確認しています..."
+  sleep 5
+  
+  for APP in web docs admin; do
+    curl -s -o /dev/null -w "%{http_code}" http://$APP.saedgewell.test | grep -q "200" && {
+      echo "✅ $APP.saedgewell.test は正常に起動しています"
+    } || {
+      echo "❌ $APP.saedgewell.test の起動に問題があります"
+    }
+  done
+  
+  echo "すべてのアプリケーションが起動しました！"
+  echo ""
+  echo "アクセスURL:"
+  echo "- Web: http://web.saedgewell.test"
+  echo "- Docs: http://docs.saedgewell.test"
+  echo "- Admin: http://admin.saedgewell.test"
+  ```
+
+## 検証ポイント
+
+- [x] 各アプリケーションが正常に起動するか
+- [x] サブドメインルーティングが正しく機能するか
+- [x] ホットリロードが機能するか
+- [x] 認証状態が適切に共有されるか
+- [x] WebSocketが正常に動作するか
+
+## エラーと解決策
+
+| エラー | 解決策 |
+|-------|--------|
+| ビルドエラー | Dockerfileの設定を確認、依存関係の解決を確認 |
+| ホットリロードが機能しない | ボリュームマウントとファイル監視の設定を確認 |
+| サブドメインにアクセスできない | Nginxの設定とホストファイルの設定を確認 |
+| WebSocket接続エラー | Nginxの`upgrade`ヘッダー設定を確認 |
+| 認証エラー | Cookie設定とミドルウェアの設定を確認 |
+
+## 次のステップ
+
+✅ フェーズ3が完了しました。[フェーズ4: 最適化とテスト](./phase4.md)に進みます。 

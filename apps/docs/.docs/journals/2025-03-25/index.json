@@ -1,0 +1,295 @@
+{
+  "date": "2025-03-25",
+  "entries": [
+    {
+      "id": "docker-migration-conflict-resolution",
+      "title": "Docker移行コンフリクト解消手順",
+      "description": "",
+      "tags": [
+        "Docker",
+        "移行",
+        "コンフリクト解消"
+      ]
+    },
+    {
+      "id": "docker-package-install",
+      "title": "Dockerコンテナにパッケージをインストールする方法",
+      "description": "",
+      "tags": [
+        "docker",
+        "package-management",
+        "bun",
+        "troubleshooting"
+      ]
+    },
+    {
+      "id": "feature-docker-migration-to-main-merge-env-and-app-refactor",
+      "title": "feature/docker-migrationブランチからmainブランチへのマージ作業: 環境構築とアプリケーション構造改善",
+      "description": "",
+      "tags": [
+        "Docker",
+        "マージ",
+        "移行",
+        "アプリケーション構造",
+        "環境構築",
+        "Nginx",
+        "Supabase"
+      ]
+    },
+    {
+      "id": "journal-directory-automation",
+      "title": "ジャーナルディレクトリ自動作成機能の改善",
+      "description": "bunを使った環境に合わせてジャーナルディレクトリの自動作成機能とコミット情報取得機能を改善",
+      "tags": [
+        "journals",
+        "automation",
+        "bun",
+        "typescript"
+      ]
+    },
+    {
+      "id": "journal-entry-ai-title-generator",
+      "title": "AIタイトル生成機能を使ったジャーナルエントリー作成",
+      "description": "AIを活用してタイトル候補を生成し、ジャーナルエントリーを効率的に作成する方法",
+      "tags": [
+        "Journal",
+        "AI",
+        "Productivity",
+        "Documentation"
+      ]
+    },
+    {
+      "id": "ts-server-problem",
+      "title": "TypeScript言語サーバーの問題と解決策",
+      "description": "",
+      "tags": [
+        "TypeScript",
+        "VSCode",
+        "TS Server",
+        "Performance"
+      ]
+    },
+    {
+      "id": "website-revamp-completion-report",
+      "title": "ウェブサイト改修完了報告",
+      "description": "",
+      "tags": [
+        "ウェブサイト",
+        "改修",
+        "完了報告"
+      ]
+    }
+  ],
+  "commits": [
+    {
+      "message": "feat: スクリプト修正と問題解決に関するドキュメントを追加し、タグを更新\n\n- 新しいエントリー「スクリプト修正と問題解決」を追加し、スクリプトのエラーとその修正内容を詳細に記述\n- 既存のエントリーにタグを追加し、検索性を向上\n- 手動同期テスト手順のタグを更新し、関連性を強化",
+      "sha": "8db28df1592d46b3b621ea31ad8e428045ea8f95",
+      "date": "2025-03-25T18:10:05Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/8db28df1592d46b3b621ea31ad8e428045ea8f95",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 119,
+      "deletions": 2
+    },
+    {
+      "message": "feat: 新しいジャーナルエントリー作成スクリプトと手動同期テスト手順を追加\n\n- AI支援によるタイトル生成機能を持つジャーナルエントリー作成スクリプトを新規作成\n- GitHub Personal Access Tokenの設定手順を含む手動同期テスト手順を追加\n- 日記情報の更新スクリプトを改善し、GitHubからのコミット情報取得機能を実装\n- 不要なスクリプトを削除し、プロジェクトの整頓を実施",
+      "sha": "b2482a3967642c71f6afb121bc7c11ab54e82a6c",
+      "date": "2025-03-25T18:02:00Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/b2482a3967642c71f6afb121bc7c11ab54e82a6c",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 204,
+      "deletions": 148
+    },
+    {
+      "message": "feat: 公開リポジトリとの同期機能を追加\n\n- GitHub Actionsを使用して、プライベートリポジトリから公開リポジトリへの自動同期を実装\n- GitHub Personal Access Tokenの設定手順をドキュメント化\n- 手動での同期テスト手順を追加し、スクリプトの使用方法を明確化\n- 同期対象のディレクトリとファイルを指定し、不要な情報を除外する処理を実装",
+      "sha": "b8f8692fb7ef4ecba260c2b243402a93653d9574",
+      "date": "2025-03-25T17:07:02Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/b8f8692fb7ef4ecba260c2b243402a93653d9574",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 275,
+      "deletions": 0
+    },
+    {
+      "message": "chore: 不要なファイルと設定を削除し、READMEを更新\n\n- favicon.icoファイルを削除\n- 不要な画像ファイルを一括削除\n- Supabase関連の設定ファイルを削除し、プロジェクトのクリーンアップを実施\n- README.mdを更新し、プロジェクトの目的と主要機能を明確化",
+      "sha": "773e87d81adaadb43589bb59401ba16767c0fd7b",
+      "date": "2025-03-25T16:57:13Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/773e87d81adaadb43589bb59401ba16767c0fd7b",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 13,
+      "deletions": 7018
+    },
+    {
+      "message": "feat: Docker移行に関するドキュメントを追加し、環境構築手順を整理\n\n- Docker環境への移行に伴うコンフリクト解消手順を新規作成\n- 環境変数の設定とミドルウェアの改善に関するドキュメントを追加\n- Docker移行に関する詳細な作業記録を整理し、可読性を向上\n- 不要なPRテンプレートファイルを削除し、ドキュメントの整備を実施",
+      "sha": "9880ca9b4fffc13b20a61dd0311b91e819991237",
+      "date": "2025-03-25T16:13:43Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/9880ca9b4fffc13b20a61dd0311b91e819991237",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 992,
+      "deletions": 336
+    },
+    {
+      "message": "chore: 不要なPRテンプレートファイルを削除",
+      "sha": "162054f2c480ff7fc78bef19e35bcbf1c26404d0",
+      "date": "2025-03-25T15:50:34Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/162054f2c480ff7fc78bef19e35bcbf1c26404d0",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 0,
+      "deletions": 137
+    },
+    {
+      "message": "Merge pull request #6 from otomatty/feature/docker-migration-merge-main\n\nfeat: Supabaseクライアントのインポートパスを修正し、新しいScrapboxクライアントを追加",
+      "sha": "425fc85b94d2c0eb61593add3224b663afbf64f1",
+      "date": "2025-03-25T15:33:33Z",
+      "authorName": "AkimasaSugai",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/425fc85b94d2c0eb61593add3224b663afbf64f1",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 15770,
+      "deletions": 6331
+    },
+    {
+      "message": "feat: Supabaseクライアントのインポートパスを修正し、新しいScrapboxクライアントを追加\n\n- Supabaseクライアントのインポートパスを`@kit/supabase/clients/server-client`から`@kit/supabase/server-client`に変更\n- Scrapbox APIクライアントを新規作成し、プロジェクトとページ一覧を取得する機能を実装\n- 既存のコードでSupabaseクライアントの使用を統一し、可読性を向上",
+      "sha": "8cf335e8ba6f43f63bde82ae42b329ceb97fd6a0",
+      "date": "2025-03-25T15:30:47Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/8cf335e8ba6f43f63bde82ae42b329ceb97fd6a0",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 347,
+      "deletions": 234
+    },
+    {
+      "message": "Merge remote-tracking branch 'origin/main' into feature/docker-migration-merge-main",
+      "sha": "0490d05f0cdcc09ae5eed7c195934c444f30254a",
+      "date": "2025-03-25T15:30:27Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/0490d05f0cdcc09ae5eed7c195934c444f30254a",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 11304,
+      "deletions": 35
+    },
+    {
+      "message": "feat: ジャーナル管理機能の改善と新機能の追加\n\n- 新しいジャーナルエントリー作成スクリプトを追加し、AIによるタイトル生成機能を実装\n- ジャーナルディレクトリの自動作成機能を改善し、日付ディレクトリの管理を効率化\n- Dockerコンテナにパッケージをインストールする方法に関する詳細なドキュメントを追加\n- フォーカス関連のユーティリティ関数を新規作成し、セッションの合計フォーカス時間を計算する機能を実装\n- 不要なファイルを削除し、プロジェクトのクリーンアップを実施\n- 依存関係を更新し、全体の整合性を向上",
+      "sha": "5031e8c7e6a56936095752c4fa85100bc07e8536",
+      "date": "2025-03-25T13:59:49Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/5031e8c7e6a56936095752c4fa85100bc07e8536",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 5089,
+      "deletions": 1473
+    },
+    {
+      "message": "feat: 管理画面のレイアウトと機能の改善\n\n- 新しい管理画面用のレイアウトコンポーネントを追加し、全体の構造を整理\n- サイドバーとヘッダーのコンポーネントを新規作成し、ナビゲーションを強化\n- 不要なマーケティング関連のコンポーネントを削除し、コードの可読性を向上\n- GitHub設定やサイト設定に関するアクションを新たに追加し、機能を拡張\n- CSSスタイルを整理し、全体のデザインを一貫性のあるものに改善\n- 不要なファイルを削除し、プロジェクトのクリーンアップを実施",
+      "sha": "93306ad135d7ee8ec926831bdef67b08f31c04cf",
+      "date": "2025-03-25T10:12:43Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/93306ad135d7ee8ec926831bdef67b08f31c04cf",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 2514,
+      "deletions": 4019
+    },
+    {
+      "message": "feat: 環境変数の設定とミドルウェアの改善\n\n- docker-compose.ymlでクッキーのドメイン設定を明示化し、テスト環境に対応\n- middleware.tsでホスト名に基づくドメイン設定を簡素化し、デバッグログを削除\n- 認証Cookieの処理ロジックを修正し、サブドメイン間での認証状態の共有を強化\n- 不要なデバッグ出力を削除し、コードの可読性を向上\n- 不要なファイルを削除し、プロジェクトのクリーンアップを実施",
+      "sha": "09872ac18fe2da9c1732cd1db33ce10d0fee9c4b",
+      "date": "2025-03-25T09:13:55Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/09872ac18fe2da9c1732cd1db33ce10d0fee9c4b",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 198,
+      "deletions": 330
+    },
+    {
+      "message": "Initial commit from Create Next App",
+      "sha": "f5f0eb2e67d274a64b7bec373713928deb9217ff",
+      "date": "2025-03-25T09:08:58Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/niinumakikaku/commit/f5f0eb2e67d274a64b7bec373713928deb9217ff",
+      "repoName": "niinumakikaku",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/niinumakikaku",
+      "additions": 514,
+      "deletions": 0
+    },
+    {
+      "message": "feat: Dockerパッケージのインストール方法に関するドキュメントを追加し、依存関係を更新\n\n- 新たに「Dockerコンテナにパッケージをインストールする方法」に関する詳細なドキュメントを作成\n- @google/generative-aiパッケージを依存関係に追加し、bun.lockを更新\n- GitHubCardコンポーネントの画像サイズ設定を追加し、レスポンシブデザインを改善",
+      "sha": "ec212f8976e88c4fa6f4083f3a2dc0fbce3f0f76",
+      "date": "2025-03-25T08:15:28Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/ec212f8976e88c4fa6f4083f3a2dc0fbce3f0f76",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 169,
+      "deletions": 0
+    },
+    {
+      "message": "feat: Docker環境の設定とデバッグ機能の追加\n\n- .env.dockerファイルにDocker固有の環境設定を追加し、Supabase接続情報を明示化\n- .env.exampleファイルにSupabase設定の例を追加し、環境変数の管理を改善\n- docker-compose.ymlに環境変数を追加し、Docker環境での一貫性を確保\n- middleware.tsにデバッグ用のログ出力を追加し、リクエスト情報を可視化\n- 認証関連の設定を見直し、セキュリティを強化\n- 不要なファイルやスクリプトを削除し、プロジェクトのクリーンアップを実施",
+      "sha": "6fbae168496d05024d89c3eb4b4dafd083ee32c2",
+      "date": "2025-03-25T08:05:03Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/6fbae168496d05024d89c3eb4b4dafd083ee32c2",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 2144,
+      "deletions": 6337
+    }
+  ]
+}

@@ -1,0 +1,619 @@
+---
+title: 'Docker環境でのSupabase認証実装とネットワーク問題の解決'
+date: '2025-03-21'
+author: 'Akimasa Sugai'
+tags: ['docker', 'supabase', 'authentication', 'network', 'next.js']
+---
+
+# Docker環境でのSupabase認証実装とネットワーク問題の解決
+
+## 概要
+
+Docker環境で実行されているNext.jsアプリケーションがローカルのSupabaseインスタンスと連携し、Google認証を含む機能を正常に動作させるための実装を行いました。異なるDockerネットワーク間の通信問題を解決し、ブラウザとサーバー側で適切なSupabase接続URLを使い分ける仕組みを構築しました。
+
+## 背景と課題
+
+### 初期状態の問題点
+
+Docker環境でNext.jsアプリケーションを実行する際、以下の問題が発生していました：
+
+1. **Dockerネットワークの分離**：アプリケーションコンテナ群（web、docs、admin）とSupabaseコンテナ群が異なるDockerネットワークに属しており、相互通信ができない状態でした。
+
+2. **JWT認証エラー**：Supabaseへの接続時に、JWTトークンの検証エラーが発生していました。
+
+3. **環境依存のURL問題**：
+   - ブラウザからは`localhost:54321`でSupabaseにアクセスする必要がある
+   - サーバー側（Docker内）からは内部ネットワーク名を使用する必要がある
+
+4. **Google認証のコールバックURL設定**：認証後のリダイレクトURLが正しく設定されておらず、認証フローが完了しない問題がありました。
+
+### 解決すべき課題
+
+1. Docker内のネットワーク設定を改善し、アプリケーションコンテナからSupabaseコンテナへの直接アクセスを可能にする
+
+2. 環境に応じて適切なSupabase接続URLを使い分ける仕組みを構築する：
+   - ブラウザ環境：`http://localhost:54321`
+   - Docker環境内部：`http://supabase_kong_saedgewell:8000`
+
+3. JWT認証を正しく構成し、Supabaseの認証機能を動作させる
+
+4. Google認証のためのリダイレクトURLを適切に設定する
+
+## 実装内容: Docker Compose設定の修正
+
+最初に`docker-compose.yml`ファイルを修正し、アプリケーションコンテナがSupabaseネットワークにアクセスできるようにしました。
+
+### Docker Composeのネットワーク設定改善
+
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile.dev
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SUPABASE_URL=http://supabase_kong_saedgewell:8000
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      - SUPABASE_AUTH_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+      - SUPABASE_AUTH_COOKIE_SECURE=false
+      - SUPABASE_AUTH_COOKIE_DOMAIN=.saedgewell.test
+      - SUPABASE_AUTH_COOKIE_SAME_SITE=lax
+    networks:
+      - saedgewell_net
+      - supabase_network_saedgewell  # Supabaseネットワークに接続
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+
+  docs:
+    build:
+      context: .
+      dockerfile: docker/docs/Dockerfile.dev
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SUPABASE_URL=http://supabase_kong_saedgewell:8000
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      - SUPABASE_AUTH_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+      - SUPABASE_AUTH_COOKIE_SECURE=false
+      - SUPABASE_AUTH_COOKIE_DOMAIN=.saedgewell.test
+      - SUPABASE_AUTH_COOKIE_SAME_SITE=lax
+    networks:
+      - saedgewell_net
+      - supabase_network_saedgewell  # Supabaseネットワークに接続
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/admin/Dockerfile.dev
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SUPABASE_URL=http://supabase_kong_saedgewell:8000
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      - SUPABASE_AUTH_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+      - SUPABASE_AUTH_COOKIE_SECURE=false
+      - SUPABASE_AUTH_COOKIE_DOMAIN=.saedgewell.test
+      - SUPABASE_AUTH_COOKIE_SAME_SITE=lax
+    networks:
+      - saedgewell_net
+      - supabase_network_saedgewell  # Supabaseネットワークに接続
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/certs:/etc/nginx/certs
+    depends_on:
+      - web
+      - docs
+      - admin
+    networks:
+      - saedgewell_net
+      - supabase_network_saedgewell  # Supabaseネットワークに接続
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+
+networks:
+  saedgewell_net:
+  supabase_network_saedgewell:
+    external: true  # 既存のSupabaseネットワークを参照
+
+volumes:
+  node_modules:
+```
+
+### 変更点の説明
+
+1. **ネットワーク設定の追加**：
+   - 各サービス（web、docs、admin、nginx）の`networks`セクションに`supabase_network_saedgewell`を追加しました。これにより、アプリケーションコンテナからSupabaseコンテナへの直接通信が可能になります。
+
+2. **環境変数の更新**：
+   - `NEXT_PUBLIC_SUPABASE_URL`の値を`http://supabase_kong_saedgewell:8000`に変更しました。これはDocker内部でのSupabase APIエンドポイントを指します。
+   - JWT認証に必要な`SUPABASE_AUTH_JWT_SECRET`を設定しました。
+   - Cookie設定を調整し、サブドメイン間でのCookie共有が可能になるように`SUPABASE_AUTH_COOKIE_DOMAIN`を`.saedgewell.test`に設定しました。
+
+3. **外部ネットワーク参照の追加**：
+   - `networks`セクションで`supabase_network_saedgewell`を`external: true`と定義し、既存のSupabaseネットワークを参照するようにしました。
+
+この修正により、アプリケーションコンテナからSupabaseコンテナへのネットワークアクセスが可能になり、Docker内部で直接Supabaseサービスを利用できるようになりました。 
+
+## 実装内容: Supabaseクライアント実装の修正
+
+Dockerコンテナ内とブラウザでの接続URLの違いに対応するため、Supabaseクライアントの実装を修正しました。
+
+### ブラウザクライアントの修正
+
+ブラウザクライアントの実装を修正し、実行環境に応じて適切なURLを選択するようにしました。
+
+```typescript
+/**
+ * browser-client.ts
+ *
+ * このファイルはブラウザ環境（クライアントサイド）でSupabaseクライアントを初期化するための
+ * 関数を提供します。
+ */
+import { createBrowserClient } from '@supabase/ssr';
+
+import type { Database } from '../database.types';
+import { getSupabaseClientKeys } from '../get-supabase-client-keys';
+
+/**
+ * @name getSupabaseBrowserClient
+ * @description ブラウザで使用するためのSupabaseクライアントを取得します
+ */
+export function getSupabaseBrowserClient<GenericSchema = Database>() {
+  const keys = getSupabaseClientKeys();
+
+  // ブラウザ環境かどうかを判定
+  const isBrowser = typeof window !== 'undefined';
+  
+  // ブラウザ環境では常にNEXT_PUBLIC_SUPABASE_URLを使用
+  // サーバー環境では、Docker内での接続URLが設定されていれば使用
+  const url = isBrowser ? keys.url : (process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER || keys.url);
+
+  // ホスト名からドメイン設定を決定
+  const hostname = isBrowser ? window.location.hostname : '';
+  let domain = undefined;
+
+  // 開発環境の場合
+  if (hostname.includes('saedgewell.test')) {
+    domain = '.saedgewell.test';
+  }
+  // 本番環境の場合: トップレベルドメインを抽出（example.comなど）
+  else if (hostname.includes('.')) {
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      domain = `.${parts.slice(-2).join('.')}`;
+    }
+  }
+
+  return createBrowserClient<GenericSchema>(url, keys.anonKey, {
+    cookieOptions: {
+      // ドメインが存在する場合のみ設定
+      ...(domain ? { domain } : {}),
+      path: '/',
+      sameSite: 'lax',
+      // 開発環境ではfalse、本番環境ではtrue
+      secure:
+        hostname !== 'localhost' &&
+        !hostname.endsWith('.test') &&
+        !hostname.endsWith('.local'),
+    },
+  });
+}
+```
+
+### サーバークライアントの修正
+
+サーバークライアントの実装も、Docker環境内での接続に対応するように修正しました。
+
+```typescript
+/**
+ * server-client.ts
+ *
+ * このファイルはサーバー環境（Next.jsのサーバーコンポーネントやAPIルート）で
+ * Supabaseクライアントを初期化するための関数を提供します。
+ */
+import 'server-only';
+
+import { cookies } from 'next/headers';
+
+import { createServerClient } from '@supabase/ssr';
+
+import type { Database } from '../database.types';
+import { getSupabaseClientKeys } from '../get-supabase-client-keys';
+
+/**
+ * @name getSupabaseServerClient
+ * @description サーバーで使用するためのSupabaseクライアントを作成します。
+ */
+export function getSupabaseServerClient<GenericSchema = Database>() {
+  const keys = getSupabaseClientKeys();
+  
+  // Docker環境内での接続URLが設定されていれば使用、なければ通常のURLを使用
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER || keys.url;
+
+  return createServerClient<GenericSchema>(url, keys.anonKey, {
+    cookies: {
+      async getAll() {
+        const cookieStore = await cookies();
+
+        return cookieStore.getAll();
+      },
+      async setAll(cookiesToSet) {
+        const cookieStore = await cookies();
+
+        try {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
+          }
+        } catch {
+          // サーバーコンポーネントから`setAll`メソッドが呼び出されました。
+          // ミドルウェアがユーザーセッションを更新している場合、
+          // これは無視できます。
+        }
+      },
+    },
+  });
+}
+```
+
+### ミドルウェアクライアントの修正
+
+ミドルウェアクライアントも同様に、Docker環境での接続に対応するように修正しました。
+
+```typescript
+/**
+ * middleware-client.ts
+ *
+ * このファイルはNext.jsのミドルウェア内でSupabaseクライアントを初期化するための
+ * 関数を提供します。
+ */
+import 'server-only';
+
+import type { NextRequest, NextResponse } from 'next/server';
+
+import { createServerClient } from '@supabase/ssr';
+
+import type { Database } from '../database.types';
+import { getSupabaseClientKeys } from '../get-supabase-client-keys';
+
+/**
+ * Supabase用のミドルウェアクライアントを作成します。
+ *
+ * @param {NextRequest} request - Next.jsのリクエストオブジェクト。
+ * @param {NextResponse} response - Next.jsのレスポンスオブジェクト。
+ */
+export function createMiddlewareClient<GenericSchema = Database>(
+  request: NextRequest,
+  response: NextResponse
+) {
+  const keys = getSupabaseClientKeys();
+  
+  // Docker環境内での接続URLが設定されていれば使用、なければ通常のURLを使用
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER || keys.url;
+
+  // ホスト名からドメイン設定を決定
+  const host = request.headers.get('host') || '';
+  let domain = undefined;
+
+  // 開発環境の場合
+  if (host.includes('saedgewell.test')) {
+    domain = '.saedgewell.test';
+  }
+  // 本番環境の場合: トップレベルドメインを抽出（example.comなど）
+  else if (host.includes('.')) {
+    const parts = host.split('.');
+    if (parts.length >= 2) {
+      domain = `.${parts.slice(-2).join('.')}`;
+    }
+  }
+
+  return createServerClient<GenericSchema>(url, keys.anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        // リクエストにクッキーを設定
+        for (const { name, value } of cookiesToSet) {
+          request.cookies.set(name, value);
+        }
+
+        // レスポンスにクッキーを設定（ドメイン付き）
+        for (const { name, value, options } of cookiesToSet) {
+          const cookieOptions = {
+            ...options,
+            // ドメインが存在する場合のみ設定
+            ...(domain ? { domain } : {}),
+          };
+
+          response.cookies.set(name, value, cookieOptions);
+        }
+      },
+    },
+  });
+}
+```
+
+### 環境変数ファイルの修正
+
+Docker環境内と通常のブラウザ環境で異なるURLを使い分けるため、環境変数ファイル（`.env.local`）を修正しました。
+
+```
+# Supabase API設定 - ホストマシンからのアクセス用（ブラウザ用）
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+# Supabase API設定 - Docker内からのアクセス用
+NEXT_PUBLIC_SUPABASE_URL_DOCKER=http://supabase_kong_saedgewell:8000
+# 共通の匿名キー
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+```
+
+### 変更点の説明
+
+1. **環境検出ロジックの追加**：
+   - `isBrowser`変数を使って、実行環境がブラウザか否かを判定
+   - ブラウザ環境では`NEXT_PUBLIC_SUPABASE_URL`を使用
+   - サーバー環境では`NEXT_PUBLIC_SUPABASE_URL_DOCKER`を優先的に使用
+
+2. **URL選択ロジックの実装**：
+   - ブラウザ環境：`http://localhost:54321`（ホストからSupabaseにアクセス）
+   - サーバー環境：`http://supabase_kong_saedgewell:8000`（Docker内部通信）
+
+3. **Cookie設定の最適化**：
+   - サブドメイン間でのCookie共有のため、`.saedgewell.test`ドメインを設定
+   - 開発環境では`secure: false`、本番環境では`secure: true`に設定
+
+この実装により、ブラウザからのアクセス時とDocker内部からのアクセス時で適切なURLが使い分けられ、環境に応じた通信が可能になりました。 
+
+## 実装内容: Google認証のリダイレクトURL設定
+
+Google認証のコールバック処理が正常に機能するように、Supabaseの設定ファイルを修正しました。
+
+### Supabase設定ファイルの修正
+
+Supabaseの`config.toml`ファイルを編集して、ローカル開発環境用のリダイレクトURLを追加しました。
+
+```toml
+site_url = "https://saedgewell.test"
+# A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
+additional_redirect_urls = [
+  "https://web.saedgewell.test", 
+  "https://docs.saedgewell.test", 
+  "https://admin.saedgewell.test",
+  "http://localhost:54321/auth/v1/callback",
+  "http://localhost:7510",
+  "http://localhost:7520",
+  "http://localhost:7530"
+]
+# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
+jwt_expiry = 3600
+# If disabled, the refresh token will never expire.
+enable_refresh_token_rotation = true
+# Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
+# Requires enable_refresh_token_rotation = true.
+refresh_token_reuse_interval = 10
+# Allow/disallow new user signups to your project.
+enable_signup = true
+# Allow/disallow anonymous sign-ins to your project.
+enable_anonymous_sign_ins = false
+# Allow/disallow testing manual linking of accounts
+enable_manual_linking = false
+```
+
+### 変更点の説明
+
+1. **リダイレクトURLの追加**：
+   - `additional_redirect_urls`リストに以下のURLを追加しました：
+     - `http://localhost:54321/auth/v1/callback`：Supabaseの認証コールバックエンドポイント
+     - `http://localhost:7510`、`http://localhost:7520`、`http://localhost:7530`：各アプリのローカルポート
+
+2. **既存のリダイレクトURLの維持**：
+   - 既存の`https://web.saedgewell.test`、`https://docs.saedgewell.test`、`https://admin.saedgewell.test`は残し、HTTPSでの認証もサポート
+
+この修正により、Google認証フローが完了後、正しくアプリケーションにリダイレクトされるようになりました。
+
+## 実装内容: ネットワーク接続確認
+
+設定変更後、正しくネットワーク接続が行われているかを確認するためのテストを行いました。
+
+### Dockerネットワーク構成の確認
+
+アプリケーションコンテナとSupabaseコンテナが同一ネットワーク上に配置されていることを確認しました。
+
+```bash
+# Supabaseネットワークの詳細を確認
+$ docker network inspect supabase_network_saedgewell
+
+# 出力結果
+{
+    "Name": "supabase_network_saedgewell",
+    "Id": "abc123...",
+    "Scope": "local",
+    "Driver": "bridge",
+    "EnableIPv6": false,
+    "IPAM": {
+        "Driver": "default",
+        "Options": {},
+        "Config": [
+            {
+                "Subnet": "172.19.0.0/16",
+                "Gateway": "172.19.0.1"
+            }
+        ]
+    },
+    "Internal": false,
+    "Containers": {
+        "123abc...": {
+            "Name": "supabase_kong_saedgewell",
+            "EndpointID": "...",
+            "MacAddress": "...",
+            "IPv4Address": "172.19.0.2/16",
+            "IPv6Address": ""
+        },
+        // その他のSupabaseコンテナ...
+        "456def...": {
+            "Name": "saedgewell-web-1",
+            "EndpointID": "...",
+            "MacAddress": "...",
+            "IPv4Address": "172.19.0.15/16",
+            "IPv6Address": ""
+        },
+        // その他のアプリケーションコンテナ...
+    },
+    // ...
+}
+```
+
+### アプリケーションコンテナの環境変数確認
+
+アプリケーションコンテナ内で正しい環境変数が設定されていることを確認しました。
+
+```bash
+# Webコンテナの環境変数を確認
+$ docker exec -it saedgewell-web-1 printenv | grep -i supabase
+
+# 出力結果
+SUPABASE_AUTH_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+SUPABASE_AUTH_COOKIE_SAME_SITE=lax
+SUPABASE_AUTH_COOKIE_DOMAIN=.saedgewell.test
+NEXT_PUBLIC_SUPABASE_URL=http://supabase_kong_saedgewell:8000
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+SUPABASE_AUTH_COOKIE_SECURE=false
+```
+
+### Supabaseサービスの稼働確認
+
+Supabaseサービスが正常に稼働していることを確認しました。
+
+```bash
+# Supabaseの状態確認
+$ supabase status
+
+# 出力結果
+         API URL: http://127.0.0.1:54321
+     GraphQL URL: http://127.0.0.1:54321/graphql/v1
+          DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      Studio URL: http://127.0.0.1:54323
+    Inbucket URL: http://127.0.0.1:54324
+      JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
+        anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+```
+
+これらの確認により、Docker環境内でのネットワーク構成とSupabase接続が正しく設定されていることを確認できました。
+
+## 今後の課題
+
+今回の実装により、Docker環境でのSupabase認証は正常に動作するようになりましたが、さらなる改善のために以下の課題に取り組む必要があります。
+
+### 1. HTTPS対応の強化
+
+現在の実装ではHTTP接続を使用していますが、本番環境と同様のセキュリティを確保するためにHTTPS対応を強化する必要があります。
+
+- Supabaseの`site_url`と`additional_redirect_urls`をHTTPS URLに統一
+- NGINXでのSSL証明書の設定
+- Cookie設定の`secure: true`への変更
+- 自己署名証明書の信頼設定
+
+### 2. 環境変数管理の改善
+
+現在の実装では、複数の場所に環境変数設定が散在しています。これを整理し、より管理しやすくする必要があります。
+
+- `.env`ファイルの集約と標準化
+- 環境ごとの設定の分離（開発、テスト、本番）
+- 機密情報の安全な管理方法の検討
+- 環境変数のドキュメント化
+
+### 3. マルチコンテナ環境のスケーリング
+
+現在の実装では、単一のDockerホスト上での動作を前提としていますが、より複雑な環境（Kubernetes、Docker Swarmなど）でも動作するように拡張する必要があります。
+
+- コンテナオーケストレーションでの動作検証
+- サービスディスカバリの導入
+- 内部ネットワーク通信の最適化
+- コンテナ間通信のセキュリティ強化
+
+### 4. ドメイン名解決の簡素化
+
+現在の実装では、ホストファイルの編集が必要ですが、より簡単に開発環境を構築できるようにする必要があります。
+
+- ローカルDNSサーバーの導入
+- Docker内DNSの設定改善
+- 開発環境セットアップスクリプトの作成
+- 新規開発者向けのオンボーディングドキュメントの整備
+
+### 5. Google認証以外の認証プロバイダー対応
+
+現在はGoogle認証に焦点を当てていますが、他の認証プロバイダー（GitHub, Facebook, Twitterなど）にも対応する必要があります。
+
+- 各認証プロバイダーのコールバック設定
+- 認証プロバイダー切り替えのUI実装
+- プロバイダーごとの追加情報取得処理
+- ソーシャルログイン連携機能の強化
+
+## まとめ
+
+Docker環境におけるNext.jsアプリケーションとSupabaseの連携において、ネットワーク分離とURL環境依存の問題を解決しました。主な成果は以下の通りです：
+
+1. **ネットワーク問題の解決**：
+   - Docker ComposeでSupabaseネットワークを外部参照として追加
+   - アプリケーションコンテナをSupabaseネットワークに接続
+   - コンテナ間の直接通信を実現
+
+2. **環境依存URL問題の解決**：
+   - 環境検出ロジックの実装で、ブラウザとサーバーで異なるURLを使用
+   - `NEXT_PUBLIC_SUPABASE_URL`と`NEXT_PUBLIC_SUPABASE_URL_DOCKER`の分離
+   - Supabaseクライアント実装の改善
+
+3. **認証設定の改善**：
+   - JWT認証シークレットの正確な設定
+   - Google認証コールバックURLの適切な設定
+   - Cookie設定の最適化
+
+4. **テスト・検証**：
+   - Dockerネットワーク構成の確認
+   - 環境変数設定の検証
+   - 実際の認証フローのテスト
+
+これらの改善により、開発者はローカル環境でも本番環境に近い形でSupabase認証機能を使用できるようになりました。また、`.saedgewell.test`ドメインでのHTTPS対応など、将来の拡張にも対応できる基盤が整いました。
+
+今後は前述の課題に取り組みながら、より堅牢で使いやすい開発環境の構築を目指します。特にHTTPS対応と環境変数管理の改善は、セキュリティと開発効率の向上のために優先的に取り組むべき課題です。 

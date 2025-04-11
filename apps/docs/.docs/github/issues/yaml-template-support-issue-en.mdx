@@ -1,0 +1,38 @@
+---
+title: "[Feature Request] Support YAML format issue templates"
+description: "GitHub Pull Requests extension should support YAML format (.yml) issue templates."
+date: 2025-03-22
+repository_url: "https://github.com/microsoft/vscode-pull-request-github"
+issue_number: "#6722"
+---
+## Feature Request
+
+### Description
+I'd like to request support for YAML format (.yml) issue templates in the GitHub Pull Requests and Issues extension. Currently, the extension only recognizes Markdown (.md) templates but not YAML templates that are placed in the `.github/ISSUE_TEMPLATE/` directory.
+
+### Current Behavior
+When creating a new issue via the VSCode extension:
+- Only Markdown (.md) templates in `.github/ISSUE_TEMPLATE/` are recognized and displayed
+- YAML (.yml) templates in the same directory are completely ignored
+- This creates a situation where we need to maintain two sets of templates (YAML for GitHub Web and Markdown for VSCode)
+
+### Expected Behavior
+- The extension should recognize and display both YAML and Markdown issue templates
+- Ideally, render YAML templates as forms similar to GitHub Web, but if technically challenging, displaying them in YAML format would also be acceptable
+- Allow selection from all available templates regardless of format
+
+### Current Directory Structure and Workaround
+
+Currently, we're maintaining duplicate templates in both formats:
+
+```
+.github/
+└── ISSUE_TEMPLATE/
+    ├── BUG-REPORT.yml      # For GitHub Web (not displayed in VSCode)
+    ├── BUG-REPORT.md       # For VSCode (displayed)
+    ├── FEATURE-REQUEST.yml # For GitHub Web (not displayed in VSCode)
+    ├── FEATURE-REQUEST.md  # For VSCode (displayed)
+    └── config.yml          # Template configuration
+```
+
+This is not ideal as it requires keeping both versions in sync manually. If the extension supported YAML format templates, we wouldn't need to maintain duplicate templates. 

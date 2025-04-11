@@ -1,0 +1,58 @@
+name: "✨ 機能リクエスト"
+description: 新機能または改善のリクエストを作成します。
+title: "✨ [機能] - <タイトル>"
+labels: [
+  "enhancement"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "概要"
+      description: 提案する機能や改善点の詳細な説明を入力してください
+      placeholder: 機能の簡潔で具体的な説明を記入してください...
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "動機"
+      description: この機能が必要な理由や解決したい問題について説明してください
+      placeholder: この機能によって解決される問題や得られるメリットを記入してください...
+    validations:
+      required: true
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "実装案"
+      description: 考えられる実装方法があれば記入してください
+      placeholder: 技術的な実装アイデアがあれば記入してください...
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "代替案"
+      description: 検討した代替案や他の方法があれば説明してください
+      placeholder: 他に考えられるアプローチがあれば記入してください...
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: "追加情報"
+      description: 機能リクエストに関連するその他の情報やコンテキスト
+      placeholder: 参考リンクやスクリーンショットなど...
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "優先度"
+      description: この機能の優先度をどのように考えていますか？
+      options:
+        - 低（Nice to have）
+        - 中（重要だが緊急ではない）
+        - 高（プロジェクトの成功に不可欠）
+    validations:
+      required: true 

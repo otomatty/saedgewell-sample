@@ -1,0 +1,10 @@
+{
+  "title": "Credits",
+  "description": "使用ライブラリとライセンス情報",
+  "order": 7,
+  "icon": "/icons/credits.svg",
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-10",
+  "maintainers": ["Akimasa Sugai"]
+}

@@ -1,0 +1,134 @@
+/*
+* shadcn-ui.css
+*
+* Shadcn UIのCSSカラーをカスタマイズするためのファイル。
+* 新しい色を適用する場合は https://ui.shadcn.com/themes を参照してください。
+*
+* このファイルの役割：
+* - アプリケーション全体のベースとなるカラーテーマを定義
+* - ライトモード/ダークモードの色設定
+* - フォント、ボーダー半径などの基本的なデザイントークンの定義
+ */
+
+@layer base {
+    /* ライトモードのデフォルトテーマ設定 */
+    :root {
+        /* フォント設定 */
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        --font-heading: var(--font-sans);
+
+        /* 基本カラー */
+        --background: 68 50% 97%;  /* 背景色 */
+        --foreground: 136 31% 8%;  /* 文字色 */
+        
+        /* カードコンポーネント */
+        --card: 68 50% 99%;
+        --card-foreground: 136 31% 8%;
+        
+        /* ポップオーバー */
+        --popover: 68 50% 99%;
+        --popover-foreground: 136 31% 8%;
+        
+        /* プライマリカラー */
+        --primary: 136 31% 12%;
+        --primary-foreground: 68 50% 95%;
+        
+        /* セカンダリカラー */
+        --secondary: 68 50% 95%;
+        --secondary-foreground: 136 31% 8%;
+        
+        /* ミュートカラー（控えめな色） */
+        --muted: 68 50% 95%;
+        --muted-foreground: 0 0% 45.1%;
+        
+        /* アクセントカラー */
+        --accent: 68 50% 95%;
+        --accent-foreground: 136 31% 12%;
+        
+        /* 破壊的アクション用カラー */
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 68 50% 95%;
+        
+        /* ユーティリティカラー */
+        --border: 0 0% 89.8%;
+        --input: 0 0% 89.8%;
+        --ring: 136 31% 14%;
+
+        /* 境界線の丸み */
+        --radius: 0.5rem;
+
+        /* チャート用カラー */
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+
+        /* サイドバー用カラー */
+        --sidebar-background: 68, 50%, 95%;
+        --sidebar-foreground: 240 5.3% 26.1%;
+        --sidebar-primary: 240 5.9% 10%;
+        --sidebar-primary-foreground: 68, 50%, 95%;
+        --sidebar-accent: 240 4.8% 95.9%;
+        --sidebar-accent-foreground: 240 5.9% 10%;
+        --sidebar-border: 220 13% 91%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+
+    /* ダークモードのテーマ設定 */
+    .dark {
+        /* 基本カラー - ダークモード */
+        --background: 136 31% 8%;
+        --foreground: 68 50% 97%;
+        
+        /* カードコンポーネント - ダークモード */
+        --card: 136 31% 10%;
+        --card-foreground: 68 50% 97%;
+        
+        /* ポップオーバー - ダークモード */
+        --popover: 136 31% 8%;
+        --popover-foreground: 68 50% 97%;
+        
+        /* プライマリカラー - ダークモード */
+        --primary: 68 50% 97%;
+        --primary-foreground: 136 31% 9%;
+        
+        /* セカンダリカラー - ダークモード */
+        --secondary: 136 31% 9%;
+        --secondary-foreground: 68 50% 97%;
+        
+        /* ミュートカラー - ダークモード */
+        --muted: 136 31% 9%;
+        --muted-foreground: 0 0% 63.9%;
+        
+        /* アクセントカラー - ダークモード */
+        --accent: 136 31% 12%;
+        --accent-foreground: 68 50% 97%;
+        
+        /* 破壊的アクション用カラー - ダークモード */
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 68 50% 97%;
+        
+        /* ユーティリティカラー - ダークモード */
+        --border: 136 31% 12%;
+        --input: 136 31% 15%;
+        --ring: 0 0% 83.1%;
+
+        /* チャート用カラー - ダークモード */
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+
+        /* サイドバー用カラー - ダークモード */
+        --sidebar-background: 136 31% 9%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 68, 50%, 95%;
+        --sidebar-accent: 136 31% 12%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 136 31% 12%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+}
