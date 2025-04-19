@@ -1,0 +1,95 @@
+{
+  "name": "@kit/types",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "build:vercel": "tsup",
+    "dev": "tsup --watch",
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "format": "biome format .",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth/index.mjs",
+      "require": "./dist/auth/index.js"
+    },
+    "./profile": {
+      "types": "./dist/profile.d.ts",
+      "import": "./dist/profile/index.mjs",
+      "require": "./dist/profile/index.js"
+    },
+    "./error": {
+      "types": "./dist/error.d.ts",
+      "import": "./dist/error/index.mjs",
+      "require": "./dist/error/index.js"
+    },
+    "./notification": {
+      "types": "./dist/notification.d.ts",
+      "import": "./dist/notification/index.mjs",
+      "require": "./dist/notification/index.js"
+    },
+    "./blog": {
+      "types": "./dist/blog.d.ts",
+      "import": "./dist/blog/index.mjs",
+      "require": "./dist/blog/index.js"
+    },
+    "./contact": {
+      "types": "./dist/contact.d.ts",
+      "import": "./dist/contact/index.mjs",
+      "require": "./dist/contact/index.js"
+    },
+    "./github": {
+      "types": "./dist/github.d.ts",
+      "import": "./dist/github/index.mjs",
+      "require": "./dist/github/index.js"
+    },
+    "./project": {
+      "types": "./dist/project.d.ts",
+      "import": "./dist/project/index.mjs",
+      "require": "./dist/project/index.js"
+    },
+    "./site": {
+      "types": "./dist/site.d.ts",
+      "import": "./dist/site/index.mjs",
+      "require": "./dist/site/index.js"
+    },
+    "./skills": {
+      "types": "./dist/skills.d.ts",
+      "import": "./dist/skills/index.mjs",
+      "require": "./dist/skills/index.js"
+    },
+    "./works": {
+      "types": "./dist/works.d.ts",
+      "import": "./dist/works/index.mjs",
+      "require": "./dist/works/index.js"
+    },
+    "./focus": {
+      "types": "./dist/focus.d.ts",
+      "import": "./dist/focus/index.mjs",
+      "require": "./dist/focus/index.js"
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@kit/tsconfig": "workspace:*",
+    "tsup": "8.4.0",
+    "typescript": "5.8.2"
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["src/*"]
+    }
+  }
+}

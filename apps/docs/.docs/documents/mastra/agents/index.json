@@ -1,0 +1,35 @@
+{
+  "title": "エージェント",
+  "description": "Mastraを使用したAIエージェントの開発",
+  "order": 2,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "Mastraエージェントの概要と基本構造",
+      "order": 1
+    },
+    {
+      "name": "memory",
+      "title": "メモリ",
+      "description": "エージェントのメモリ管理と永続化",
+      "order": 2
+    },
+    {
+      "name": "tools",
+      "title": "ツール",
+      "description": "エージェントツールの実装と活用方法",
+      "order": 3
+    },
+    {
+      "name": "voice",
+      "title": "音声",
+      "description": "音声対応エージェントの実装方法",
+      "order": 4
+    }
+  ]
+}

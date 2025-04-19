@@ -1,0 +1,93 @@
+---
+title: 'アカウントワークスペースAPI'
+description: 'アカウントワークスペースAPIを使用して現在のアカウントに関連するデータを取得する方法'
+icon: 'building'
+order: 5
+---
+
+# アカウントワークスペースAPI
+
+アカウントワークスペースAPIを使用すると、現在のアカウントに関連するすべてのデータを取得することができます。
+`/home/[account]`レイアウト内では、アカウントワークスペースAPIから取得したデータにアクセスできます。
+
+このレイアウト内のデータには、現在選択されているアカウントとユーザーに関する必要な情報のほとんどが含まれています。
+
+## サーバーコンポーネントでのチームアカウントワークスペースデータへのアクセス
+
+データにアクセスするには、`loadTeamWorkspace`ローダー関数を使用できます。この関数はリクエストごとにキャッシュされるため、パフォーマンスを気にすることなく複数回呼び出すことができます。
+
+この関数への複数の呼び出しは単一のリクエスト内で重複排除されますが、このリクエストはページに移動するときに呼び出されることに注意してください。データの一部のみが必要な場合は、より細かいリクエストを行うことをお勧めします。
+
+```tsx
+import { loadTeamWorkspace } from '~/home/[account]/_lib/server/team-account-workspace.loader';
+
+export default async function SomeAccountPage() {
+  const data = await loadTeamWorkspace();
+  // データを使用する
+}
+```
+
+`loadTeamWorkspace`関数から返されるデータは、以下のプロパティを持つオブジェクトです：
+
+- `account`: アカウントオブジェクト
+- `user`: Supabase Authから取得したユーザーオブジェクト
+- `accounts`: ユーザーがメンバーであるすべてのアカウントの配列
+
+以下はデータ構造の例です：
+
+```tsx
+import type { User } from '@supabase/supabase-js';
+
+{
+  account: {
+    id: string;
+    name: string;
+    picture_url: string;
+    slug: string;
+    role: string;
+    role_hierarchy_level: number;
+    primary_owner_user_id: string;
+    subscription_status: string;
+    permissions: string[];
+  };
+  user: User;
+  accounts: Array<{
+    id: string | null;
+    name: string | null;
+    picture_url: string | null;
+    role: string | null;
+    slug: string | null;
+  }>;
+}
+```
+
+`account`オブジェクトには以下のプロパティが含まれています：
+
+- `id`: アカウントID
+- `name`: アカウント名
+- `picture_url`: アカウント画像のURL
+- `slug`: アカウントのスラッグ
+- `role`: アカウント内でのユーザーの役割
+- `role_hierarchy_level`: ユーザーの役割階層レベル
+- `primary_owner_user_id`: 主要所有者のユーザーID
+- `subscription_status`: アカウントのサブスクリプションステータス。これは 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused' のいずれかです。
+- `permissions`: アカウント内でユーザーが持つ権限の配列
+
+## クライアントコンポーネントでのアカウントワークスペースデータへのアクセス
+
+アカウントワークスペースAPIから取得したデータはコンテキストで利用可能です。`useTeamAccountWorkspace`フックを使用してこのデータにアクセスできます。
+
+```tsx
+'use client';
+
+import { useTeamAccountWorkspace } from '@kit/team-accounts/hooks/use-team-account-workspace';
+
+export default function SomeComponent() {
+  const { account, user, accounts } = useTeamAccountWorkspace();
+  // アカウント、ユーザー、アカウントを使用する
+}
+```
+
+`useTeamAccountWorkspace`フックは`loadTeamWorkspace`関数と同じデータ構造を返します。
+
+注意：このフックはサーバーコンポーネントではなく、クライアントコンポーネントでのみ使用できます。さらに、これは`/home/[account]`レイアウト配下のページでのみ利用可能です。

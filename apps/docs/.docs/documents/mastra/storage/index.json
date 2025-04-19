@@ -1,0 +1,17 @@
+{
+  "title": "ストレージ",
+  "description": "Mastraのデータストレージ機能",
+  "order": 6,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "Mastraのストレージシステムの概要",
+      "order": 1
+    }
+  ]
+}

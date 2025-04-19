@@ -1,0 +1,76 @@
+name: "📋 タスク"
+description: 一般的な開発タスクやその他の作業項目を作成します。
+title: "📋 [タスク] - <タイトル>"
+labels: [
+  "task"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "タスクの説明"
+      description: タスクの詳細な説明を入力してください
+      placeholder: タスクの目的、範囲、期待される成果物について記入してください...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "受け入れ基準"
+      description: このタスクが完了したと見なされるための基準
+      placeholder: |
+        - [ ] 基準1
+        - [ ] 基準2
+        - [ ] 基準3
+      render: markdown
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "優先度"
+      description: このタスクの優先度
+      options:
+        - 低（時間があれば）
+        - 中（重要だが緊急ではない）
+        - 高（重要かつ優先的に取り組むべき）
+        - 緊急（最優先で取り組む必要がある）
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: "規模"
+      description: タスクの規模または複雑さ
+      options:
+        - XS (数時間以内)
+        - S (1日以内)
+        - M (2〜3日)
+        - L (1週間程度)
+        - XL (1週間以上)
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "依存関係"
+      description: このタスクが依存する他のタスクやIssue
+      placeholder: 依存するIssue番号や前提条件があれば記入してください...
+    validations:
+      required: false
+  - type: textarea
+    id: resources
+    attributes:
+      label: "参考資料"
+      description: タスク実行に役立つ資料やリンク
+      placeholder: ドキュメント、コード参照、外部リソースなど...
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: "追加メモ"
+      description: その他の関連情報や注意事項
+      placeholder: 実装上の注意点や検討事項など...
+    validations:
+      required: false 

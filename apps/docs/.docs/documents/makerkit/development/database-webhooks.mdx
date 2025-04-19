@@ -1,0 +1,88 @@
+---
+title: 'データベースウェブフックの処理'
+description: 'Next.js Supabaseアプリケーションでカスタムデータベースウェブフックを処理する方法を学ぶ'
+icon: 'webhook'
+order: 7
+---
+
+# Next.js Supabaseアプリケーションでカスタムデータベースウェブフックを処理する方法
+
+データベースウェブフックを使用すると、データベースの変更をリッスンし、変更が発生したときにカスタムロジックをトリガーできます。これは通知の送信、キャッシュの更新、または他のサービスのトリガーに役立ちます。
+
+Makerkitはデフォルトでいくつかのウェブフックを処理します。例えば、ユーザー削除後のサブスクリプション削除や、ユーザー登録後のメール送信などの機能があります。
+
+独自のウェブフックハンドラーを追加することで、この機能を拡張できます：
+
+## カスタムウェブフックハンドラーの追加
+
+`apps/web/app/api/db/webhook/route.ts`ファイルを編集して、カスタムウェブフックハンドラーを追加できます：
+
+```tsx
+import {
+ getDatabaseWebhookHandlerService,
+} from '@kit/database-webhooks';
+
+/**
+* @name POST
+* @description POST handler for the webhook route that handles the webhook event
+*/
+export async function POST(request: Request) {
+ const service = getDatabaseWebhookHandlerService();
+ try {
+   // ウェブフックイベントを処理する
+   await service.handleWebhook(request, {
+     handleEvent(change) {
+       if (change.type === 'INSERT' && change.table === 'invitations') {
+         // 招待状に対して何かを行う
+       }
+     },
+   });
+   return new Response(null, { status: 200 });
+ } catch {
+   return new Response(null, { status: 500 });
+ }
+}
+```
+
+上記のように、`handleEvent`関数はウェブフックイベントを処理するためのカスタムロジックを追加できる場所です。この例では、イベントが`invitations`テーブルに対する`INSERT`イベントかどうかをチェックし、招待状に対して何かを行います。
+
+## 変更オブジェクトの型
+
+`change`オブジェクトは`RecordChange`型であり、以下のプロパティを含んでいます：
+
+```tsx
+import { Database } from '@kit/supabase/database';
+
+export type Tables = Database['public']['Tables'];
+export type TableChangeType = 'INSERT' | 'UPDATE' | 'DELETE';
+
+export interface RecordChange<
+  Table extends keyof Tables,
+  Row = Tables[Table]['Row'],
+> {
+  type: TableChangeType;
+  table: Table;
+  record: Row;
+  schema: 'public';
+  old_record: null | Row;
+}
+```
+
+型を手動でキャストする必要がある場合があります：
+
+```tsx
+type AccountChange = RecordChange<'accounts'>;
+```
+
+これで、`AccountChange`型を`handleEvent`関数内の`change`オブジェクトの型付けに使用でき、`accounts`テーブルに型付けされます。
+
+## ウェブフックの活用例
+
+データベースウェブフックは以下のようなシナリオで特に役立ちます：
+
+1. **リアルタイム通知** - ユーザーがアクションを実行したときに他のユーザーに通知を送信
+2. **外部サービスの同期** - データベースの変更を外部APIやサービスと同期
+3. **キャッシュの無効化** - データが変更されたときにキャッシュを更新または無効化
+4. **監査ログ** - 重要なデータ変更の記録を保持
+
+ウェブフックを使用することで、アプリケーションの反応性と統合性を向上させることができます。

@@ -1,0 +1,85 @@
+---
+title: 'シートごとの課金設定 | Next.js Supabase SaaS Kit Turbo'
+description: 'アプリケーションの追加シート（ユーザー）に対して顧客に課金するためのシートごとの課金設定方法を学ぶ'
+icon: 'users'
+order: 7
+---
+
+# Makerkitでのシートごとの課金設定
+
+シートごとの課金は、SaaSアプリケーションでよく使用される価格モデルで、アプリケーション内のシート（ユーザー）数に基づいて顧客に課金します。このガイドでは、Makerkitでシートごとの課金を設定する方法を説明します。
+
+Makerkitは以下の処理を自動的に行います：
+
+- 価格モデルがシート数に依存しているかどうかを理解する（価格モデルの`per_seat`品目タイプを使用）
+- チームアカウントのメンバー数に基づいてシート数を計算する
+- サブスクリプション時に課金システムにシート数を報告する
+- メンバーの追加または削除時に課金システムにシート数を報告する
+
+## シートごとの課金スキーマの定義
+
+シートごとの課金は以下のフィールドで定義されます：
+
+```typescript
+export default createBillingSchema({
+  provider,
+  products: [
+    {
+      id: 'starter',
+      name: 'Starter',
+      description: 'The perfect plan to get started',
+      currency: 'USD',
+      badge: `Value`,
+      plans: [
+        {
+          name: 'Starter Monthly',
+          id: 'starter-monthly',
+          trialDays: 7,
+          paymentType: 'recurring',
+          interval: 'month',
+          lineItems: [
+            {
+              id: 'price_1NNwYHI1i3VnbZTqI2UzaHIe',
+              name: 'Addon 2',
+              cost: 0,
+              type: 'per_seat',
+              tiers: [
+                {
+                    upTo: 3,
+                    cost: 0,
+                },
+                {
+                    upTo: 5,
+                    cost: 7.99,
+                },
+                {
+                    upTo: 'unlimited',
+                    cost: 5.99,
+                }
+              ]
+            },
+          ],
+        }
+      ],
+    }
+  ]
+});
+```
+
+各フィールドの説明：
+
+- **id**: 品目の一意の識別子。課金プロバイダーの価格IDと一致する必要があります。スキーマはこれを検証しますが、正しく設定することを忘れないでください。
+- **name**: 品目の名前
+- **cost**: 品目のコスト。階層に基づいてコストが計算されるため、0に設定できます。
+- **type**: 品目のタイプ（例：flat、metered、per-seat）。この場合は`per_seat`です。
+- **tiers**: 品目の階層。各階層は以下のフィールドで定義されます：
+  - **upTo**: 階層の上限。使用量がこの制限を下回る場合、この階層に基づいてコストが計算されます。
+  - **cost**: 階層のコスト。これは1ユニットあたりのコストです。
+
+最初の階層を0に設定すると、最初のn個のシートが無料になります。これはシートごとの課金でよく行われる方法です。
+
+コストはUI表示用に設定されることに注意してください。実際の課金は課金プロバイダーが処理するため、課金プロバイダーで正しくコストが設定されていることを確認してください。
+
+## シート数の報告
+
+これは自動的に行われます。Makerkitは、サブスクリプション時およびメンバーの追加または削除時に、課金プロバイダーにシート数を報告します。

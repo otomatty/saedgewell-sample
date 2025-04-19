@@ -1,0 +1,17 @@
+{
+  "title": "コア",
+  "description": "Mastraコアモジュールのリファレンス",
+  "order": 2,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "mastra-class",
+      "title": "Mastra Class",
+      "description": "Mastraのメインクラスのリファレンス",
+      "order": 1
+    }
+  ]
+}

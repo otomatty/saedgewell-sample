@@ -1,0 +1,134 @@
+# Docker環境でのJWT認証問題の解決
+
+## 問題の概要
+
+Dockerコンテナ内でのSupabase接続において、以下の問題が発生していました：
+
+1. サービスロールクライアントとの接続でJWT署名検証エラー（`JWSError JWSInvalidSignature`）が発生
+2. `host.docker.internal`の名前解決ができない場合がある
+3. PostgRESTコンテナでのJWT秘密鍵の設定が不一致（プレーンテキスト vs Base64エンコード）
+
+## 原因
+
+以下の複数の要因が重なっていました：
+
+1. **JWT秘密鍵の不一致**：
+   - 環境変数`SUPABASE_AUTH_JWT_SECRET`はBase64エンコードされた形式（`c3VwZXItc2VjcmV0LWp3dC10b2tlbi13aXRoLWF0LWxlYXN0LTMyLWNoYXJhY3RlcnMtbG9uZw==`）
+   - PostgRESTコンテナはプレーンテキスト形式の秘密鍵を期待（`super-secret-jwt-token-with-at-least-32-characters-long`）
+
+2. **Dockerネットワーク内での名前解決問題**：
+   - Webコンテナは`NEXT_PUBLIC_SUPABASE_URL=http://host.docker.internal:54321`を使用
+   - `host.docker.internal`の名前解決が一部環境で失敗
+
+3. **複数のPostgRESTコンテナ**：
+   - Supabase CLIが管理するPostgRESTコンテナと手動で作成したコンテナが競合
+
+## 解決策
+
+### 1. JWT秘密鍵の統一
+
+すべてのコンポーネントで同一のJWT秘密鍵を使用するようにします：
+
+```bash
+# プレーンテキスト形式のJWT秘密鍵
+JWT_SECRET="super-secret-jwt-token-with-at-least-32-characters-long"
+
+# Base64エンコード形式（環境変数用）
+JWT_SECRET_BASE64="c3VwZXItc2VjcmV0LWp3dC10b2tlbi13aXRoLWF0LWxlYXN0LTMyLWNoYXJhY3RlcnMtbG9uZw=="
+```
+
+### 2. PostgRESTコンテナの再構成
+
+既存のPostgRESTコンテナを停止・削除し、正しい設定で新しいコンテナを作成します：
+
+```bash
+# 既存のコンテナを停止・削除
+docker stop supabase_rest_saedgewell
+docker rm supabase_rest_saedgewell
+
+# 新しいコンテナを正しいJWT設定で起動
+docker run -d --name supabase_rest_saedgewell --network=host \
+  -e PGRST_DB_URI="postgres://authenticator:authenticator@localhost:54322/postgres" \
+  -e PGRST_DB_SCHEMAS="public,storage,graphql_public" \
+  -e PGRST_DB_ANON_ROLE="anon" \
+  -e PGRST_JWT_SECRET="super-secret-jwt-token-with-at-least-32-characters-long" \
+  -e PGRST_DB_USE_LEGACY_GUCS="false" \
+  public.ecr.aws/supabase/postgrest:v12.2.3
+```
+
+### 3. Dockerコンテナの環境変数設定
+
+Webコンテナ内の環境変数を適切に設定します：
+
+```bash
+# 環境変数ファイルを作成
+cat > .env.local << EOL
+# JWT設定
+SUPABASE_AUTH_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long
+
+# Supabase API設定
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTl9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+EOL
+
+# コンテナに環境変数ファイルをコピー
+docker cp .env.local saedgewell-web-1:/app/.env.local
+```
+
+### 4. host.docker.internal の名前解決設定
+
+コンテナ内で`host.docker.internal`を`localhost`に解決するよう設定します：
+
+```bash
+# コンテナ内のhostsファイルを更新
+docker exec saedgewell-web-1 /bin/sh -c "echo '127.0.0.1 host.docker.internal' >> /etc/hosts"
+```
+
+### 5. コンテナの再起動
+
+設定変更を反映するためにコンテナを再起動します：
+
+```bash
+docker restart saedgewell-web-1 saedgewell-docs-1 saedgewell-admin-1
+```
+
+## 症状の確認方法
+
+### JWTエラーの診断
+
+次のコマンドで直接サービスロールクライアントをテストし、JWT署名エラーが発生しているか確認できます：
+
+```bash
+# 環境変数を設定してスクリプトを実行
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 \
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU \
+SUPABASE_AUTH_JWT_SECRET=c3VwZXItc2VjcmV0LWp3dC10b2tlbi13aXRoLWF0LWxlYXN0LTMyLWNoYXJhY3RlcnMtbG9uZw== \
+node scripts/dev/debug-service-role.js
+```
+
+## Docker Compose設定のベストプラクティス
+
+長期的な解決策として、以下の点をDocker Compose設定に反映することを推奨します：
+
+1. **統一された環境変数**：
+   - 同じURLとJWT設定をすべてのコンテナで使用する
+
+2. **明示的なホスト設定**：
+   - すべてのサービスに`extra_hosts`設定を追加：
+     ```yaml
+     extra_hosts:
+       - "host.docker.internal:host-gateway"
+     ```
+
+3. **ヘルスチェックの追加**：
+   - 依存サービスの起動を確認するヘルスチェックを追加
+
+4. **環境変数ファイルの共有**：
+   - 一貫した設定のために`.env.local`ファイルを全コンテナで共有
+
+## 参考資料
+
+- [Supabase CLI Documentation](https://supabase.com/docs/reference/cli/usage)
+- [Docker Networking](https://docs.docker.com/network/)
+- [JWT Authentication with Supabase](https://supabase.com/docs/guides/auth/jwt) 

@@ -1,0 +1,2950 @@
+[
+  {
+    "title": "linear",
+    "order": 0,
+    "slug": "linear",
+    "children": [
+      {
+        "title": "account",
+        "order": 0,
+        "slug": "linear/account",
+        "children": [
+          {
+            "title": "account preferences",
+            "slug": "linear/account/account-preferences",
+            "children": []
+          },
+          {
+            "title": "notifications",
+            "slug": "linear/account/notifications",
+            "children": []
+          },
+          {
+            "title": "profile",
+            "slug": "linear/account/profile",
+            "children": []
+          },
+          {
+            "title": "security and access",
+            "slug": "linear/account/security-and-access",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "administration",
+        "order": 0,
+        "slug": "linear/administration",
+        "children": [
+          {
+            "title": "api and webhooks",
+            "slug": "linear/administration/api-and-webhooks",
+            "children": []
+          },
+          {
+            "title": "audit log",
+            "slug": "linear/administration/audit-log",
+            "children": []
+          },
+          {
+            "title": "billing and plans",
+            "slug": "linear/administration/billing-and-plans",
+            "children": []
+          },
+          {
+            "title": "exporting data",
+            "slug": "linear/administration/exporting-data",
+            "children": []
+          },
+          {
+            "title": "import issues",
+            "slug": "linear/administration/import-issues",
+            "children": []
+          },
+          {
+            "title": "invite members",
+            "slug": "linear/administration/invite-members",
+            "children": []
+          },
+          {
+            "title": "login methods",
+            "slug": "linear/administration/login-methods",
+            "children": []
+          },
+          {
+            "title": "members roles",
+            "slug": "linear/administration/members-roles",
+            "children": []
+          },
+          {
+            "title": "saml",
+            "slug": "linear/administration/saml",
+            "children": []
+          },
+          {
+            "title": "scim",
+            "slug": "linear/administration/scim",
+            "children": []
+          },
+          {
+            "title": "security",
+            "slug": "linear/administration/security",
+            "children": []
+          },
+          {
+            "title": "third party app approvals",
+            "slug": "linear/administration/third-party-app-approvals",
+            "children": []
+          },
+          {
+            "title": "workspaces",
+            "slug": "linear/administration/workspaces",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "analytics",
+        "order": 0,
+        "slug": "linear/analytics",
+        "children": [
+          {
+            "title": "cycle graph",
+            "slug": "linear/analytics/cycle-graph",
+            "children": []
+          },
+          {
+            "title": "exporting data",
+            "slug": "linear/analytics/exporting-data",
+            "children": []
+          },
+          {
+            "title": "insights",
+            "slug": "linear/analytics/insights",
+            "children": []
+          },
+          {
+            "title": "project graph",
+            "slug": "linear/analytics/project-graph",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "cycles",
+        "order": 0,
+        "slug": "linear/cycles",
+        "children": [
+          {
+            "title": "cycle graph",
+            "slug": "linear/cycles/cycle-graph",
+            "children": []
+          },
+          {
+            "title": "update cycles",
+            "slug": "linear/cycles/update-cycles",
+            "children": []
+          },
+          {
+            "title": "use cycles",
+            "slug": "linear/cycles/use-cycles",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "find-and-filter",
+        "order": 0,
+        "slug": "linear/find-and-filter",
+        "children": [
+          {
+            "title": "display options",
+            "slug": "linear/find-and-filter/display-options",
+            "children": []
+          },
+          {
+            "title": "favorites",
+            "slug": "linear/find-and-filter/favorites",
+            "children": []
+          },
+          {
+            "title": "filters",
+            "slug": "linear/find-and-filter/filters",
+            "children": []
+          },
+          {
+            "title": "search",
+            "slug": "linear/find-and-filter/search",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "getting-started",
+        "order": 0,
+        "slug": "linear/getting-started",
+        "children": [
+          {
+            "title": "スタートガイド",
+            "order": 1,
+            "slug": "linear/getting-started/start-guide",
+            "children": []
+          },
+          {
+            "title": "コンセプト",
+            "order": 2,
+            "slug": "linear/getting-started/conceptual-model",
+            "children": []
+          },
+          {
+            "title": "アプリのダウンロード",
+            "order": 3,
+            "slug": "linear/getting-started/get-the-app",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "integrations",
+        "order": 0,
+        "slug": "linear/integrations",
+        "children": [
+          {
+            "title": "airbyte",
+            "slug": "linear/integrations/airbyte",
+            "children": []
+          },
+          {
+            "title": "api and webhooks",
+            "slug": "linear/integrations/api-and-webhooks",
+            "children": []
+          },
+          {
+            "title": "asks",
+            "slug": "linear/integrations/asks",
+            "children": []
+          },
+          {
+            "title": "discord",
+            "slug": "linear/integrations/discord",
+            "children": []
+          },
+          {
+            "title": "figma",
+            "slug": "linear/integrations/figma",
+            "children": []
+          },
+          {
+            "title": "front",
+            "slug": "linear/integrations/front",
+            "children": []
+          },
+          {
+            "title": "github",
+            "slug": "linear/integrations/github",
+            "children": []
+          },
+          {
+            "title": "gitlab",
+            "slug": "linear/integrations/gitlab",
+            "children": []
+          },
+          {
+            "title": "google sheets",
+            "slug": "linear/integrations/google-sheets",
+            "children": []
+          },
+          {
+            "title": "integration directory",
+            "slug": "linear/integrations/integration-directory",
+            "children": []
+          },
+          {
+            "title": "intercom",
+            "slug": "linear/integrations/intercom",
+            "children": []
+          },
+          {
+            "title": "jira",
+            "slug": "linear/integrations/jira",
+            "children": []
+          },
+          {
+            "title": "notion",
+            "slug": "linear/integrations/notion",
+            "children": []
+          },
+          {
+            "title": "sentry",
+            "slug": "linear/integrations/sentry",
+            "children": []
+          },
+          {
+            "title": "slack",
+            "slug": "linear/integrations/slack",
+            "children": []
+          },
+          {
+            "title": "zapier",
+            "slug": "linear/integrations/zapier",
+            "children": []
+          },
+          {
+            "title": "zendesk",
+            "slug": "linear/integrations/zendesk",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "issue-properties",
+        "order": 0,
+        "slug": "linear/issue-properties",
+        "children": [
+          {
+            "title": "due dates",
+            "slug": "linear/issue-properties/due-dates",
+            "children": []
+          },
+          {
+            "title": "estimates",
+            "slug": "linear/issue-properties/estimates",
+            "children": []
+          },
+          {
+            "title": "issue relations",
+            "slug": "linear/issue-properties/issue-relations",
+            "children": []
+          },
+          {
+            "title": "labels",
+            "slug": "linear/issue-properties/labels",
+            "children": []
+          },
+          {
+            "title": "priority",
+            "slug": "linear/issue-properties/priority",
+            "children": []
+          },
+          {
+            "title": "slas",
+            "slug": "linear/issue-properties/slas",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "issues",
+        "order": 0,
+        "slug": "linear/issues",
+        "children": [
+          {
+            "title": "comment on issues",
+            "slug": "linear/issues/comment-on-issues",
+            "children": []
+          },
+          {
+            "title": "creating issues",
+            "slug": "linear/issues/creating-issues",
+            "children": []
+          },
+          {
+            "title": "customer requests",
+            "slug": "linear/issues/customer-requests",
+            "children": []
+          },
+          {
+            "title": "delete archive issues",
+            "slug": "linear/issues/delete-archive-issues",
+            "children": []
+          },
+          {
+            "title": "editing issues",
+            "slug": "linear/issues/editing-issues",
+            "children": []
+          },
+          {
+            "title": "editor",
+            "slug": "linear/issues/editor",
+            "children": []
+          },
+          {
+            "title": "issue templates",
+            "slug": "linear/issues/issue-templates",
+            "children": []
+          },
+          {
+            "title": "parent and sub issues",
+            "slug": "linear/issues/parent-and-sub-issues",
+            "children": []
+          },
+          {
+            "title": "select issues",
+            "slug": "linear/issues/select-issues",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "projects-and-initiatives",
+        "order": 0,
+        "slug": "linear/projects-and-initiatives",
+        "children": [
+          {
+            "title": "initiative and project updates",
+            "slug": "linear/projects-and-initiatives/initiative-and-project-updates",
+            "children": []
+          },
+          {
+            "title": "initiatives",
+            "slug": "linear/projects-and-initiatives/initiatives",
+            "children": []
+          },
+          {
+            "title": "project dependencies",
+            "slug": "linear/projects-and-initiatives/project-dependencies",
+            "children": []
+          },
+          {
+            "title": "project documents",
+            "slug": "linear/projects-and-initiatives/project-documents",
+            "children": []
+          },
+          {
+            "title": "project graph",
+            "slug": "linear/projects-and-initiatives/project-graph",
+            "children": []
+          },
+          {
+            "title": "project milestones",
+            "slug": "linear/projects-and-initiatives/project-milestones",
+            "children": []
+          },
+          {
+            "title": "project notifications",
+            "slug": "linear/projects-and-initiatives/project-notifications",
+            "children": []
+          },
+          {
+            "title": "project overview",
+            "slug": "linear/projects-and-initiatives/project-overview",
+            "children": []
+          },
+          {
+            "title": "project priority",
+            "slug": "linear/projects-and-initiatives/project-priority",
+            "children": []
+          },
+          {
+            "title": "project status",
+            "slug": "linear/projects-and-initiatives/project-status",
+            "children": []
+          },
+          {
+            "title": "project templates",
+            "slug": "linear/projects-and-initiatives/project-templates",
+            "children": []
+          },
+          {
+            "title": "projects",
+            "slug": "linear/projects-and-initiatives/projects",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "teams",
+        "order": 0,
+        "slug": "linear/teams",
+        "children": [
+          {
+            "title": "configuring workflows",
+            "slug": "linear/teams/configuring-workflows",
+            "children": []
+          },
+          {
+            "title": "private teams",
+            "slug": "linear/teams/private-teams",
+            "children": []
+          },
+          {
+            "title": "sub teams",
+            "slug": "linear/teams/sub-teams",
+            "children": []
+          },
+          {
+            "title": "teams",
+            "slug": "linear/teams/teams",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "views",
+        "order": 0,
+        "slug": "linear/views",
+        "children": [
+          {
+            "title": "board layout",
+            "slug": "linear/views/board-layout",
+            "children": []
+          },
+          {
+            "title": "custom views",
+            "slug": "linear/views/custom-views",
+            "children": []
+          },
+          {
+            "title": "label views",
+            "slug": "linear/views/label-views",
+            "children": []
+          },
+          {
+            "title": "peek",
+            "slug": "linear/views/peek",
+            "children": []
+          },
+          {
+            "title": "triage",
+            "slug": "linear/views/triage",
+            "children": []
+          },
+          {
+            "title": "user views",
+            "slug": "linear/views/user-views",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "your-sidebar",
+        "order": 0,
+        "slug": "linear/your-sidebar",
+        "children": [
+          {
+            "title": "default team pages",
+            "slug": "linear/your-sidebar/default-team-pages",
+            "children": []
+          },
+          {
+            "title": "inbox",
+            "slug": "linear/your-sidebar/inbox",
+            "children": []
+          },
+          {
+            "title": "my issues",
+            "slug": "linear/your-sidebar/my-issues",
+            "children": []
+          },
+          {
+            "title": "pull request reviews",
+            "slug": "linear/your-sidebar/pull-request-reviews",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Next.js",
+    "description": "Next.jsの公式ドキュメント",
+    "order": 0,
+    "slug": "next",
+    "children": []
+  },
+  {
+    "title": "Supabase",
+    "description": "Supabaseの公式ドキュメント",
+    "order": 0,
+    "slug": "supabase",
+    "children": []
+  },
+  {
+    "title": "Saedgewell App",
+    "description": "メインアプリケーション",
+    "order": 1,
+    "slug": "saedgewell-app",
+    "children": []
+  },
+  {
+    "title": "React",
+    "description": "ユーザーインターフェースを構築するためのJavaScriptライブラリ",
+    "order": 3,
+    "slug": "react",
+    "children": []
+  },
+  {
+    "title": "MakerKit",
+    "description": "MakerKitテンプレートのカスタマイズガイド",
+    "order": 4,
+    "slug": "makerkit",
+    "children": [
+      {
+        "title": "導入",
+        "description": "MakerKitのインストールと初期設定",
+        "order": 1,
+        "slug": "makerkit/installation",
+        "children": [
+          {
+            "title": "リポジトリの紹介",
+            "description": "Next.js Supabase SaaS Kit Turboリポジトリは、SupabaseでSaaSアプリケーションを構築するためのNext.jsスターターキットです。",
+            "icon": "rocket",
+            "order": 1,
+            "slug": "makerkit/installation/introduction",
+            "children": []
+          },
+          {
+            "title": "技術詳細",
+            "description": "Makerkitが使用する技術スタックとモノレポ構造の詳細な説明",
+            "icon": "code",
+            "order": 2,
+            "slug": "makerkit/installation/technical-details",
+            "children": []
+          },
+          {
+            "title": "規約",
+            "description": "コードベースの一貫性と可読性を確保するためのMakerkitの規約",
+            "icon": "book",
+            "order": 3,
+            "slug": "makerkit/installation/conventions",
+            "children": []
+          },
+          {
+            "title": "リポジトリのクローン",
+            "description": "Next.js Supabase SaaS Kit Turboリポジトリをローカルマシンにクローンする方法",
+            "icon": "git-branch",
+            "order": 4,
+            "slug": "makerkit/installation/clone-the-repository",
+            "children": []
+          },
+          {
+            "title": "プロジェクトの実行",
+            "description": "ローカルマシンでNext.js Supabase Turboプロジェクトを実行する方法",
+            "icon": "play",
+            "order": 5,
+            "slug": "makerkit/installation/running-the-project",
+            "children": []
+          },
+          {
+            "title": "一般的なコマンド",
+            "description": "Next.js Supabase Turboスターターキットで作業するために知っておくべき一般的なコマンドについて学びます",
+            "icon": "terminal",
+            "order": 6,
+            "slug": "makerkit/installation/common-commands",
+            "children": []
+          },
+          {
+            "title": "更新",
+            "description": "Next.js Supabase Turboスターターキットを最新バージョンに更新する方法を学びます",
+            "icon": "refresh-cw",
+            "order": 7,
+            "slug": "makerkit/installation/updating-the-codebase",
+            "children": []
+          },
+          {
+            "title": "コードベースのナビゲーション",
+            "description": "Next.js Supabase Turboスターターキットのコードベースをナビゲートする方法を学びます。プロジェクト構造とコードベースの更新方法を理解します。",
+            "icon": "compass",
+            "order": 8,
+            "slug": "makerkit/installation/navigating-the-codebase",
+            "children": []
+          },
+          {
+            "title": "機能ウォークスルー",
+            "description": "Next.js Supabase Turboスターターキットの機能ウォークスルー。キットの機能と使用方法を理解します。",
+            "icon": "footprints",
+            "order": 9,
+            "slug": "makerkit/installation/walkthrough",
+            "children": []
+          },
+          {
+            "title": "Makerkit v1からの移行ガイドライン",
+            "description": "Makerkit v1からNext.js SaaSボイラープレートへの移行ガイドライン。",
+            "icon": "arrow-right",
+            "order": 10,
+            "slug": "makerkit/installation/migrating-from-v1",
+            "children": []
+          },
+          {
+            "title": "Next.js 15へのアップデート",
+            "description": "MakerkitをNext.js 15にアップデートするためのガイド。コードベースを最新のNext.jsバージョンに移行するために知っておくべきすべてのこと。",
+            "icon": "refresh",
+            "order": 11,
+            "slug": "makerkit/installation/updating-to-next-js-15",
+            "children": []
+          },
+          {
+            "title": "Tailwind CSS v4へのアップデート",
+            "description": "MakerkitをTailwind CSS v4にアップデートするためのガイド。コードベースを最新のTailwind CSSバージョンに移行するために知っておくべきすべてのこと。",
+            "icon": "paintbrush",
+            "order": 12,
+            "slug": "makerkit/installation/updating-to-tailwind-css-v4",
+            "children": []
+          },
+          {
+            "title": "CursorとWindsurfのためのLLMルール",
+            "description": "LLMのための最適なコンテキストを生成するために、CursorとWindsurfでこれらのルールを使用してください",
+            "icon": "brain",
+            "order": 14,
+            "slug": "makerkit/installation/llms-rules",
+            "children": []
+          },
+          {
+            "title": "FAQ",
+            "description": "Next.js SaaSボイラープレートに関するよくある質問",
+            "icon": "help-circle",
+            "order": 15,
+            "slug": "makerkit/installation/faq",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "構成",
+        "description": "MakerKitの基本設定と構成",
+        "order": 2,
+        "slug": "makerkit/configuration",
+        "children": [
+          {
+            "title": "環境変数",
+            "description": "Next.js Supabaseスターターキットでの環境変数の設定方法について学びます。",
+            "icon": "settings",
+            "order": 1,
+            "slug": "makerkit/configuration/environment-variables",
+            "children": []
+          },
+          {
+            "title": "アプリケーション設定の構成",
+            "description": "Next.js Supabaseアプリケーションの全体設定のセットアップ方法を学びます",
+            "icon": "settings",
+            "order": 2,
+            "slug": "makerkit/configuration/application-configuration",
+            "children": []
+          },
+          {
+            "title": "認証設定の構成",
+            "description": "Next.js Supabaseアプリケーションの認証設定のセットアップ方法を学びます",
+            "icon": "lock",
+            "order": 3,
+            "slug": "makerkit/configuration/authentication-configuration",
+            "children": []
+          },
+          {
+            "title": "パス設定の構成",
+            "description": "Next.js Supabaseアプリケーションのパス設定のセットアップ方法を学びます",
+            "icon": "route",
+            "order": 4,
+            "slug": "makerkit/configuration/paths-configuration",
+            "children": []
+          },
+          {
+            "title": "機能フラグ設定の構成",
+            "description": "Next.js Supabaseアプリケーションの機能フラグ設定のセットアップ方法を学びます",
+            "icon": "flag",
+            "order": 5,
+            "slug": "makerkit/configuration/feature-flags",
+            "children": []
+          },
+          {
+            "title": "個人アカウントナビゲーション設定の構成",
+            "description": "Next.js Supabaseアプリケーションの個人アカウントナビゲーションのセットアップ方法を学びます",
+            "icon": "layout",
+            "order": 6,
+            "slug": "makerkit/configuration/account-navigation-configuration",
+            "children": []
+          },
+          {
+            "title": "チームアカウントナビゲーション設定の構成",
+            "description": "Next.js Supabaseアプリケーションのチームアカウントナビゲーションのセットアップ方法を学びます",
+            "icon": "layout-grid",
+            "order": 7,
+            "slug": "makerkit/configuration/team-account-navigation-config",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "カスタマイズ",
+        "description": "MakerKitのカスタマイズ方法",
+        "order": 3,
+        "slug": "makerkit/customization",
+        "children": [
+          {
+            "title": "Tailwind CSS Shadcnテーマの更新",
+            "description": "MakerkitアプリケーションでのタイルウィンドCSSテーマの更新方法",
+            "icon": "palette",
+            "order": 1,
+            "slug": "makerkit/customization/tailwind-css",
+            "children": []
+          },
+          {
+            "title": "Shadcnテーマの更新",
+            "description": "Makerkitアプリケーションでのテーマの更新方法",
+            "icon": "brush",
+            "order": 2,
+            "slug": "makerkit/customization/updating-the-theme",
+            "children": []
+          },
+          {
+            "title": "デフォルトロゴの更新",
+            "description": "Makerkitアプリケーションでのデフォルトアプリケーションロゴの更新方法",
+            "icon": "image",
+            "order": 3,
+            "slug": "makerkit/customization/updating-the-logo",
+            "children": []
+          },
+          {
+            "title": "Shadcn UIコンポーネントを追加する方法",
+            "description": "Next.js Supabaseアプリケーションを新しいShadcn UIコンポーネントで更新する",
+            "icon": "component",
+            "order": 4,
+            "slug": "makerkit/customization/adding-shadcn-ui-components-to-your-application-next-js-supabase-saas-kit",
+            "children": []
+          },
+          {
+            "title": "デフォルトフォントを更新する",
+            "description": "Makerkitアプリケーションのフォントを更新する方法を学ぶ",
+            "icon": "type",
+            "order": 5,
+            "slug": "makerkit/customization/updating-fonts",
+            "children": []
+          },
+          {
+            "title": "SaaSのデフォルトレイアウトスタイルを更新する",
+            "description": "Makerkitアプリケーションのデフォルトレイアウトスタイルを更新する方法を学ぶ",
+            "icon": "layout",
+            "order": 6,
+            "slug": "makerkit/customization/layout-style",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "開発",
+        "description": "開発環境とワークフロー",
+        "order": 4,
+        "slug": "makerkit/development",
+        "children": [
+          {
+            "title": "ローカル開発へのアプローチ方法",
+            "description": "Next.js Supabase Turboプロジェクトでのローカル開発へのアプローチ方法を学ぶ",
+            "icon": "code",
+            "order": 1,
+            "slug": "makerkit/development/starting-developing-your-app",
+            "children": []
+          },
+          {
+            "title": "新しいマイグレーションを作成しデータベーススキーマを更新する方法",
+            "description": "Next.js Supabaseアプリケーションで新しいマイグレーションを作成しデータベーススキーマを更新する方法を学ぶ",
+            "icon": "database",
+            "order": 2,
+            "slug": "makerkit/development/migrations",
+            "children": []
+          },
+          {
+            "title": "データベーススキーマの作成・更新",
+            "description": "Next.js Supabaseアプリケーションで新しいマイグレーションを作成しデータベーススキーマを更新する方法を学ぶ",
+            "icon": "table",
+            "order": 3,
+            "slug": "makerkit/development/database-schema",
+            "children": []
+          },
+          {
+            "title": "データベース関数",
+            "description": "Next.js Supabaseスキーマで利用可能なデータベース関数について学ぶ",
+            "icon": "function-square",
+            "order": 4,
+            "slug": "makerkit/development/database-functions",
+            "children": []
+          },
+          {
+            "title": "Supabaseからデータを読み込む",
+            "description": "このページではSupabaseデータベースからデータを読み込み、Next.jsアプリケーションで表示する方法を学びます",
+            "icon": "database-zap",
+            "order": 5,
+            "slug": "makerkit/development/loading-data-from-the-db",
+            "children": []
+          },
+          {
+            "title": "Supabaseデータベースにデータを書き込む方法を学ぶ",
+            "description": "このページではNext.jsアプリでSupabaseデータベースにデータを書き込む方法を学びます",
+            "icon": "database-out",
+            "order": 6,
+            "slug": "makerkit/development/writing-data-to-database",
+            "children": []
+          },
+          {
+            "title": "データベースウェブフックの処理",
+            "description": "Next.js Supabaseアプリケーションでカスタムデータベースウェブフックを処理する方法を学ぶ",
+            "icon": "webhook",
+            "order": 7,
+            "slug": "makerkit/development/database-webhooks",
+            "children": []
+          },
+          {
+            "title": "RBAC:ロールとパーミッションの理解",
+            "description": "Next.js Supabaseでロールとパーミッションを実装する方法を学ぶ",
+            "icon": "shield",
+            "order": 8,
+            "slug": "makerkit/development/rbac-roles-and-permissions",
+            "children": []
+          },
+          {
+            "title": "マーケティングページ",
+            "description": "Next.js Supabase Turboスターターキットでマーケティングページを作成・更新する方法を学ぶ",
+            "icon": "presentation",
+            "order": 9,
+            "slug": "makerkit/development/marketing-pages",
+            "children": []
+          },
+          {
+            "title": "法的ページ",
+            "description": "Next.js Supabase Turboスターターキットで法的ページを作成・更新する方法を学ぶ",
+            "icon": "scale",
+            "order": 10,
+            "slug": "makerkit/development/legal-pages",
+            "children": []
+          },
+          {
+            "title": "外部マーケティングウェブサイト",
+            "description": "Next.js Supabase Turboスターターキットで外部マーケティングウェブサイトと連携するようMakerkitを設定する方法を学ぶ",
+            "icon": "external-link",
+            "order": 11,
+            "slug": "makerkit/development/external-marketing-website",
+            "children": []
+          },
+          {
+            "title": "SEOを改善する",
+            "description": "Makerkitアプリケーションの検索エンジン最適化（SEO）を改善する方法を学ぶ",
+            "icon": "search",
+            "order": 12,
+            "slug": "makerkit/development/seo",
+            "children": []
+          },
+          {
+            "title": "Turborepoパッケージの追加",
+            "description": "Makerkitアプリケーションに新しいTurborepoパッケージを追加する方法を学ぶ",
+            "icon": "package",
+            "order": 13,
+            "slug": "makerkit/development/adding-a-turborepo-app",
+            "children": []
+          },
+          {
+            "title": "Turborepoアプリケーションの追加",
+            "description": "Makerkitアプリケーションに新しいTurborepoアプリケーションを追加する方法を学ぶ",
+            "icon": "app-window",
+            "order": 14,
+            "slug": "makerkit/development/adding-a-turborepo-package",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "API",
+        "description": "APIリファレンスとガイドライン",
+        "order": 5,
+        "slug": "makerkit/api",
+        "children": [
+          {
+            "title": "アカウントAPI",
+            "description": "MakerkitにおけるアカウントAPIの簡単な紹介",
+            "icon": "user",
+            "order": 1,
+            "slug": "makerkit/api/account-api",
+            "children": []
+          },
+          {
+            "title": "チームアカウントAPI",
+            "description": "Next.js Supabase SaaS KitにおけるチームアカウントAPIの簡単な紹介",
+            "icon": "users",
+            "order": 2,
+            "slug": "makerkit/api/team-account-api",
+            "children": []
+          },
+          {
+            "title": "認証API",
+            "description": "Makerkitにおける認証APIの簡単な紹介",
+            "icon": "lock",
+            "order": 3,
+            "slug": "makerkit/api/authentication-api",
+            "children": []
+          },
+          {
+            "title": "ユーザーワークスペースAPI",
+            "description": "ユーザーワークスペースAPIを使用して現在のユーザーに関連するデータを取得する方法",
+            "icon": "layout-dashboard",
+            "order": 4,
+            "slug": "makerkit/api/user-workspace-api",
+            "children": []
+          },
+          {
+            "title": "アカウントワークスペースAPI",
+            "description": "アカウントワークスペースAPIを使用して現在のアカウントに関連するデータを取得する方法",
+            "icon": "building",
+            "order": 5,
+            "slug": "makerkit/api/account-workspace-api",
+            "children": []
+          },
+          {
+            "title": "OTP API",
+            "description": "アプリケーションでワンタイムパスワード（OTP）を扱うためのシンプルなインターフェース",
+            "icon": "key",
+            "order": 6,
+            "slug": "makerkit/api/otp-api",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "データフェッチ",
+        "description": "データフェッチングとキャッシュ戦略",
+        "order": 6,
+        "slug": "makerkit/data-fetching",
+        "children": [
+          {
+            "title": "Server Components",
+            "description": "Next.js Supabase SaaS KitでServer Componentsを使用してデータをフェッチする方法を学ぶ",
+            "icon": "server",
+            "order": 1,
+            "slug": "makerkit/data-fetching/server-components",
+            "children": []
+          },
+          {
+            "title": "Supabaseクライアント",
+            "description": "ブラウザまたはサーバー上でSupabaseと対話するための異なるクライアントの使用方法",
+            "icon": "database",
+            "order": 1,
+            "slug": "makerkit/data-fetching/supabase-clients",
+            "children": []
+          },
+          {
+            "title": "Server Actionsの使用",
+            "description": "データを変更および再検証するためのServer Actionsの書き方を学ぶ",
+            "icon": "server",
+            "order": 2,
+            "slug": "makerkit/data-fetching/server-actions",
+            "children": []
+          },
+          {
+            "title": "API Route Handlersの使用",
+            "description": "Next.js Supabase SaaS Kitでデータのフェッチと書き込みを行うためのRoute Handlersの書き方を学ぶ",
+            "icon": "route",
+            "order": 3,
+            "slug": "makerkit/data-fetching/route-handlers",
+            "children": []
+          },
+          {
+            "title": "React Queryの使用",
+            "description": "Next.js Supabaseアプリケーションで非同期データフェッチを管理するためのReact Queryの使用方法を学ぶ",
+            "icon": "database",
+            "order": 4,
+            "slug": "makerkit/data-fetching/react-query",
+            "children": []
+          },
+          {
+            "title": "APIルートのCSRF保護",
+            "description": "APIルートをCSRF攻撃から保護する方法を学ぶ",
+            "icon": "shield",
+            "order": 5,
+            "slug": "makerkit/data-fetching/csrf-protection",
+            "children": []
+          },
+          {
+            "title": "APIルートのCAPTCHA保護",
+            "description": "APIルートにCAPTCHA保護を設定する方法を学ぶ",
+            "icon": "robot",
+            "order": 6,
+            "slug": "makerkit/data-fetching/captcha-protection",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "課金とサブスク",
+        "description": "課金システムとサブスクリプション管理",
+        "order": 7,
+        "slug": "makerkit/billing",
+        "children": [
+          {
+            "title": "Billing Api",
+            "slug": "makerkit/billing/billing-api",
+            "children": []
+          },
+          {
+            "title": "Handling Webhooks",
+            "slug": "makerkit/billing/handling-webhooks",
+            "children": []
+          },
+          {
+            "title": "One Off Payments",
+            "slug": "makerkit/billing/one-off-payments",
+            "children": []
+          },
+          {
+            "title": "Next.js Supabase SaaS Kitでの課金の仕組み",
+            "description": "Makerkitでの課金システムの概要と設定方法を学ぶ",
+            "icon": "credit-card",
+            "order": 1,
+            "slug": "makerkit/billing/how-billing-works",
+            "children": []
+          },
+          {
+            "title": "Next.js Supabase Kitでの課金スキーマの設定",
+            "description": "Makerkitアプリケーションでの課金プランの設定方法を学ぶ",
+            "icon": "database",
+            "order": 2,
+            "slug": "makerkit/billing/billing-schema",
+            "children": []
+          },
+          {
+            "title": "Stripe課金の設定",
+            "description": "Makerkit Next.js Supabase SaaS KitでのStripeの設定方法を学ぶ",
+            "icon": "credit-card",
+            "order": 3,
+            "slug": "makerkit/billing/stripe",
+            "children": []
+          },
+          {
+            "title": "Next.js Supabase SaaS Starter KitでのLemon Squeezy課金の設定",
+            "description": "SaaSプロダクトでLemon Squeezyを使用した課金システムの設定方法を学ぶ",
+            "icon": "lemon",
+            "order": 4,
+            "slug": "makerkit/billing/lemon-squeezy",
+            "children": []
+          },
+          {
+            "title": "Paddle課金の設定 | Next.js Supabase SaaS Kit Turbo",
+            "description": "SaaSプロダクトでPaddleを使用した課金システムの設定方法を学ぶ",
+            "icon": "paddle",
+            "order": 5,
+            "slug": "makerkit/billing/paddle",
+            "children": []
+          },
+          {
+            "title": "従量課金の設定 | Next.js Supabase SaaS Kit Turbo",
+            "description": "プロダクトの使用量に基づいて顧客に課金する従量課金モデルの設定方法を学ぶ",
+            "icon": "meter",
+            "order": 6,
+            "slug": "makerkit/billing/metered-usage",
+            "children": []
+          },
+          {
+            "title": "シートごとの課金設定 | Next.js Supabase SaaS Kit Turbo",
+            "description": "アプリケーションの追加シート（ユーザー）に対して顧客に課金するためのシートごとの課金設定方法を学ぶ",
+            "icon": "users",
+            "order": 7,
+            "slug": "makerkit/billing/per-seat-billing",
+            "children": []
+          },
+          {
+            "title": "クレジットベースの課金をMakerkitに追加する | Next.js Supabase",
+            "description": "Next.js Supabaseアプリケーションでクレジットベースの使用量課金を実装する方法を学ぶ",
+            "icon": "coins",
+            "order": 8,
+            "slug": "makerkit/billing/credits-based-billing",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "コンテンツ管理",
+        "description": "コンテンツ管理とCMS機能",
+        "order": 8,
+        "slug": "makerkit/content",
+        "children": [
+          {
+            "title": "Cms Api",
+            "slug": "makerkit/content/cms-api",
+            "children": []
+          },
+          {
+            "title": "Cms",
+            "slug": "makerkit/content/cms",
+            "children": []
+          },
+          {
+            "title": "Creating Your Own Cms Client N",
+            "slug": "makerkit/content/creating-your-own-cms-client-n",
+            "children": []
+          },
+          {
+            "title": "Keystatic",
+            "slug": "makerkit/content/keystatic",
+            "children": []
+          },
+          {
+            "title": "Wordpress",
+            "slug": "makerkit/content/wordpress",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "UIコンポーネント",
+        "description": "UIコンポーネントライブラリ",
+        "order": 9,
+        "slug": "makerkit/ui-components",
+        "children": [
+          {
+            "title": "App Breadcrumbs",
+            "slug": "makerkit/ui-components/app-breadcrumbs",
+            "children": []
+          },
+          {
+            "title": "Bordered Navigation Menu",
+            "slug": "makerkit/ui-components/bordered-navigation-menu",
+            "children": []
+          },
+          {
+            "title": "Card Button",
+            "slug": "makerkit/ui-components/card-button",
+            "children": []
+          },
+          {
+            "title": "Conditional Rendering",
+            "slug": "makerkit/ui-components/conditional-rendering",
+            "children": []
+          },
+          {
+            "title": "Cookie Banner",
+            "slug": "makerkit/ui-components/cookie-banner",
+            "children": []
+          },
+          {
+            "title": "Data Table",
+            "slug": "makerkit/ui-components/data-table",
+            "children": []
+          },
+          {
+            "title": "Empty State",
+            "slug": "makerkit/ui-components/empty-state",
+            "children": []
+          },
+          {
+            "title": "Loading Overlay",
+            "slug": "makerkit/ui-components/loading-overlay",
+            "children": []
+          },
+          {
+            "title": "Marketing Components",
+            "slug": "makerkit/ui-components/marketing-components",
+            "children": []
+          },
+          {
+            "title": "Multi Step Forms",
+            "slug": "makerkit/ui-components/multi-step-forms",
+            "children": []
+          },
+          {
+            "title": "Page",
+            "slug": "makerkit/ui-components/page",
+            "children": []
+          },
+          {
+            "title": "Shadcn Ui",
+            "slug": "makerkit/ui-components/shadcn-ui",
+            "children": []
+          },
+          {
+            "title": "Stepper",
+            "slug": "makerkit/ui-components/stepper",
+            "children": []
+          },
+          {
+            "title": "Temporary Landing Page",
+            "slug": "makerkit/ui-components/temporary-landing-page",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Notifications",
+        "description": "通知システムの実装",
+        "order": 10,
+        "slug": "makerkit/notifications",
+        "children": [
+          {
+            "title": "Notifications Configuration",
+            "slug": "makerkit/notifications/notifications-configuration",
+            "children": []
+          },
+          {
+            "title": "Sending Notifications",
+            "slug": "makerkit/notifications/sending-notifications",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Translations",
+        "description": "多言語対応と国際化",
+        "order": 11,
+        "slug": "makerkit/translations",
+        "children": [
+          {
+            "title": "Adding New Translations",
+            "slug": "makerkit/translations/adding-new-translations",
+            "children": []
+          },
+          {
+            "title": "Language Selector",
+            "slug": "makerkit/translations/language-selector",
+            "children": []
+          },
+          {
+            "title": "Using Translations",
+            "slug": "makerkit/translations/using-translations",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Emails",
+        "description": "メール送信とテンプレート管理",
+        "order": 12,
+        "slug": "makerkit/emails",
+        "children": [
+          {
+            "title": "Authentication Emails",
+            "slug": "makerkit/emails/authentication-emails",
+            "children": []
+          },
+          {
+            "title": "Custom Mailer",
+            "slug": "makerkit/emails/custom-mailer",
+            "children": []
+          },
+          {
+            "title": "Email Configuration",
+            "slug": "makerkit/emails/email-configuration",
+            "children": []
+          },
+          {
+            "title": "Email Templates",
+            "slug": "makerkit/emails/email-templates",
+            "children": []
+          },
+          {
+            "title": "Local Development",
+            "slug": "makerkit/emails/local-development",
+            "children": []
+          },
+          {
+            "title": "Sending Emails",
+            "slug": "makerkit/emails/sending-emails",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Monitoring",
+        "description": "モニタリングとパフォーマンス監視",
+        "order": 13,
+        "slug": "makerkit/monitoring",
+        "children": [
+          {
+            "title": "Baselime",
+            "slug": "makerkit/monitoring/baselime",
+            "children": []
+          },
+          {
+            "title": "How Monitoring Works",
+            "slug": "makerkit/monitoring/how-monitoring-works",
+            "children": []
+          },
+          {
+            "title": "Sentry",
+            "slug": "makerkit/monitoring/sentry",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Super Admin",
+        "description": "管理者機能とアクセス制御",
+        "order": 14,
+        "slug": "makerkit/super-admin",
+        "children": [
+          {
+            "title": "Adding A Super Admin",
+            "slug": "makerkit/super-admin/adding-a-super-admin",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Analytics API",
+        "description": "アナリティクスAPIの利用方法",
+        "order": 15,
+        "slug": "makerkit/analytics-api",
+        "children": [
+          {
+            "title": "Analytics And Events",
+            "slug": "makerkit/analytics-api/analytics-and-events",
+            "children": []
+          },
+          {
+            "title": "Custom Analytics Provider",
+            "slug": "makerkit/analytics-api/custom-analytics-provider",
+            "children": []
+          },
+          {
+            "title": "Google Analytics",
+            "slug": "makerkit/analytics-api/google-analytics",
+            "children": []
+          },
+          {
+            "title": "Posthog",
+            "slug": "makerkit/analytics-api/posthog",
+            "children": []
+          },
+          {
+            "title": "Umami",
+            "slug": "makerkit/analytics-api/umami",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Plugins",
+        "description": "プラグインシステムと拡張機能",
+        "order": 16,
+        "slug": "makerkit/plugins",
+        "children": [
+          {
+            "title": "Ai Chatbot",
+            "slug": "makerkit/plugins/ai-chatbot",
+            "children": []
+          },
+          {
+            "title": "Feedback Widget",
+            "slug": "makerkit/plugins/feedback-widget",
+            "children": []
+          },
+          {
+            "title": "Installing Plugins",
+            "slug": "makerkit/plugins/installing-plugins",
+            "children": []
+          },
+          {
+            "title": "Roadmap Plugin",
+            "slug": "makerkit/plugins/roadmap-plugin",
+            "children": []
+          },
+          {
+            "title": "Waitlist",
+            "slug": "makerkit/plugins/waitlist",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Going to Production",
+        "description": "本番環境へのデプロイとベストプラクティス",
+        "order": 17,
+        "slug": "makerkit/going-to-production",
+        "children": [
+          {
+            "title": "Authentication Emails",
+            "slug": "makerkit/going-to-production/authentication-emails",
+            "children": []
+          },
+          {
+            "title": "Authentication",
+            "slug": "makerkit/going-to-production/authentication",
+            "children": []
+          },
+          {
+            "title": "Checklist",
+            "slug": "makerkit/going-to-production/checklist",
+            "children": []
+          },
+          {
+            "title": "Deploy Supabase",
+            "slug": "makerkit/going-to-production/deploy-supabase",
+            "children": []
+          },
+          {
+            "title": "Deploy To Cloudflare",
+            "slug": "makerkit/going-to-production/deploy-to-cloudflare",
+            "children": []
+          },
+          {
+            "title": "Deploy To Vercel",
+            "slug": "makerkit/going-to-production/deploy-to-vercel",
+            "children": []
+          },
+          {
+            "title": "Environment Variables",
+            "slug": "makerkit/going-to-production/environment-variables",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Recipes",
+        "description": "一般的な実装パターンとレシピ集",
+        "order": 18,
+        "slug": "makerkit/recipes",
+        "children": [
+          {
+            "title": "Checkout Addons With Stripe Billing",
+            "slug": "makerkit/recipes/checkout-addons-with-stripe-billing",
+            "children": []
+          },
+          {
+            "title": "Disabling Personal Accounts",
+            "slug": "makerkit/recipes/disabling-personal-accounts",
+            "children": []
+          },
+          {
+            "title": "Drizzle",
+            "slug": "makerkit/recipes/drizzle",
+            "children": []
+          },
+          {
+            "title": "Onboarding Checkout",
+            "slug": "makerkit/recipes/onboarding-checkout",
+            "children": []
+          },
+          {
+            "title": "Projects Data Model",
+            "slug": "makerkit/recipes/projects-data-model",
+            "children": []
+          },
+          {
+            "title": "Subscription Entitlements",
+            "slug": "makerkit/recipes/subscription-entitlements",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Developer Tools",
+        "description": "開発者ツールとユーティリティ",
+        "order": 19,
+        "slug": "makerkit/developer-tools",
+        "children": [
+          {
+            "title": "Environment Variables",
+            "slug": "makerkit/developer-tools/environment-variables",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "Troubleshooting",
+        "description": "トラブルシューティングガイド",
+        "order": 20,
+        "slug": "makerkit/troubleshooting",
+        "children": [
+          {
+            "title": "Authentication",
+            "slug": "makerkit/troubleshooting/authentication",
+            "children": []
+          },
+          {
+            "title": "Billing",
+            "slug": "makerkit/troubleshooting/billing",
+            "children": []
+          },
+          {
+            "title": "Deployment",
+            "slug": "makerkit/troubleshooting/deployment",
+            "children": []
+          },
+          {
+            "title": "Emails",
+            "slug": "makerkit/troubleshooting/emails",
+            "children": []
+          },
+          {
+            "title": "Installation",
+            "slug": "makerkit/troubleshooting/installation",
+            "children": []
+          },
+          {
+            "title": "Modules Not Found",
+            "slug": "makerkit/troubleshooting/modules-not-found",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Mastra",
+    "description": "Mastraのカスタマイズガイド",
+    "order": 4,
+    "slug": "mastra",
+    "children": [
+      {
+        "title": "エージェント",
+        "description": "Mastraを使用したAIエージェントの開発",
+        "order": 2,
+        "slug": "mastra/agents",
+        "children": [
+          {
+            "title": "概要",
+            "description": "Mastraエージェントの概要と基本構造",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/agents/overview",
+            "children": []
+          },
+          {
+            "title": "メモリ",
+            "description": "エージェントのメモリ管理と永続化",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/agents/memory",
+            "children": []
+          },
+          {
+            "title": "ツール",
+            "description": "エージェントツールの実装と活用方法",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/agents/tools",
+            "children": []
+          },
+          {
+            "title": "音声",
+            "description": "音声対応エージェントの実装方法",
+            "order": 4,
+            "updated": "2024-03-18",
+            "slug": "mastra/agents/voice",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "使い方",
+        "description": "Mastraの使い方に関するガイド",
+        "order": 2,
+        "slug": "mastra/getting-started",
+        "children": [
+          {
+            "title": "ローカルインストール",
+            "description": "Mastra を実行するには、LLM (大規模言語モデル) へのアクセスが必要です。通常、OpenAI、Anthropic、Google Gemini などの LLM プロバイダーから API キーを取得します。Ollama を使用してローカル LLM で Mastra を実行することもできます。",
+            "order": 1,
+            "slug": "mastra/getting-started/installation",
+            "children": []
+          },
+          {
+            "title": "プロジェクト構成",
+            "description": "Mastra でフォルダとファイルを整理するためのガイド",
+            "order": 2,
+            "slug": "mastra/getting-started/project-structure",
+            "children": []
+          },
+          {
+            "title": "エージェントコードエディタツール",
+            "description": "Mastraのエージェントコードエディタツール",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/getting-started/agent-code-editor-tools",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "ガイド",
+        "description": "Mastraを使用した実装例とガイド",
+        "order": 3,
+        "slug": "mastra/guides",
+        "children": [
+          {
+            "title": "Agents: Chef Michel",
+            "description": "Chef Michel AIエージェントの実装ガイド",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/guides/chef-michel",
+            "children": []
+          },
+          {
+            "title": "Tools: Stock Agent",
+            "description": "株価情報を提供するエージェントツールの実装ガイド",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/guides/stock-agent",
+            "children": []
+          },
+          {
+            "title": "Workflows: AI Recruiter",
+            "description": "AI採用担当者ワークフローの実装ガイド",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/guides/ai-recruiter",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "フレームワーク",
+        "description": "Mastraと他のフレームワークとの連携",
+        "order": 4,
+        "slug": "mastra/frameworks",
+        "children": [
+          {
+            "title": "AI SDK",
+            "description": "Mastraとの連携とAI SDKの活用方法",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/frameworks/ai-sdk",
+            "children": []
+          },
+          {
+            "title": "Integrate with Next.js",
+            "description": "Next.jsプロジェクトでのMastraの統合方法",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/frameworks/nextjs-integration",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "ワークフロー",
+        "description": "Mastraのワークフロー機能の活用",
+        "order": 5,
+        "slug": "mastra/workflows",
+        "children": [
+          {
+            "title": "概要",
+            "description": "Mastraワークフローの概要と基本構造",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/workflows/overview",
+            "children": []
+          },
+          {
+            "title": "ステップ",
+            "description": "ワークフローのステップ設計と実装",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/workflows/steps",
+            "children": []
+          },
+          {
+            "title": "制御フロー",
+            "description": "ワークフロー内での制御フローの実装",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/workflows/control-flow",
+            "children": []
+          },
+          {
+            "title": "変数",
+            "description": "ワークフロー内での変数の利用方法",
+            "order": 4,
+            "updated": "2024-03-18",
+            "slug": "mastra/workflows/variables",
+            "children": []
+          },
+          {
+            "title": "一時停止と再開",
+            "description": "ワークフローの一時停止と再開の実装",
+            "order": 5,
+            "updated": "2024-03-18",
+            "slug": "mastra/workflows/suspend-resume",
+            "children": []
+          },
+          {
+            "title": "動的ワークフロー",
+            "description": "動的に変化するワークフローの実装方法",
+            "order": 6,
+            "updated": "2024-03-18",
+            "slug": "mastra/workflows/dynamic-workflows",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "ストレージ",
+        "description": "Mastraのデータストレージ機能",
+        "order": 6,
+        "slug": "mastra/storage",
+        "children": [
+          {
+            "title": "概要",
+            "description": "Mastraのストレージシステムの概要",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/storage/overview",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "RAG",
+        "description": "検索拡張生成 (Retrieval Augmented Generation)",
+        "order": 7,
+        "slug": "mastra/rag",
+        "children": [
+          {
+            "title": "概要",
+            "description": "Mastraでの検索拡張生成の概要",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/rag/overview",
+            "children": []
+          },
+          {
+            "title": "チャンキングと埋め込み",
+            "description": "文書のチャンキングと埋め込みの実装",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/rag/chunking-embedding",
+            "children": []
+          },
+          {
+            "title": "ベクトルデータベース",
+            "description": "Mastraで利用可能なベクトルデータベース",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/rag/vector-databases",
+            "children": []
+          },
+          {
+            "title": "検索",
+            "description": "効果的な検索と取得の実装方法",
+            "order": 4,
+            "updated": "2024-03-18",
+            "slug": "mastra/rag/retrieval",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "ローカル開発",
+        "description": "Mastraのローカル開発環境",
+        "order": 8,
+        "slug": "mastra/local-dev",
+        "children": [
+          {
+            "title": "プロジェクト作成",
+            "description": "Mastraプロジェクトの作成方法",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/local-dev/creating-projects",
+            "children": []
+          },
+          {
+            "title": "Mastra Dev",
+            "description": "Mastra開発環境の活用方法",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/local-dev/mastra-dev",
+            "children": []
+          },
+          {
+            "title": "統合",
+            "description": "ローカル開発時の外部サービスとの統合",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/local-dev/integrations",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "デプロイメント",
+        "description": "Mastraアプリケーションのデプロイ",
+        "order": 9,
+        "slug": "mastra/deployment",
+        "children": [
+          {
+            "title": "Mastra Server",
+            "description": "Mastraサーバーの構成と設定",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/deployment/mastra-server",
+            "children": []
+          },
+          {
+            "title": "ロギングとトレーシング",
+            "description": "ログの記録と分散トレーシングの実装",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/deployment/logging-tracing",
+            "children": []
+          },
+          {
+            "title": "デプロイ",
+            "description": "各種環境へのデプロイ方法",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/deployment/deployment",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "評価 (Evals)",
+        "description": "AIモデルとシステムの評価",
+        "order": 10,
+        "slug": "mastra/evals",
+        "children": [
+          {
+            "title": "概要",
+            "description": "Mastraの評価システムの概要",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/evals/overview",
+            "children": []
+          },
+          {
+            "title": "テキスト評価",
+            "description": "テキスト出力の評価方法",
+            "order": 2,
+            "updated": "2024-03-18",
+            "slug": "mastra/evals/textual-evals",
+            "children": []
+          },
+          {
+            "title": "カスタム評価",
+            "description": "独自の評価メトリクスの作成",
+            "order": 3,
+            "updated": "2024-03-18",
+            "slug": "mastra/evals/custom-evals",
+            "children": []
+          },
+          {
+            "title": "CIでの実行",
+            "description": "CI/CDパイプラインでの評価の実行",
+            "order": 4,
+            "updated": "2024-03-18",
+            "slug": "mastra/evals/running-in-ci",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "よくある質問",
+        "description": "Mastraに関するよくある質問",
+        "order": 11,
+        "slug": "mastra/faq",
+        "children": [
+          {
+            "title": "ライセンス",
+            "description": "Mastraのライセンスに関する情報",
+            "order": 1,
+            "updated": "2024-03-18",
+            "slug": "mastra/faq/licensing",
+            "children": []
+          }
+        ]
+      },
+      {
+        "title": "リファレンス",
+        "description": "Mastra APIとコンポーネントの詳細リファレンス",
+        "order": 12,
+        "slug": "mastra/reference",
+        "children": [
+          {
+            "title": "概要",
+            "description": "リファレンスドキュメントの概要",
+            "order": 1,
+            "slug": "mastra/reference/overview",
+            "children": []
+          },
+          {
+            "title": "コア",
+            "description": "Mastraコアモジュールのリファレンス",
+            "order": 2,
+            "slug": "mastra/reference/core",
+            "children": [
+              {
+                "title": "Mastra Class",
+                "description": "Mastraのメインクラスのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/core/mastra-class",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "CLI",
+            "description": "Mastraコマンドラインインターフェースのリファレンス",
+            "order": 3,
+            "slug": "mastra/reference/cli",
+            "children": [
+              {
+                "title": "mastra init",
+                "description": "mastra initコマンドのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/cli/mastra-init",
+                "children": []
+              },
+              {
+                "title": "mastra dev",
+                "description": "mastra devコマンドのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/cli/mastra-dev",
+                "children": []
+              },
+              {
+                "title": "mastra deploy",
+                "description": "mastra deployコマンドのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/cli/mastra-deploy",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "エージェント",
+            "description": "エージェントAPIリファレンス",
+            "order": 4,
+            "slug": "mastra/reference/agents",
+            "children": [
+              {
+                "title": "getAgent()",
+                "description": "getAgent関数のリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/agents/get-agent",
+                "children": []
+              },
+              {
+                "title": "createTool()",
+                "description": "createTool関数のリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/agents/create-tool",
+                "children": []
+              },
+              {
+                "title": "generate()",
+                "description": "generate関数のリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/agents/generate",
+                "children": []
+              },
+              {
+                "title": "stream()",
+                "description": "stream関数のリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/agents/stream",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "ツール",
+            "description": "ツールAPIリファレンス",
+            "order": 5,
+            "slug": "mastra/reference/tools",
+            "children": [
+              {
+                "title": "createDocumentChunkerTool()",
+                "description": "ドキュメントチャンカーツールの作成関数",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/tools/create-document-chunker-tool",
+                "children": []
+              },
+              {
+                "title": "createGraphRAGTool()",
+                "description": "グラフRAGツールの作成関数",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/tools/create-graph-rag-tool",
+                "children": []
+              },
+              {
+                "title": "createVectorQueryTool()",
+                "description": "ベクトルクエリツールの作成関数",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/tools/create-vector-query-tool",
+                "children": []
+              },
+              {
+                "title": "MastraMCPClient",
+                "description": "MastraMCPClientクラスのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/tools/mastra-mcp-client",
+                "children": []
+              },
+              {
+                "title": "MCPConfiguration",
+                "description": "MCPConfiguration設定のリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/tools/mcp-configuration",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "ワークフロー",
+            "description": "ワークフローAPIリファレンス",
+            "order": 6,
+            "slug": "mastra/reference/workflows",
+            "children": [
+              {
+                "title": "Workflow",
+                "description": "Workflowクラスのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/workflow",
+                "children": []
+              },
+              {
+                "title": "Step",
+                "description": "Stepクラスのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/step",
+                "children": []
+              },
+              {
+                "title": "StepOptions",
+                "description": "StepOptionsインターフェースのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/step-options",
+                "children": []
+              },
+              {
+                "title": "StepCondition",
+                "description": "StepConditionのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/step-condition",
+                "children": []
+              },
+              {
+                "title": ".step()",
+                "description": "step()メソッドのリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/step-method",
+                "children": []
+              },
+              {
+                "title": ".after()",
+                "description": "after()メソッドのリファレンス",
+                "order": 6,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/after-method",
+                "children": []
+              },
+              {
+                "title": ".then()",
+                "description": "then()メソッドのリファレンス",
+                "order": 7,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/then-method",
+                "children": []
+              },
+              {
+                "title": ".until()",
+                "description": "until()メソッドのリファレンス",
+                "order": 8,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/until-method",
+                "children": []
+              },
+              {
+                "title": ".while()",
+                "description": "while()メソッドのリファレンス",
+                "order": 9,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/while-method",
+                "children": []
+              },
+              {
+                "title": ".if()",
+                "description": "if()メソッドのリファレンス",
+                "order": 10,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/if-method",
+                "children": []
+              },
+              {
+                "title": ".else()",
+                "description": "else()メソッドのリファレンス",
+                "order": 11,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/else-method",
+                "children": []
+              },
+              {
+                "title": ".createRun()",
+                "description": "createRun()メソッドのリファレンス",
+                "order": 12,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/create-run-method",
+                "children": []
+              },
+              {
+                "title": ".start()",
+                "description": "start()メソッドのリファレンス",
+                "order": 13,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/start-method",
+                "children": []
+              },
+              {
+                "title": ".execute()",
+                "description": "execute()メソッドのリファレンス",
+                "order": 14,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/execute-method",
+                "children": []
+              },
+              {
+                "title": ".suspend()",
+                "description": "suspend()メソッドのリファレンス",
+                "order": 15,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/suspend-method",
+                "children": []
+              },
+              {
+                "title": ".resume()",
+                "description": "resume()メソッドのリファレンス",
+                "order": 16,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/resume-method",
+                "children": []
+              },
+              {
+                "title": ".commit()",
+                "description": "commit()メソッドのリファレンス",
+                "order": 17,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/commit-method",
+                "children": []
+              },
+              {
+                "title": ".watch()",
+                "description": "watch()メソッドのリファレンス",
+                "order": 18,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/workflows/watch-method",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "メモリ",
+            "description": "メモリAPIリファレンス",
+            "order": 7,
+            "slug": "mastra/reference/memory",
+            "children": [
+              {
+                "title": "Memory Class",
+                "description": "Memoryクラスのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/memory/memory-class",
+                "children": []
+              },
+              {
+                "title": ".createThread()",
+                "description": "createThread()メソッドのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/memory/create-thread",
+                "children": []
+              },
+              {
+                "title": ".query()",
+                "description": "query()メソッドのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/memory/query",
+                "children": []
+              },
+              {
+                "title": ".getThreadById()",
+                "description": "getThreadById()メソッドのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/memory/get-thread-by-id",
+                "children": []
+              },
+              {
+                "title": ".getThreadsByResourceId()",
+                "description": "getThreadsByResourceId()メソッドのリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/memory/get-threads-by-resource-id",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "ストレージ",
+            "description": "ストレージAPIリファレンス",
+            "order": 8,
+            "slug": "mastra/reference/storage",
+            "children": [
+              {
+                "title": "LibSQL Storage",
+                "description": "LibSQLストレージのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/storage/libsql-storage",
+                "children": []
+              },
+              {
+                "title": "PostgreSQL Storage",
+                "description": "PostgreSQLストレージのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/storage/postgresql-storage",
+                "children": []
+              },
+              {
+                "title": "Upstash Storage",
+                "description": "Upstashストレージのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/storage/upstash-storage",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "RAG",
+            "description": "RAG (検索拡張生成) APIリファレンス",
+            "order": 9,
+            "slug": "mastra/reference/rag",
+            "children": [
+              {
+                "title": ".chunk()",
+                "description": "chunk()メソッドのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/chunk",
+                "children": []
+              },
+              {
+                "title": ".embed()",
+                "description": "embed()メソッドのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/embed",
+                "children": []
+              },
+              {
+                "title": "ExtractParams",
+                "description": "ExtractParamsインターフェイスのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/extract-params",
+                "children": []
+              },
+              {
+                "title": "rerank()",
+                "description": "rerank()関数のリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/rerank",
+                "children": []
+              },
+              {
+                "title": "MDocument",
+                "description": "MDocumentクラスのリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/mdocument",
+                "children": []
+              },
+              {
+                "title": "Metadata Filters",
+                "description": "メタデータフィルターのリファレンス",
+                "order": 6,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/metadata-filters",
+                "children": []
+              },
+              {
+                "title": "GraphRAG",
+                "description": "GraphRAGのリファレンス",
+                "order": 7,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/graph-rag",
+                "children": []
+              },
+              {
+                "title": "AstraVector",
+                "description": "AstraVectorストアのリファレンス",
+                "order": 8,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/astra-vector",
+                "children": []
+              },
+              {
+                "title": "ChromaVector",
+                "description": "ChromaVectorストアのリファレンス",
+                "order": 9,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/chroma-vector",
+                "children": []
+              },
+              {
+                "title": "CloudflareVector",
+                "description": "CloudflareVectorストアのリファレンス",
+                "order": 10,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/cloudflare-vector",
+                "children": []
+              },
+              {
+                "title": "PgVector",
+                "description": "PgVectorストアのリファレンス",
+                "order": 11,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/pg-vector",
+                "children": []
+              },
+              {
+                "title": "LibSQLVector",
+                "description": "LibSQLVectorストアのリファレンス",
+                "order": 12,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/libsql-vector",
+                "children": []
+              },
+              {
+                "title": "PineconeVector",
+                "description": "PineconeVectorストアのリファレンス",
+                "order": 13,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/pinecone-vector",
+                "children": []
+              },
+              {
+                "title": "QdrantVector",
+                "description": "QdrantVectorストアのリファレンス",
+                "order": 14,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/qdrant-vector",
+                "children": []
+              },
+              {
+                "title": "UpstashVector",
+                "description": "UpstashVectorストアのリファレンス",
+                "order": 15,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/upstash-vector",
+                "children": []
+              },
+              {
+                "title": "Reference: Turbopuffer Vector Store",
+                "description": "Turbopuffer Vector Storeのリファレンス",
+                "order": 16,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/rag/turbopuffer-vector-store",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "Evals",
+            "description": "評価システムAPIリファレンス",
+            "order": 10,
+            "slug": "mastra/reference/evals",
+            "children": [
+              {
+                "title": "AnswerRelevancy",
+                "description": "AnswerRelevancy評価のリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/answer-relevancy",
+                "children": []
+              },
+              {
+                "title": "Bias",
+                "description": "Bias評価のリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/bias",
+                "children": []
+              },
+              {
+                "title": "Completeness",
+                "description": "Completeness評価のリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/completeness",
+                "children": []
+              },
+              {
+                "title": "ContentSimilarity",
+                "description": "ContentSimilarity評価のリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/content-similarity",
+                "children": []
+              },
+              {
+                "title": "ContextPosition",
+                "description": "ContextPosition評価のリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/context-position",
+                "children": []
+              },
+              {
+                "title": "ContextPrecision",
+                "description": "ContextPrecision評価のリファレンス",
+                "order": 6,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/context-precision",
+                "children": []
+              },
+              {
+                "title": "ContextRelevancy",
+                "description": "ContextRelevancy評価のリファレンス",
+                "order": 7,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/context-relevancy",
+                "children": []
+              },
+              {
+                "title": "ContextualRecall",
+                "description": "ContextualRecall評価のリファレンス",
+                "order": 8,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/contextual-recall",
+                "children": []
+              },
+              {
+                "title": "Faithfulness",
+                "description": "Faithfulness評価のリファレンス",
+                "order": 9,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/faithfulness",
+                "children": []
+              },
+              {
+                "title": "Hallucination",
+                "description": "Hallucination評価のリファレンス",
+                "order": 10,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/hallucination",
+                "children": []
+              },
+              {
+                "title": "KeywordCoverage",
+                "description": "KeywordCoverage評価のリファレンス",
+                "order": 11,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/keyword-coverage",
+                "children": []
+              },
+              {
+                "title": "PromptAlignment",
+                "description": "PromptAlignment評価のリファレンス",
+                "order": 12,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/prompt-alignment",
+                "children": []
+              },
+              {
+                "title": "Summarization",
+                "description": "Summarization評価のリファレンス",
+                "order": 13,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/summarization",
+                "children": []
+              },
+              {
+                "title": "TextualDifference",
+                "description": "TextualDifference評価のリファレンス",
+                "order": 14,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/textual-difference",
+                "children": []
+              },
+              {
+                "title": "ToneConsistency",
+                "description": "ToneConsistency評価のリファレンス",
+                "order": 15,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/tone-consistency",
+                "children": []
+              },
+              {
+                "title": "Toxicity",
+                "description": "Toxicity評価のリファレンス",
+                "order": 16,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/evals/toxicity",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "音声",
+            "description": "音声APIリファレンス",
+            "order": 11,
+            "slug": "mastra/reference/voice",
+            "children": [
+              {
+                "title": "Mastra Voice",
+                "description": "Mastra Voiceのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/mastra-voice",
+                "children": []
+              },
+              {
+                "title": "Composite Voice",
+                "description": "Composite Voiceのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/composite-voice",
+                "children": []
+              },
+              {
+                "title": "Deepgram",
+                "description": "Deepgramプロバイダーのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/deepgram",
+                "children": []
+              },
+              {
+                "title": "ElevenLabs",
+                "description": "ElevenLabsプロバイダーのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/elevenlabs",
+                "children": []
+              },
+              {
+                "title": "Google",
+                "description": "Googleプロバイダーのリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/google",
+                "children": []
+              },
+              {
+                "title": "Murf",
+                "description": "Murfプロバイダーのリファレンス",
+                "order": 6,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/murf",
+                "children": []
+              },
+              {
+                "title": "OpenAI",
+                "description": "OpenAIプロバイダーのリファレンス",
+                "order": 7,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/openai",
+                "children": []
+              },
+              {
+                "title": "OpenAI Realtime",
+                "description": "OpenAI Realtimeプロバイダーのリファレンス",
+                "order": 8,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/openai-realtime",
+                "children": []
+              },
+              {
+                "title": "PlayAI",
+                "description": "PlayAIプロバイダーのリファレンス",
+                "order": 9,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/playai",
+                "children": []
+              },
+              {
+                "title": "Speechify",
+                "description": "Speechifyプロバイダーのリファレンス",
+                "order": 10,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/voice/speechify",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "可観測性",
+            "description": "可観測性APIリファレンス",
+            "order": 12,
+            "slug": "mastra/reference/observability",
+            "children": [
+              {
+                "title": "プロバイダー",
+                "description": "可観測性プロバイダー",
+                "order": 1,
+                "slug": "mastra/reference/observability/providers",
+                "children": [
+                  {
+                    "title": "オブザーバビリティプロバイダー概要",
+                    "description": "Mastraでサポートされているオブザーバビリティプロバイダーの概要",
+                    "order": 1,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/overview",
+                    "children": []
+                  },
+                  {
+                    "title": "SigNoz",
+                    "description": "SigNozプロバイダーのリファレンス",
+                    "order": 2,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/signoz",
+                    "children": []
+                  },
+                  {
+                    "title": "Braintrust",
+                    "description": "Braintrustプロバイダーのリファレンス",
+                    "order": 3,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/braintrust",
+                    "children": []
+                  },
+                  {
+                    "title": "LangSmith",
+                    "description": "LangSmithプロバイダーのリファレンス",
+                    "order": 4,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/langsmith",
+                    "children": []
+                  },
+                  {
+                    "title": "Langfuse",
+                    "description": "Langfuseプロバイダーのリファレンス",
+                    "order": 5,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/langfuse",
+                    "children": []
+                  },
+                  {
+                    "title": "LangWatch",
+                    "description": "LangWatchプロバイダーのリファレンス",
+                    "order": 6,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/langwatch",
+                    "children": []
+                  },
+                  {
+                    "title": "New Relic",
+                    "description": "New Relicプロバイダーのリファレンス",
+                    "order": 7,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/new-relic",
+                    "children": []
+                  },
+                  {
+                    "title": "Traceloop",
+                    "description": "Traceloopプロバイダーのリファレンス",
+                    "order": 8,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/traceloop",
+                    "children": []
+                  },
+                  {
+                    "title": "Laminar",
+                    "description": "Laminarプロバイダーのリファレンス",
+                    "order": 9,
+                    "updated": "2024-03-18",
+                    "slug": "mastra/reference/observability/providers/laminar",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "title": "Logger",
+                "description": "Loggerクラスのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/observability/logger",
+                "children": []
+              },
+              {
+                "title": "OTelConfig",
+                "description": "OTelConfig設定のリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/observability/otel-config",
+                "children": []
+              },
+              {
+                "title": ".createLogger()",
+                "description": "createLogger()メソッドのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/observability/create-logger",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "Client SDK - JS",
+            "description": "JavaScript用クライアントSDKリファレンス",
+            "order": 13,
+            "slug": "mastra/reference/client-sdk-js",
+            "children": [
+              {
+                "title": "概要",
+                "description": "JavaScript SDKの概要",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/overview",
+                "children": []
+              },
+              {
+                "title": "Agents API",
+                "description": "エージェントAPIのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/agents-api",
+                "children": []
+              },
+              {
+                "title": "Memory API",
+                "description": "メモリAPIのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/memory-api",
+                "children": []
+              },
+              {
+                "title": "Tools API",
+                "description": "ツールAPIのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/tools-api",
+                "children": []
+              },
+              {
+                "title": "Workflows API",
+                "description": "ワークフローAPIのリファレンス",
+                "order": 5,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/workflows-api",
+                "children": []
+              },
+              {
+                "title": "Vectors API",
+                "description": "ベクターAPIのリファレンス",
+                "order": 6,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/vectors-api",
+                "children": []
+              },
+              {
+                "title": "Logs API",
+                "description": "ログAPIのリファレンス",
+                "order": 7,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/logs-api",
+                "children": []
+              },
+              {
+                "title": "Telemetry API",
+                "description": "テレメトリAPIのリファレンス",
+                "order": 8,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/telemetry-api",
+                "children": []
+              },
+              {
+                "title": "Error Handling",
+                "description": "エラーハンドリングのリファレンス",
+                "order": 9,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/client-sdk-js/error-handling",
+                "children": []
+              }
+            ]
+          },
+          {
+            "title": "デプロイヤー",
+            "description": "デプロイツールリファレンス",
+            "order": 14,
+            "slug": "mastra/reference/deployer",
+            "children": [
+              {
+                "title": "Deployer",
+                "description": "Deployerクラスのリファレンス",
+                "order": 1,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/deployer/deployer",
+                "children": []
+              },
+              {
+                "title": "Cloudflare",
+                "description": "Cloudflareデプロイのリファレンス",
+                "order": 2,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/deployer/cloudflare",
+                "children": []
+              },
+              {
+                "title": "Netlify",
+                "description": "Netlifyデプロイのリファレンス",
+                "order": 3,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/deployer/netlify",
+                "children": []
+              },
+              {
+                "title": "Vercel",
+                "description": "Vercelデプロイのリファレンス",
+                "order": 4,
+                "updated": "2024-03-18",
+                "slug": "mastra/reference/deployer/vercel",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Convex",
+    "description": "Convexのカスタマイズガイド",
+    "order": 6,
+    "slug": "convex",
+    "children": []
+  },
+  {
+    "title": "Super Next App",
+    "description": "Super Next Appテンプレートの使用ガイド",
+    "order": 6,
+    "slug": "super-next-app",
+    "children": [
+      {
+        "title": "turborepo",
+        "order": 0,
+        "slug": "super-next-app/turborepo",
+        "children": [
+          {
+            "title": "Add New App",
+            "slug": "super-next-app/turborepo/add-new-app",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Bun",
+    "description": "Bunのカスタマイズガイド",
+    "order": 7,
+    "slug": "bun",
+    "children": []
+  }
+]

@@ -1,0 +1,17 @@
+[install]
+# pnpmのdedupe-peer-dependentsに相当
+dedupe = true
+
+# i18nextとbiomeのホイスティング設定
+hoist = ["*i18next*", "*biome*"]
+
+# Node.jsバージョンの指定（オプション）
+node_version = "20.10"
+
+[install.lockfile]
+# lockfileの設定
+save = true
+
+[install.cache]
+# キャッシュの設定
+dir = ".bun/cache" 

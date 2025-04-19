@@ -1,0 +1,47 @@
+{
+  "title": "ワークフロー",
+  "description": "Mastraのワークフロー機能の活用",
+  "order": 5,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "Mastraワークフローの概要と基本構造",
+      "order": 1
+    },
+    {
+      "name": "steps",
+      "title": "ステップ",
+      "description": "ワークフローのステップ設計と実装",
+      "order": 2
+    },
+    {
+      "name": "control-flow",
+      "title": "制御フロー",
+      "description": "ワークフロー内での制御フローの実装",
+      "order": 3
+    },
+    {
+      "name": "variables",
+      "title": "変数",
+      "description": "ワークフロー内での変数の利用方法",
+      "order": 4
+    },
+    {
+      "name": "suspend-resume",
+      "title": "一時停止と再開",
+      "description": "ワークフローの一時停止と再開の実装",
+      "order": 5
+    },
+    {
+      "name": "dynamic-workflows",
+      "title": "動的ワークフロー",
+      "description": "動的に変化するワークフローの実装方法",
+      "order": 6
+    }
+  ]
+}

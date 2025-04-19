@@ -1,0 +1,47 @@
+{
+  "name": "@kit/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "build:vercel": "tsup",
+    "dev": "tsup --watch",
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "format": "biome format .",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    "./server-client": "./src/clients/server-client.ts",
+    "./server-admin-client": "./src/clients/server-admin-client.ts",
+    "./middleware-client": "./src/clients/middleware-client.ts",
+    "./browser-client": "./src/clients/browser-client.ts",
+    "./direct-fetch-client": "./src/clients/direct-fetch-client.ts",
+    "./check-requires-mfa": "./src/check-requires-mfa.ts",
+    "./require-user": "./src/require-user.ts",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./database": "./src/database.types.ts",
+    "./circle-database": "./src/circle-database.types.ts",
+    "./auth": "./src/auth.ts",
+    "./handle-auth-callback": "./src/handle-auth-callback.ts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.6.1",
+    "@supabase/supabase-js": "2.49.3",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@kit/tsconfig": "workspace:*",
+    "tsup": "8.4.0",
+    "typescript": "5.8.2"
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["src/*"]
+    }
+  }
+}

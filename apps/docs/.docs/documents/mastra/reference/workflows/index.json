@@ -1,0 +1,119 @@
+{
+  "title": "ワークフロー",
+  "description": "ワークフローAPIリファレンス",
+  "order": 6,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "workflow",
+      "title": "Workflow",
+      "description": "Workflowクラスのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "step",
+      "title": "Step",
+      "description": "Stepクラスのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "step-options",
+      "title": "StepOptions",
+      "description": "StepOptionsインターフェースのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "step-condition",
+      "title": "StepCondition",
+      "description": "StepConditionのリファレンス",
+      "order": 4
+    },
+    {
+      "name": "step-method",
+      "title": ".step()",
+      "description": "step()メソッドのリファレンス",
+      "order": 5
+    },
+    {
+      "name": "after-method",
+      "title": ".after()",
+      "description": "after()メソッドのリファレンス",
+      "order": 6
+    },
+    {
+      "name": "then-method",
+      "title": ".then()",
+      "description": "then()メソッドのリファレンス",
+      "order": 7
+    },
+    {
+      "name": "until-method",
+      "title": ".until()",
+      "description": "until()メソッドのリファレンス",
+      "order": 8
+    },
+    {
+      "name": "while-method",
+      "title": ".while()",
+      "description": "while()メソッドのリファレンス",
+      "order": 9
+    },
+    {
+      "name": "if-method",
+      "title": ".if()",
+      "description": "if()メソッドのリファレンス",
+      "order": 10
+    },
+    {
+      "name": "else-method",
+      "title": ".else()",
+      "description": "else()メソッドのリファレンス",
+      "order": 11
+    },
+    {
+      "name": "create-run-method",
+      "title": ".createRun()",
+      "description": "createRun()メソッドのリファレンス",
+      "order": 12
+    },
+    {
+      "name": "start-method",
+      "title": ".start()",
+      "description": "start()メソッドのリファレンス",
+      "order": 13
+    },
+    {
+      "name": "execute-method",
+      "title": ".execute()",
+      "description": "execute()メソッドのリファレンス",
+      "order": 14
+    },
+    {
+      "name": "suspend-method",
+      "title": ".suspend()",
+      "description": "suspend()メソッドのリファレンス",
+      "order": 15
+    },
+    {
+      "name": "resume-method",
+      "title": ".resume()",
+      "description": "resume()メソッドのリファレンス",
+      "order": 16
+    },
+    {
+      "name": "commit-method",
+      "title": ".commit()",
+      "description": "commit()メソッドのリファレンス",
+      "order": 17
+    },
+    {
+      "name": "watch-method",
+      "title": ".watch()",
+      "description": "watch()メソッドのリファレンス",
+      "order": 18
+    }
+  ]
+}

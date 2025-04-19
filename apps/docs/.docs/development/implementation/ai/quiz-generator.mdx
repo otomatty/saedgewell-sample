@@ -1,0 +1,788 @@
+---
+title: '振り返り問題自動生成機能'
+description: 'ドキュメント内容に基づいた理解度確認のための問題を自動生成する機能'
+---
+
+# 振り返り問題自動生成機能
+
+## 1. 機能概要
+
+ドキュメント内容に基づいた理解度確認のための問題を自動生成し、ユーザーが学習した内容を振り返り、知識を定着させることを支援する機能。
+
+### 主要な特徴:
+- 複数の問題形式（選択式、記述式、穴埋め）
+- 難易度レベル選択
+- 回答の自動評価
+- 解説の提供
+
+## 2. 技術要件
+
+- **フロントエンド**: 
+  - Next.js 15
+  - React 19
+  - Tailwind CSS v4
+  - shadcn/ui
+- **状態管理**: 
+  - Jotai
+- **API**: 
+  - Gemini API
+- **パッケージ**:
+  - @google/generative-ai
+  - @hookform/resolvers/zod (フォーム検証用)
+  - react-hook-form (フォーム管理用)
+  - zod (スキーマ検証用)
+  - react-markdown (解説表示用)
+
+## 3. ユーザーストーリー
+
+- ユーザーとして、読んだドキュメントの内容を確認するための問題を自動生成してほしい
+- ユーザーとして、難易度を選択して自分のレベルに合った問題を解きたい
+- ユーザーとして、回答後すぐに採点結果と解説を確認したい
+- ユーザーとして、苦手な部分を特定して重点的に学習し直したい
+
+## 4. アーキテクチャ
+
+### コンポーネント構成:
+1. **QuizGenerator**: ドキュメント内容から問題を生成
+2. **QuizDisplay**: 問題を表示し回答を受け付ける
+3. **QuizEvaluator**: 回答を評価して採点
+4. **ExplanationProvider**: 解説と補足情報を提供
+
+### データフロー:
+1. ドキュメント内容 → 問題生成 → 問題表示
+2. ユーザー回答 → 回答評価 → 結果・解説表示
+3. 苦手分野特定 → 関連コンテンツ推奨
+
+## 5. APIインターフェース
+
+```typescript
+// lib/ai/quiz-service.ts
+import { atom } from 'jotai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { z } from 'zod';
+
+export type QuestionType = 'multiple-choice' | 'text' | 'fill-blank';
+export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+
+export const QuizGenerationRequestSchema = z.object({
+  documentContent: z.string().min(1, "ドキュメント内容は必須です"),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  questionTypes: z.array(z.enum(['multiple-choice', 'text', 'fill-blank'])),
+  questionCount: z.number().min(1).max(10),
+  focusAreas: z.array(z.string()).optional(),
+});
+
+export type QuizGenerationRequest = z.infer<typeof QuizGenerationRequestSchema>;
+
+export interface QuizQuestion {
+  id: string;
+  type: QuestionType;
+  question: string;
+  options?: string[];             // 選択肢（選択式の場合）
+  correctAnswer: string | string[]; // 正解
+  explanation: string;            // 解説
+}
+
+export interface QuizResponse {
+  questions: QuizQuestion[];
+  metadata: {
+    coveredTopics: string[];      // カバーされているトピック
+    estimatedTime: number;        // 想定所要時間（分）
+  };
+}
+
+export interface EvaluationRequest {
+  question: QuizQuestion;
+  userAnswer: string;
+}
+
+export interface EvaluationResponse {
+  isCorrect: boolean;
+  score: number;                 // 部分点がある場合
+  feedback: string;              // フィードバック
+  keyPoints: string[];           // 重要ポイント
+}
+
+// Jotaiを使用した状態管理
+export const quizSettingsAtom = atom<QuizGenerationRequest>({
+  documentContent: '',
+  difficulty: 'medium',
+  questionTypes: ['multiple-choice'],
+  questionCount: 5,
+  focusAreas: [],
+});
+
+export const quizQuestionsAtom = atom<QuizQuestion[]>([]);
+export const userAnswersAtom = atom<Record<string, string>>({});
+export const quizResultsAtom = atom<Record<string, EvaluationResponse>>({});
+export const isGeneratingQuizAtom = atom<boolean>(false);
+export const isEvaluatingAtom = atom<boolean>(false);
+
+// 問題生成関数
+export async function generateQuiz(request: QuizGenerationRequest): Promise<QuizResponse> {
+  // 実装
+}
+
+// 回答評価関数
+export async function evaluateAnswer(request: EvaluationRequest): Promise<EvaluationResponse> {
+  // 実装
+}
+```
+
+## 6. UIコンポーネント
+
+### 1. QuizSettingsPanel
+
+問題生成の設定パネル
+
+```tsx
+// components/ai/QuizSettingsPanel.tsx
+'use client';
+
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAtom } from 'jotai';
+import { 
+  quizSettingsAtom, 
+  QuizGenerationRequestSchema,
+  QuizGenerationRequest,
+  isGeneratingQuizAtom,
+  generateQuiz,
+  quizQuestionsAtom
+} from '@/lib/ai/quiz-service';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2 } from 'lucide-react';
+
+interface QuizSettingsPanelProps {
+  documentContent: string;
+  className?: string;
+}
+
+export function QuizSettingsPanel({ documentContent, className }: QuizSettingsPanelProps) {
+  const [settings, setSettings] = useAtom(quizSettingsAtom);
+  const [isGenerating, setIsGenerating] = useAtom(isGeneratingQuizAtom);
+  const [_, setQuizQuestions] = useAtom(quizQuestionsAtom);
+  
+  const { control, handleSubmit, formState: { errors } } = useForm<QuizGenerationRequest>({
+    resolver: zodResolver(QuizGenerationRequestSchema),
+    defaultValues: {
+      ...settings,
+      documentContent
+    }
+  });
+  
+  const onSubmit = async (data: QuizGenerationRequest) => {
+    setSettings(data);
+    setIsGenerating(true);
+    
+    try {
+      const response = await generateQuiz(data);
+      setQuizQuestions(response.questions);
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>振り返り問題の設定</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="difficulty">難易度</Label>
+            <Controller
+              name="difficulty"
+              control={control}
+              render={({ field }) => (
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                  disabled={isGenerating}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="難易度を選択" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">簡単</SelectItem>
+                    <SelectItem value="medium">標準</SelectItem>
+                    <SelectItem value="hard">難しい</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>問題形式</Label>
+            <div className="grid grid-cols-1 gap-2">
+              <Controller
+                name="questionTypes"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="multiple-choice" 
+                        checked={field.value.includes('multiple-choice')}
+                        onCheckedChange={(checked) => {
+                          const newValue = checked 
+                            ? [...field.value, 'multiple-choice']
+                            : field.value.filter(type => type !== 'multiple-choice');
+                          field.onChange(newValue);
+                        }}
+                        disabled={isGenerating}
+                      />
+                      <Label htmlFor="multiple-choice">選択式</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="text" 
+                        checked={field.value.includes('text')}
+                        onCheckedChange={(checked) => {
+                          const newValue = checked 
+                            ? [...field.value, 'text']
+                            : field.value.filter(type => type !== 'text');
+                          field.onChange(newValue);
+                        }}
+                        disabled={isGenerating}
+                      />
+                      <Label htmlFor="text">記述式</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="fill-blank" 
+                        checked={field.value.includes('fill-blank')}
+                        onCheckedChange={(checked) => {
+                          const newValue = checked 
+                            ? [...field.value, 'fill-blank']
+                            : field.value.filter(type => type !== 'fill-blank');
+                          field.onChange(newValue);
+                        }}
+                        disabled={isGenerating}
+                      />
+                      <Label htmlFor="fill-blank">穴埋め式</Label>
+                    </div>
+                  </>
+                )}
+              />
+            </div>
+            {errors.questionTypes && (
+              <p className="text-sm text-red-500">少なくとも1つの問題形式を選択してください</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <Label htmlFor="questionCount">問題数: {settings.questionCount}</Label>
+            </div>
+            <Controller
+              name="questionCount"
+              control={control}
+              render={({ field }) => (
+                <Slider
+                  id="questionCount"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={[field.value]}
+                  onValueChange={(value) => field.onChange(value[0])}
+                  disabled={isGenerating}
+                />
+              )}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="focusAreas">重点分野（カンマ区切り、任意）</Label>
+            <Controller
+              name="focusAreas"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  id="focusAreas"
+                  placeholder="例: API設計, データモデル, セキュリティ"
+                  value={field.value?.join(', ') || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value ? value.split(',').map(item => item.trim()) : []);
+                  }}
+                  disabled={isGenerating}
+                />
+              )}
+            />
+          </div>
+          
+          <Button type="submit" disabled={isGenerating} className="w-full">
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                問題生成中...
+              </>
+            ) : '問題を生成する'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 2. QuizContainer
+
+問題表示と回答入力の親コンテナ
+
+```tsx
+// components/ai/QuizContainer.tsx
+'use client';
+
+import { useState } from 'react';
+import { useAtom, useAtomValue } from 'jotai';
+import { 
+  quizQuestionsAtom, 
+  userAnswersAtom, 
+  quizResultsAtom,
+  isEvaluatingAtom,
+  evaluateAnswer
+} from '@/lib/ai/quiz-service';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { QuestionCard } from './QuestionCard';
+import { ResultsPanel } from './ResultsPanel';
+import { Progress } from '@/components/ui/progress';
+import { Loader2 } from 'lucide-react';
+
+interface QuizContainerProps {
+  className?: string;
+}
+
+export function QuizContainer({ className }: QuizContainerProps) {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const questions = useAtomValue(quizQuestionsAtom);
+  const [userAnswers, setUserAnswers] = useAtom(userAnswersAtom);
+  const [results, setResults] = useAtom(quizResultsAtom);
+  const [isEvaluating, setIsEvaluating] = useAtom(isEvaluatingAtom);
+  const [showResults, setShowResults] = useState(false);
+  
+  if (!questions.length) return null;
+  
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  
+  const handleAnswerChange = (answer: string) => {
+    setUserAnswers(prev => ({
+      ...prev,
+      [currentQuestion.id]: answer
+    }));
+  };
+  
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      evaluateAllAnswers();
+    }
+  };
+  
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+  
+  const evaluateAllAnswers = async () => {
+    setIsEvaluating(true);
+    
+    try {
+      const newResults: Record<string, any> = {};
+      
+      for (const question of questions) {
+        const userAnswer = userAnswers[question.id] || '';
+        
+        const result = await evaluateAnswer({
+          question,
+          userAnswer
+        });
+        
+        newResults[question.id] = result;
+      }
+      
+      setResults(newResults);
+      setShowResults(true);
+    } catch (error) {
+      console.error('Error evaluating answers:', error);
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+  
+  const resetQuiz = () => {
+    setCurrentQuestionIndex(0);
+    setUserAnswers({});
+    setResults({});
+    setShowResults(false);
+  };
+  
+  if (showResults) {
+    return (
+      <ResultsPanel 
+        questions={questions} 
+        userAnswers={userAnswers} 
+        results={results} 
+        onReset={resetQuiz}
+        className={className}
+      />
+    );
+  }
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>問題 {currentQuestionIndex + 1} / {questions.length}</CardTitle>
+        <Progress value={progress} className="h-2" />
+      </CardHeader>
+      <CardContent>
+        <QuestionCard
+          question={currentQuestion}
+          userAnswer={userAnswers[currentQuestion.id] || ''}
+          onAnswerChange={handleAnswerChange}
+        />
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevious}
+          disabled={currentQuestionIndex === 0 || isEvaluating}
+        >
+          前の問題
+        </Button>
+        
+        <Button 
+          onClick={handleNext}
+          disabled={!userAnswers[currentQuestion.id] || isEvaluating}
+        >
+          {currentQuestionIndex < questions.length - 1 ? '次の問題' : (
+            isEvaluating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                採点中...
+              </>
+            ) : '採点する'
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+### 3. QuestionCard
+
+個別問題表示カード
+
+```tsx
+// components/ai/QuestionCard.tsx
+'use client';
+
+import { QuizQuestion } from '@/lib/ai/quiz-service';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+
+interface QuestionCardProps {
+  question: QuizQuestion;
+  userAnswer: string;
+  onAnswerChange: (answer: string) => void;
+}
+
+export function QuestionCard({ 
+  question, 
+  userAnswer, 
+  onAnswerChange 
+}: QuestionCardProps) {
+  return (
+    <div className="space-y-4">
+      <div className="text-lg font-medium">{question.question}</div>
+      
+      {question.type === 'multiple-choice' && question.options && (
+        <RadioGroup 
+          value={userAnswer} 
+          onValueChange={onAnswerChange}
+          className="space-y-2"
+        >
+          {question.options.map((option, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <RadioGroupItem value={option} id={`option-${index}`} />
+              <Label htmlFor={`option-${index}`}>{option}</Label>
+            </div>
+          ))}
+        </RadioGroup>
+      )}
+      
+      {question.type === 'text' && (
+        <Textarea
+          placeholder="回答を入力してください..."
+          value={userAnswer}
+          onChange={(e) => onAnswerChange(e.target.value)}
+          rows={5}
+          className="w-full"
+        />
+      )}
+      
+      {question.type === 'fill-blank' && (
+        <Input
+          placeholder="空欄に入る言葉を入力してください..."
+          value={userAnswer}
+          onChange={(e) => onAnswerChange(e.target.value)}
+          className="w-full"
+        />
+      )}
+    </div>
+  );
+}
+```
+
+### 4. ResultsPanel
+
+結果と解説表示パネル
+
+```tsx
+// components/ai/ResultsPanel.tsx
+'use client';
+
+import { QuizQuestion, EvaluationResponse } from '@/lib/ai/quiz-service';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ResultsPanelProps {
+  questions: QuizQuestion[];
+  userAnswers: Record<string, string>;
+  results: Record<string, EvaluationResponse>;
+  onReset: () => void;
+  className?: string;
+}
+
+export function ResultsPanel({ 
+  questions, 
+  userAnswers, 
+  results, 
+  onReset,
+  className 
+}: ResultsPanelProps) {
+  // 正解数と得点率を計算
+  const correctCount = Object.values(results).filter(result => result.isCorrect).length;
+  const scorePercentage = (correctCount / questions.length) * 100;
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>結果: {correctCount} / {questions.length} 正解 ({Math.round(scorePercentage)}%)</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {questions.map((question, index) => {
+          const userAnswer = userAnswers[question.id] || '';
+          const result = results[question.id];
+          
+          return (
+            <div key={question.id} className="border rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium">問題 {index + 1}:</span>
+                  {result?.isCorrect ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-red-500" />
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {result?.score ? `${Math.round(result.score * 100)}%` : ''}
+                </div>
+              </div>
+              
+              <div className="mt-2">{question.question}</div>
+              
+              <div className="mt-4 space-y-2">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-muted-foreground">あなたの回答:</span>
+                  <span className={cn(
+                    "mt-1 p-2 rounded",
+                    result?.isCorrect ? "bg-green-50 dark:bg-green-950" : "bg-red-50 dark:bg-red-950"
+                  )}>
+                    {userAnswer || '(未回答)'}
+                  </span>
+                </div>
+                
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-muted-foreground">正解:</span>
+                  <span className="mt-1 p-2 bg-muted rounded">
+                    {Array.isArray(question.correctAnswer) 
+                      ? question.correctAnswer.join(', ') 
+                      : question.correctAnswer}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <div className="text-sm font-medium text-muted-foreground">解説:</div>
+                <div className="mt-1 p-3 bg-muted rounded">
+                  {question.explanation}
+                </div>
+              </div>
+              
+              {result?.feedback && (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-muted-foreground">フィードバック:</div>
+                  <div className="mt-1 p-3 bg-blue-50 dark:bg-blue-950 rounded">
+                    {result.feedback}
+                  </div>
+                </div>
+              )}
+              
+              {result?.keyPoints && result.keyPoints.length > 0 && (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-muted-foreground">重要ポイント:</div>
+                  <ul className="mt-1 list-disc list-inside">
+                    {result.keyPoints.map((point, i) => (
+                      <li key={i} className="text-sm">{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </CardContent>
+      <CardFooter>
+        <Button onClick={onReset} className="w-full">
+          新しい問題を生成する
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+```
+
+## 7. 実装ステップ
+
+### フェーズ1: 基本問題生成（2週間）
+- 選択式問題生成と表示の実装
+- 基本的な回答評価機能
+- シンプルな結果表示
+
+```tsx
+// TODO: 選択式問題生成ロジック
+async function implementMultipleChoiceGeneration() {
+  // 実装
+}
+
+// TODO: 基本的な回答評価機能
+async function implementBasicEvaluation() {
+  // 実装
+}
+```
+
+### フェーズ2: 問題形式の拡張（2週間）
+- 記述式・穴埋め式問題の実装
+- 高度な回答評価ロジック
+- 解説と学習支援情報の提供
+
+```tsx
+// TODO: 記述式問題生成ロジック
+async function implementTextQuestionGeneration() {
+  // 実装
+}
+
+// TODO: 穴埋め式問題生成ロジック
+async function implementFillBlankGeneration() {
+  // 実装
+}
+
+// TODO: 高度な回答評価ロジック
+async function implementAdvancedEvaluation() {
+  // 実装
+}
+```
+
+### フェーズ3: パーソナライゼーションと最適化（1週間）
+- ユーザーの過去の結果に基づく問題調整
+- UI/UXの改善と洗練
+- パフォーマンス最適化
+
+```tsx
+// TODO: ユーザーの過去の結果に基づく問題調整
+function implementPersonalizedQuizGeneration() {
+  // 実装
+}
+
+// TODO: パフォーマンス最適化
+function implementPerformanceOptimizations() {
+  // 実装
+}
+```
+
+## 8. テスト計画
+
+- 単体テスト: 問題生成、回答評価の正確性
+- 統合テスト: 問題生成から結果表示までの一連のフロー
+- ユーザーテスト: 実際のユーザーによる使用感と学習効果の評価
+- パフォーマンステスト: 長文ドキュメントからの問題生成速度
+
+```tsx
+// TODO: テストケースの実装
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+
+describe('QuizSettingsPanel', () => {
+  it('should generate quiz with selected settings', async () => {
+    // テスト実装
+  });
+});
+
+describe('QuizContainer', () => {
+  it('should display questions and handle user answers', () => {
+    // テスト実装
+  });
+});
+
+describe('ResultsPanel', () => {
+  it('should display correct evaluation results', () => {
+    // テスト実装
+  });
+});
+```
+
+## 9. リスクと緩和策
+
+| リスク | 緩和策 |
+|-------|--------|
+| 生成される問題の質のばらつき | プロンプト最適化、問題テンプレートの事前定義 |
+| 記述式回答の評価精度 | キーワードベースの評価と意味理解の組み合わせ |
+| 問題生成の処理時間が長い | バックグラウンド処理、プログレス表示の改善 |
+| ドキュメント内容の誤解釈 | ドキュメント構造解析の改善、メタデータの活用 |
+
+## 10. パフォーマンス考慮事項
+
+- 問題生成の非同期処理とバックグラウンド実行
+- 生成された問題のキャッシング
+- 一度に生成・表示する問題数の最適化
+- クライアントサイドでの部分的な評価処理

@@ -1,0 +1,130 @@
+{
+  "date": "2025-03-20",
+  "entries": [
+    {
+      "id": "supabase-production-to-local-sync",
+      "title": "Supabase本番環境からローカル環境へのデータ同期手順",
+      "description": "本番環境のSupabaseデータベースのデータをローカル開発環境に同期し、同じデータを使用して開発を行うための手順",
+      "tags": [
+        "supabase",
+        "database",
+        "開発環境",
+        "データ同期"
+      ]
+    }
+  ],
+  "commits": [
+    {
+      "message": "chore: バックアップディレクトリを追加",
+      "sha": "31799f51c9fa5b14b2874072562380e1ddb40e7d",
+      "date": "2025-03-20T12:23:19Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/31799f51c9fa5b14b2874072562380e1ddb40e7d",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 31793,
+      "deletions": 0
+    },
+    {
+      "message": "refactor: ドキュメント構造をapps/docsからdocsディレクトリに移行",
+      "sha": "1c0d57372438167d7ad2792ca52c55a23b5f9123",
+      "date": "2025-03-20T12:23:06Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/1c0d57372438167d7ad2792ca52c55a23b5f9123",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 0,
+      "deletions": 10317
+    },
+    {
+      "message": "docs: ドキュメント構造を更新とテストディレクトリを追加",
+      "sha": "5d0f157d33ed2780b71c07b3179fd020ff39dbd1",
+      "date": "2025-03-20T12:22:35Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/5d0f157d33ed2780b71c07b3179fd020ff39dbd1",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 12056,
+      "deletions": 167
+    },
+    {
+      "message": "chore(scripts): Docker環境用のスクリプトとSupabase設定を追加",
+      "sha": "5cb3373d3ccefba37883883f46bd90d96490f234",
+      "date": "2025-03-20T12:22:12Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/5cb3373d3ccefba37883883f46bd90d96490f234",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 5320,
+      "deletions": 6331
+    },
+    {
+      "message": "chore(deps): パッケージ依存関係をDocker対応に更新",
+      "sha": "fc8f6262d350bf54ff636efbbc435d94f0ad8f88",
+      "date": "2025-03-20T12:21:55Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/fc8f6262d350bf54ff636efbbc435d94f0ad8f88",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 8,
+      "deletions": 10
+    },
+    {
+      "message": "Add Docker configuration files for containerization",
+      "sha": "917b6256649dde2c4144f24b42ee340fbbfb2430",
+      "date": "2025-03-20T12:21:10Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/917b6256649dde2c4144f24b42ee340fbbfb2430",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 103,
+      "deletions": 0
+    },
+    {
+      "message": "feat: Docker移行に関するドキュメントを追加\n\n- モノレポアプリケーションのDocker化に向けた詳細なマイルストーンを作成\n- 開発環境の準備、Supabaseの移行、アプリケーションの設定、Nginxの設定、最適化とテスト手順を文書化\n- 環境構築の自動化やCI/CD統合に関する手順も含め、開発フローの効率化を図る\n- adminアプリケーションのpackage.jsonの修正を含む",
+      "sha": "374a0a1dc4c09b485c2f520d6b156589896a351f",
+      "date": "2025-03-20T03:15:57Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/374a0a1dc4c09b485c2f520d6b156589896a351f",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 916,
+      "deletions": 7
+    },
+    {
+      "message": "feat: Docker移行に関するドキュメントを追加\n\n- モノレポアプリケーションのDocker化に向けた詳細なマイルストーンを作成\n- 開発環境の準備、Supabaseの移行、アプリケーションの設定、Nginxの設定、最適化とテスト手順を文書化\n- 環境構築の自動化やCI/CD統合に関する手順も含め、開発フローの効率化を図る\n- adminアプリケーションのpackage.jsonの修正を含む",
+      "sha": "13e9ca1e080954079daed222aed4460866adfaa5",
+      "date": "2025-03-20T03:15:57Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/13e9ca1e080954079daed222aed4460866adfaa5",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 916,
+      "deletions": 7
+    }
+  ]
+}

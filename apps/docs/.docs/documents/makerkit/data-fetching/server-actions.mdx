@@ -1,0 +1,175 @@
+---
+title: 'Server Actionsの使用'
+description: 'データを変更および再検証するためのServer Actionsの書き方を学ぶ'
+icon: 'server'
+order: 2
+---
+
+
+データを変更および再検証するためのServer Actionsの書き方を学びましょう。
+
+Server Actionsは、Next.jsが通常のJavaScript関数をサーバーPOSTエンドポイントに変換することで、サーバーと通信するのに役立ちます。これらは特に、データを変更し、Server Componentsから取得したデータを再検証するのに役立ちます。
+
+一般的に言えば、Server Actionsの使用方法に関して、Makerkitと他のNext.jsアプリケーションの間に特別な違いはありません。ただし、Server Actionsを書く際に便利なユーティリティを紹介したいと思います：`enhanceAction`です。
+
+まずはServer Actionsについて紹介しましょう。
+
+大多数のケースでは、データベース内のデータを更新するためにReact Server Actionsを書くことになります。Server Actionsは、通常の関数のように呼び出されながら、サーバーサイドで変更を実行するために使用されます。
+
+Server Actionを作成するには、ファイルの先頭に`use server`を追加し、関数をエクスポートするだけで十分です。
+
+```tsx
+'use server';
+
+// これでServer Actionになりました！
+export const myServerAction = async function () {
+  // ... ここにコードを書く
+  return {
+    success: true,
+  };
+};
+```
+
+上記は基本的に何もしないプレーンなPOSTリクエストです。これをより有用にする方法を見てみましょう。
+
+Makerkitには、これらのアクションを書くのに役立つユーティリティが付属しています。このユーティリティは`enhanceAction`と呼ばれ、`@kit/next/actions`からインポートします。
+
+```tsx
+import { enhanceAction } from '@kit/next/actions';
+```
+
+このユーティリティは主に3つのことを手助けします：
+
+- ユーザーの状態をチェックします（ユーザーが認証されているかどうか）
+- Zodスキーマを与えると、リクエストボディを検証します
+- CAPTCHAサイトキーを与えると、CAPTCHAトークンを検証します
+- 監視プロバイダーを設定している場合、捕捉された例外を監視プロバイダーに送信します
+
+素晴らしいですね。使い方を見てみましょう。
+
+```tsx
+'use server';
+
+import { z } from 'zod';
+import { enhanceAction } from '@kit/next/actions';
+
+const ZodSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export const myServerAction = enhanceAction(
+  async function (data, user) {
+    // 1. "data"はZodスキーマに対して検証済みで、安全に使用できます
+    // 2. "user"は認証されたユーザーです
+    
+    // ... ここにコードを書く
+    return {
+      success: true,
+    };
+  },
+  {
+    schema: ZodSchema,
+  },
+);
+```
+
+# CAPTCHAトークン保護の使用
+
+Server Actionsを CAPTCHAトークンで保護したい場合は、`enhanceAction`関数にCAPTCHAサイトトークンを渡し、CAPTCHAフラグを`true`に設定することでできます。
+
+```tsx
+'use server';
+
+import { enhanceAction } from '@kit/next/actions';
+
+export const myServerAction = enhanceAction(
+  async function (data, user) {
+    // ... ここにコードを書く
+    return {
+      success: true,
+    };
+  },
+  {
+    captcha: true,
+    schema: ZodSchema,
+  },
+);
+```
+
+Server Actionを呼び出す際には、リクエストボディにCAPTCHAトークンを提供する必要があります。
+
+CAPTCHAトークンは、パッケージ`@kit/auth/captcha/client`の`useCaptchaToken`フックから取得できます。
+
+```tsx
+import { useCaptchaToken } from '@kit/auth/captcha/client';
+
+function Component() {
+  const captchaToken = useCaptchaToken();
+  
+  // ... ここにコードを書く
+}
+```
+
+これで、Server Actionを呼び出す際にCAPTCHAを渡すことができます：
+
+```tsx
+import { useCaptchaToken } from '@kit/auth/captcha/client';
+
+function Component() {
+  const captchaToken = useCaptchaToken();
+  
+  const onSubmit = async (params: {
+    email: string;
+    password: string;
+  }) => {
+    const response = await myServerAction({
+      ...params,
+      captchaToken,
+    });
+    
+    // ... ここにコードを書く
+  };
+}
+```
+
+注意：CAPTCHA保護を使用するには、環境変数にCAPTCHAトークンを設定する必要があります。
+
+```
+CAPTCHA_SECRET_TOKEN=
+NEXT_PUBLIC_CAPTCHA_SITE_KEY=
+```
+
+シークレット環境変数として、`.env`ファイルには追加しないでください。代わりに、CI/CDシステムの環境変数に追加してください。
+
+サポートされているCAPTCHAプロバイダーは、Cloudflare Turnstileのみです。
+
+## CAPTCHAトークンの渡し方
+
+注意：Server Actionを呼び出す際には、リクエストボディにCAPTCHAトークンを渡す必要があります。関数の型チェッカーは、Zodスキーマで`captchaToken`として定義されていない場合にエラーを出すため、CAPTCHAトークンを渡すことを保証します。
+
+# 例外のキャプチャ
+
+この関数は、監視プロバイダーを設定している場合、未捕捉の例外を自動的に報告します。監視プロバイダーは環境変数`MONITORING_PROVIDER`で設定されます。
+
+これを無効にするには、`enhanceAction`関数に`captureException: false`を渡します。
+
+```tsx
+'use server';
+
+import { enhanceAction } from '@kit/next/actions';
+
+export const myServerAction = enhanceAction(
+  async function (data, user) {
+    // ... ここにコードを書く
+    return {
+      success: true,
+    };
+  },
+  {
+    captcha: true,
+    captureException: false,
+    schema: ZodSchema,
+  },
+);
+```

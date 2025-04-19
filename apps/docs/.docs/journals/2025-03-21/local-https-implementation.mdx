@@ -1,0 +1,264 @@
+---
+title: 'ローカル開発環境でのHTTPS実装'
+
+date: '2025-03-21'
+author: 'Akimasa Sugai'
+tags: ['https', 'nginx', 'docker', 'mkcert', '開発環境']
+---
+
+# ローカル開発環境でのHTTPS実装
+
+## 概要
+
+ローカル開発環境でHTTPSを使用するための実装を行いました。自己署名証明書を使用して、web、docs、adminの各サブドメインでHTTPSアクセスを可能にし、HTTPからHTTPSへの自動リダイレクトも設定しました。
+
+## 実装内容
+
+### 1. 自己署名証明書の生成
+
+mkcertを使用して、`*.saedgewell.test`および`saedgewell.test`用の自己署名証明書を生成するスクリプトを作成しました。
+
+```bash
+#!/bin/bash
+set -e
+
+echo "ローカル開発環境用のHTTPS証明書を生成しています..."
+
+# mkcertがインストールされているか確認
+if ! command -v mkcert &> /dev/null; then
+  echo "❌ mkcertがインストールされていません"
+  echo "macOSの場合: brew install mkcert"
+  echo "Linuxの場合: apt-get install mkcert または同等のコマンド"
+  exit 1
+fi
+
+# 証明書ディレクトリの作成
+CERT_DIR="./docker/nginx/certs"
+mkdir -p $CERT_DIR
+
+# ローカルCAのインストール
+echo "ローカル認証局をインストールしています..."
+mkcert -install
+
+# saedgewell.testとそのサブドメイン用の証明書を生成
+echo "saedgewell.testとサブドメイン用の証明書を生成しています..."
+mkcert -key-file $CERT_DIR/saedgewell.key -cert-file $CERT_DIR/saedgewell.crt "*.saedgewell.test" "saedgewell.test"
+
+echo "✅ HTTPS証明書の生成が完了しました"
+echo "証明書とキーファイルが $CERT_DIR に保存されました"
+```
+
+### 2. Nginx設定の更新
+
+各サブドメイン用にHTTPS設定を追加し、HTTPからHTTPSへのリダイレクトを設定しました。
+
+```nginx
+# 上流サーバー設定
+upstream web_upstream {
+  server web:3000;
+}
+
+upstream docs_upstream {
+  server docs:3001;
+}
+
+upstream admin_upstream {
+  server admin:3002;
+}
+
+# HTTPからHTTPSへのリダイレクト
+server {
+  listen 80;
+  server_name *.saedgewell.test saedgewell.test;
+  
+  # HTTPをHTTPSにリダイレクト
+  return 301 https://$host$request_uri;
+}
+
+# Webアプリケーション（HTTPS）
+server {
+  listen 443 ssl;
+  server_name web.saedgewell.test;
+  
+  # SSL証明書の設定
+  ssl_certificate /etc/nginx/certs/saedgewell.crt;
+  ssl_certificate_key /etc/nginx/certs/saedgewell.key;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+
+  location / {
+    proxy_pass http://web_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+  }
+}
+
+# 同様にDocsとAdmin用のHTTPSサーバー設定を追加
+```
+
+### 3. Docker Compose設定の更新
+
+Nginxコンテナの設定を更新し、443ポートをマッピングして証明書ディレクトリをマウントしました。
+
+```yaml
+nginx:
+  image: nginx:alpine
+  ports:
+    - "80:80"
+    - "443:443"  # HTTPSポートを追加
+  volumes:
+    - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    - ./docker/nginx/certs:/etc/nginx/certs  # 証明書ディレクトリをマウント
+```
+
+### 4. HTTPSテストスクリプトの作成
+
+環境のHTTPS設定を検証するためのテストスクリプトを作成しました。
+
+```bash
+#!/bin/bash
+set -e
+
+echo "=== HTTPS環境のテスト ==="
+
+# 証明書の確認
+echo "証明書の確認..."
+if [ ! -f "./docker/nginx/certs/saedgewell.crt" ] || [ ! -f "./docker/nginx/certs/saedgewell.key" ]; then
+  echo "❌ 証明書ファイルが見つかりません"
+  echo "証明書を生成するには: ./scripts/dev/setup-https-certs.sh を実行してください"
+  exit 1
+fi
+echo "✅ 証明書ファイルが存在します"
+
+# Nginx設定の確認
+echo "Nginx HTTPS設定の確認..."
+if ! grep -q "listen 443 ssl" ./docker/nginx/conf.d/default.conf; then
+  echo "❌ Nginx設定にHTTPS設定が見つかりません"
+  exit 1
+fi
+echo "✅ Nginx設定にHTTPS設定が含まれています"
+
+# Docker Compose設定の確認
+echo "Docker Compose設定の確認..."
+if ! grep -q "443:443" ./docker-compose.yml; then
+  echo "❌ Docker Compose設定にポート443のマッピングが見つかりません"
+  exit 1
+fi
+echo "✅ Docker Compose設定にポート443のマッピングが含まれています"
+
+# HTTPSアクセス確認
+echo "HTTPSアクセス確認..."
+for APP in web docs admin; do
+  echo -n "https://$APP.saedgewell.test: "
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://$APP.saedgewell.test || echo "接続失敗")
+  echo "$STATUS"
+done
+
+# HTTPリダイレクト確認
+echo "HTTP→HTTPSリダイレクト確認..."
+for APP in web docs admin; do
+  echo -n "http://$APP.saedgewell.test → "
+  REDIRECT=$(curl -s -o /dev/null -w "%{redirect_url}" http://$APP.saedgewell.test || echo "リダイレクト失敗")
+  echo "$REDIRECT"
+done
+
+echo "=== テスト完了 ==="
+```
+
+## 発生した問題と解決策
+
+### 1. コンテナ間の名前解決問題
+
+**問題**:
+Nginxコンテナから他のコンテナ（docs, admin）へのホスト名による接続が失敗する問題が発生しました。
+
+**解決策**:
+- Docker Composeのネットワーク設定を確認
+- サービス名（web, docs, admin）を使用するようNginx設定を修正
+
+### 2. OOMキラーによるdocsコンテナの強制終了
+
+**問題**:
+docsコンテナがメモリ不足で強制終了（SIGKILL）される問題が発生しました。ログには以下のようなメッセージが記録されていました。
+
+```
+@next/swc version mismatch (15.2.3) with next version (15.2.1)
+<--- Last few GCs --->
+<--- JS stacktrace --->
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+ 1: 0xb04670 node::Abort() [node]
+ ...
+Received SIGKILL: killed by OOM Killer
+```
+
+**解決策**:
+- メモリ制限を1GBから2GBに増加
+- CPUリソース予約を0.25から0.5に増加
+- 自動再起動ポリシー（restart: always）の追加
+
+### 3. Docker Composeのバリデーションエラー
+
+**問題**:
+`restart` パラメータが `deploy` セクション内に配置されていたためのエラーが発生しました。
+
+```
+ERROR: The Compose file is invalid: 'restart' property isn't supported at the following location: services.web.deploy
+```
+
+**解決策**:
+- `restart: always` パラメータを `deploy` セクションの外部に移動
+- 全サービス（web, docs, admin）で構造を統一
+
+```yaml
+web:
+  restart: always  # ここに移動
+  deploy:
+    resources:
+      limits:
+        memory: 2G
+      reservations:
+        cpus: '0.5'
+```
+
+### 4. 複数サブドメインでのCookie共有
+
+**問題**:
+異なるサブドメイン間でのセッションCookieが共有されず、各アプリで個別にログインが必要になる問題。
+
+**解決策**:
+- Cookie domainを `.saedgewell.test` に設定
+- sameSite属性を'lax'に設定
+- HTTPS環境ではsecure属性を有効化
+
+```typescript
+export const AUTH_COOKIE_OPTIONS: CookieOptions = {
+  name: 'sb-auth',
+  domain: process.env.COOKIE_DOMAIN || '.saedgewell.test',
+  path: '/',
+  sameSite: 'lax',
+  secure: true, // HTTPS用に常に有効化
+  maxAge: 60 * 60 * 24 * 7, // 7日間
+}
+```
+
+## 今後の課題
+
+1. **証明書の自動更新機能**: 開発環境の証明書が期限切れにならないよう自動更新の仕組みを導入
+
+2. **セキュリティヘッダーの追加**: Content-Security-Policy、X-Content-Type-Options、X-Frame-Optionsなどのセキュリティヘッダーを開発環境でも追加
+
+3. **HTTPSパフォーマンスの最適化**: HTTP/2対応、キープアライブ設定、SSL/TLS設定の最適化
+
+4. **証明書管理の簡素化**: 証明書生成および更新プロセスの自動化とドキュメント化
+
+## まとめ
+
+ローカル開発環境でのHTTPS実装が完了し、すべてのサブドメイン（web、docs、admin）でHTTPSアクセスが可能になりました。また、HTTPからHTTPSへの自動リダイレクトも設定され、より本番環境に近い形での開発が可能になりました。
+
+OOMキラーによるdocsコンテナの強制終了など、予期しなかった問題も発生しましたが、適切なリソース設定と再起動ポリシーの導入により解決することができました。
+
+この実装により、セキュアCookieの動作確認やサブドメイン間での認証共有など、より実際の運用環境に近い状態でのテストが可能になります。 

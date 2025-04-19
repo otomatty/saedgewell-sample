@@ -1,0 +1,58 @@
+---
+title: '認証API'
+description: 'Makerkitにおける認証APIの簡単な紹介'
+icon: 'lock'
+order: 3
+---
+
+# 認証API
+
+Makerkitにおける認証APIの簡単な紹介です。
+
+ユーザーが認証されているかどうかを確認したり、現在サインインしているユーザーに関する情報を取得したりするには、`requireUser`関数を使用します：
+
+```tsx
+import { redirect } from 'next/navigation';
+import { requireUser } from '@kit/supabase/require-user';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+async function ServerComponent() {
+  const client = getSupabaseServerClient();
+  const auth = await requireUser(client);
+  
+  // ユーザーがリダイレクトを必要とするかどうかを確認
+  if (auth.error) {
+    redirect(auth.redirectTo);
+  }
+  
+  // ユーザーは認証済み！
+  const user = auth.data;
+}
+```
+
+注意：コンテキストに基づいて適切なSupabaseクライアントを使用してください。この場合、サーバーコンポーネントクライアントを使用しています。
+
+Server Actionのコンテキストでは、以下のように使用します：
+
+```tsx
+'use server';
+
+import { redirect } from 'next/navigation';
+import { requireUser } from '@kit/supabase/require-user';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+export async function myServerAction() {
+  const client = getSupabaseServerClient();
+  const auth = await requireUser(client);
+  
+  // ユーザーがリダイレクトを必要とするかどうかを確認
+  if (auth.error) {
+    redirect(auth.redirectTo);
+  }
+  
+  // ユーザーは認証済み！
+  const user = auth.data;
+}
+```
+
+ユーザーがMFA（多要素認証）を必要とし、まだ検証されていない場合、`redirect`関数はユーザーをMFA検証ページにリダイレクトします。そのため、レスポンスの`redirectTo`プロパティを確認することが重要です。

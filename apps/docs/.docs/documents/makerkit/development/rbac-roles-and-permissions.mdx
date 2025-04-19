@@ -1,0 +1,189 @@
+---
+title: 'RBAC:ロールとパーミッションの理解'
+description: 'Next.js Supabaseでロールとパーミッションを実装する方法を学ぶ'
+icon: 'shield'
+order: 8
+---
+
+# RBAC: Next.js Supabaseでのロールとパーミッションの理解
+
+Makerkitはチームメンバーに対して細かいRBAC（ロールベースアクセス制御）を実装しています。これにより、各チームメンバーに対してロールとパーミッションを定義し、誰が何にアクセスできるかを細かく制御できます。
+
+## RBACのテーブル構造
+
+Makerkitはロールとパーミッションのために2つのテーブルを実装しています：
+
+- **roles テーブル**: このテーブルは各チームメンバーのロールを保存します。
+- **role_permissions テーブル**: このテーブルは各ロールのパーミッションを保存します。
+
+`role_permissions`テーブルは以下のスキーマを持っています：
+
+- **id**: ロールパーミッションの一意の識別子。
+- **role**: チームメンバーのロール。
+- **permission**: ロールのパーミッション。
+
+`roles`テーブルは以下のスキーマを持っています：
+
+- **name**: ロールの名前。これは一意である必要があります。
+- **hierarchy_level**: ロールの階層レベル。
+
+ロールの階層を定義するために`hierarchy_level`を使用できます。例えば、管理者ロールはメンバーロールよりも高い階層レベルを持つことができます。これにより、あるロールが他のロールよりも多くのパーミッションを持っているかどうかを理解するのに役立ちます。
+
+また、パーミッション用の列挙型`app_permissions`があります：
+
+- **app_permissions 列挙型**: この列挙型は各ロールのパーミッションを保存します。
+
+デフォルトでは、Makerkitには「owner」と「member」の2つのロールと、以下のパーミッションが付属しています：
+
+```sql
+create type public.app_permissions as enum(
+  'roles.manage',
+  'billing.manage',
+  'settings.manage',
+  'members.manage',
+  'invites.manage'
+);
+```
+
+必要に応じて、さらにロールとパーミッションを追加できます。
+
+## デフォルトのロールとパーミッション
+
+デフォルトのロールは以下のように定義されています：
+
+- **owner**ロールを持つメンバーはアプリケーションへのフルアクセス権を持ちます。
+- **member**ロールを持つメンバーは以下のパーミッションを持ちます：`members.manage`と`invites.manage`。
+
+## 新しいロールとパーミッションの追加
+
+新しいパーミッションを追加するには、`app_permissions`列挙型を更新できます：
+
+```sql
+-- 新しいパーミッションを挿入
+alter type public.app_permissions add value 'tasks.write';
+alter type public.app_permissions add value 'tasks.delete';
+commit;
+```
+
+上記では、`tasks.write`と`tasks.delete`という2つの新しいパーミッションを追加しました。
+
+きめ細かいアクセス制御のために、これらのパーミッションを`role_permissions`テーブルでロールに割り当てることができます：
+
+```sql
+insert into public.role_permissions (role, permission) values ('owner', 'tasks.write');
+insert into public.role_permissions (role, permission) values ('owner', 'tasks.delete');
+```
+
+もちろん、これらのパーミッションをアプリケーションコードとRLS（行レベルセキュリティ）で強制する必要があります。
+
+## RLSでのロールとパーミッションの使用
+
+ユーザーがアカウントに対して特定のパーミッションを持っているかどうかを確認するために、`has_permission`関数を使用できます。これをRLSで使用してパーミッションを強制できます。
+
+以下では、`tasks`テーブルに`insert_tasks`というRLSポリシーを作成して、ユーザーが新しいタスクを挿入できるかどうかを確認します。現在のユーザーが`tasks.write`パーミッションを持っているかどうかを確認するために`public.has_permission`を使用します：
+
+```sql
+create policy insert_tasks on public.tasks
+    for insert
+    with check (
+        public.has_permission(auth.uid(), account_id, 'tasks.write'::app_permissions)
+    );
+```
+
+そして、ユーザーがタスクを削除できるかどうかを確認するポリシーも追加できます：
+
+```sql
+create policy delete_tasks on public.tasks
+    for delete
+    using (
+        public.has_permission(auth.uid(), account_id, 'tasks.delete'::app_permissions)
+    );
+```
+
+## アプリケーションコードでのロールとパーミッションの使用
+
+アプリケーションコードでも、ユーザーが特定のパーミッションを持っているかどうかを確認するために、同じ`has_permission`関数を使用できます。SupabaseのRPCメソッドでこの関数を呼び出します：
+
+```tsx
+async function hasPermissionToInsertTask(userId: string, accountId: string) {
+  const { data: hasPermission, error } = await client.rpc('has_permission', {
+    user_id: userId,
+    account_id: accountId,
+    permission: 'tasks.write',
+  });
+  if (error || !hasPermission) {
+    throw new Error(`User has no permission to insert task`);
+  }
+}
+```
+
+これで、ユーザーとアカウントIDを取得できれば、アプリケーションコードのどこでも`hasPermissionToInsertTask`を使用して、ユーザーがタスクを挿入する権限を持っているかどうかを確認できます。
+
+この関数を使用して、特定のページへのアクセスを制限したり、サーバーサイドリクエストを実行する前にユーザーのパーミッションを確認したりできます。
+
+もちろん、データベースレベルでもRLSが強制されていることを確認することが常に重要です。
+
+## クライアントサイドでのパーミッションの使用
+
+チェックは常にサーバーサイドで行う必要がありますが、UI目的でクライアントサイドでパーミッションを利用できると便利です。例えば、ユーザーがアクションを実行するパーミッションを持っていない場合、特定のボタンを非表示にしたい場合があります。
+
+アカウントワークスペースAPIの一部としてパーミッションを取得します - これはアカウントルート周りのレイアウトで利用できます。
+
+このAPIは現在のユーザーとアカウントのパーミッションを取得し、それを必要とするクライアントコンポーネントにページから渡すだけで、クライアントサイドで利用できるようにします。
+
+ページがあり、ユーザーがタスクを書き込むパーミッションを持っているかどうかを確認したいとします：
+
+```tsx
+import { loadTeamWorkspace } from '~/home/[account]/_lib/server/team-account-workspace.loader';
+
+export default function TasksPage() {
+  const data = await loadTeamWorkspace();
+  const permissions = data.account.permissions; // string[]
+  const canWriteTasks = permissions.includes('tasks.write');
+  return (
+    <div>
+      {canWriteTasks && <button>タスクを作成</button>}
+      // その他のUI要素 // ...
+    </div>
+  );
+}
+```
+
+また、必要なコンポーネントにパーミッションリストをプロップとして渡すこともできます。
+
+このようにして、ユーザーのパーミッションに基づいて特定のUI要素へのアクセスを制限できます。
+
+```tsx
+import { loadTeamWorkspace } from '~/home/[account]/_lib/server/team-account-workspace.loader';
+
+export default function TasksPage() {
+  const data = await loadTeamWorkspace();
+  const permissions = data.account.permissions; // string[]
+  return (
+    <div>
+      <TaskList permissions={permissions} />
+    </div>
+  );
+}
+```
+
+同様に、パーミッションを使用して特定のルートやページへのアクセスを制限することもできます。
+
+```tsx
+import { loadTeamWorkspace } from '~/home/[account]/_lib/server/team-account-workspace.loader';
+
+export default function TasksPage() {
+  const data = await loadTeamWorkspace();
+  const permissions = data.account.permissions; // string[]
+  if (!permissions.includes('tasks.read')) {
+    return <ErrorPage message="タスクを読み取る権限がありません" />;
+  }
+  return (
+    <div>
+      <TaskList permissions={permissions} />
+    </div>
+  );
+}
+```
+
+これで完了です！

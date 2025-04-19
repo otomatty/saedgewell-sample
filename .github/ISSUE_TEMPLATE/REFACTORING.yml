@@ -1,0 +1,76 @@
+name: "♻️ リファクタリング"
+description: コードのリファクタリングに関するIssueを作成します。
+title: "♻️ [リファクタリング] - <タイトル>"
+labels: [
+  "refactoring"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "概要"
+      description: リファクタリングが必要な部分とその理由について説明してください
+      placeholder: リファクタリングが必要なコードの問題点や課題を記入してください...
+    validations:
+      required: true
+  - type: textarea
+    id: current_code
+    attributes:
+      label: "現在のコード"
+      description: リファクタリングが必要な現在のコードについて説明してください
+      placeholder: 問題のあるコードのパス、関数名、または短いコードスニペットを記入してください...
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: "提案する解決策"
+      description: どのようにリファクタリングするべきか、アイデアがあれば記入してください
+      placeholder: リファクタリングの方向性や具体的な改善案があれば記入してください...
+      render: markdown
+    validations:
+      required: false
+  - type: dropdown
+    id: impact
+    attributes:
+      label: "影響範囲"
+      description: このリファクタリングの影響範囲はどの程度ですか？
+      options:
+        - 小規模（単一ファイル内の変更）
+        - 中規模（複数ファイルに影響するが機能は変わらない）
+        - 大規模（アーキテクチャレベルの変更）
+    validations:
+      required: true
+  - type: dropdown
+    id: reason
+    attributes:
+      label: "リファクタリングの理由"
+      description: リファクタリングが必要な主な理由は何ですか？
+      options:
+        - コードの可読性向上
+        - パフォーマンス改善
+        - 保守性の向上
+        - 技術的負債の解消
+        - コードの重複排除
+        - テスト容易性の向上
+        - その他
+      multiple: true
+    validations:
+      required: true
+  - type: textarea
+    id: benefits
+    attributes:
+      label: "期待される効果"
+      description: このリファクタリングによって得られる具体的なメリットを記入してください
+      placeholder: リファクタリング後に改善される点や得られるメリットを記入してください...
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: "リスクと対策"
+      description: リファクタリングに伴うリスクと、それを軽減するための対策
+      placeholder: 考えられるリスクとその対策方法について記入してください...
+    validations:
+      required: false 

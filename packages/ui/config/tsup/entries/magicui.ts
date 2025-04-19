@@ -1,0 +1,36 @@
+/**
+ * Magic UI コンポーネントのエントリーポイント定義
+ * @description 各Magic UIコンポーネントのエントリーポイントパスを配列として定義
+ */
+export const magicuiEntries = [
+  'src/magicui/animated-circular-progress-bar/index.tsx',
+  'src/magicui/animated-grid-pattern/index.tsx',
+  'src/magicui/aurora-text/index.tsx',
+  'src/magicui/bento-grid/index.tsx',
+  'src/magicui/dot-pattern/index.tsx',
+  'src/magicui/flickering-grid/index.tsx',
+  'src/magicui/flip-text/index.tsx',
+  'src/magicui/galaxy-3d/index.tsx',
+  'src/magicui/gear-background/index.tsx',
+  'src/magicui/grid-pattern/index.tsx',
+  'src/magicui/interest-pattern/index.tsx',
+  'src/magicui/kagome-pattern/index.tsx',
+  'src/magicui/linear-rotate/index.tsx',
+  'src/magicui/magic-card/index.tsx',
+  'src/magicui/marquee/index.tsx',
+  'src/magicui/meteors/index.tsx',
+  'src/magicui/neon-gradient-card/index.tsx',
+  'src/magicui/number-ticker/index.tsx',
+  'src/magicui/note-pattern/index.tsx',
+  'src/magicui/orbit-animation/index.tsx',
+  'src/magicui/orbiting-circles/index.tsx',
+  'src/magicui/particles/index.tsx',
+  'src/magicui/ripple/index.tsx',
+  'src/magicui/scroll-fade-text/index.tsx',
+  'src/magicui/scroll-text-animation/index.tsx',
+  'src/magicui/seigaiha-pattern/index.tsx',
+  'src/magicui/shimmer-button/index.tsx',
+  'src/magicui/shippo-pattern/index.tsx',
+  'src/magicui/spinning-text/index.tsx',
+  'src/magicui/wave-background/index.tsx',
+];

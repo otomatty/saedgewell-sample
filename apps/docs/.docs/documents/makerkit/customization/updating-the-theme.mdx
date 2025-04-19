@@ -1,0 +1,30 @@
+---
+title: 'Shadcnテーマの更新'
+description: 'Makerkitアプリケーションでのテーマの更新方法'
+icon: 'brush'
+order: 2
+---
+
+# MakerkitアプリケーションでのShadcnテーマの更新
+
+MakerkitはShadcn UIを使用し、そのガイドラインに従ってテーマを定義しています。
+
+デフォルトのテーマはアプリケーション内の`apps/web/styles/shadcn-ui.css`にあります。
+
+デフォルトのスタイルをオーバーライドしたい場合は、独自の色を定義するか、[Shadcnテーマページ](https://ui.shadcn.com/themes)からテーマを選択し、このファイルにコピー＆ペーストしてください。
+
+Shadcn UIテーマ（この記事執筆時点ではTailwind CSS v3）との違いの一つは、CSSの変数を`hsl`関数を使用するように変換する必要があることです。
+
+例えば、デフォルトのテーマには以下のようなCSS変数があります：
+
+```css
+--color-primary: 229 231 239;
+```
+
+これを`hsl`関数に変換するには、値をHSLに変換し、それをhex形式に変換する必要があります。
+
+```css
+--color-primary: hsl(229 23% 15%);
+```
+
+Shadcn UI CSSテーマを`hsl`関数に素早く変換するには、任意のAIツールを使用できます。

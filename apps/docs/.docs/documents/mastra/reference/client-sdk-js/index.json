@@ -1,0 +1,65 @@
+{
+  "title": "Client SDK - JS",
+  "description": "JavaScript用クライアントSDKリファレンス",
+  "order": 13,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "JavaScript SDKの概要",
+      "order": 1
+    },
+    {
+      "name": "agents-api",
+      "title": "Agents API",
+      "description": "エージェントAPIのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "memory-api",
+      "title": "Memory API",
+      "description": "メモリAPIのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "tools-api",
+      "title": "Tools API",
+      "description": "ツールAPIのリファレンス",
+      "order": 4
+    },
+    {
+      "name": "workflows-api",
+      "title": "Workflows API",
+      "description": "ワークフローAPIのリファレンス",
+      "order": 5
+    },
+    {
+      "name": "vectors-api",
+      "title": "Vectors API",
+      "description": "ベクターAPIのリファレンス",
+      "order": 6
+    },
+    {
+      "name": "logs-api",
+      "title": "Logs API",
+      "description": "ログAPIのリファレンス",
+      "order": 7
+    },
+    {
+      "name": "telemetry-api",
+      "title": "Telemetry API",
+      "description": "テレメトリAPIのリファレンス",
+      "order": 8
+    },
+    {
+      "name": "error-handling",
+      "title": "Error Handling",
+      "description": "エラーハンドリングのリファレンス",
+      "order": 9
+    }
+  ]
+}

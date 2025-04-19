@@ -1,0 +1,199 @@
+---
+title: '従量課金の設定 | Next.js Supabase SaaS Kit Turbo'
+description: 'プロダクトの使用量に基づいて顧客に課金する従量課金モデルの設定方法を学ぶ'
+icon: 'meter'
+order: 6
+---
+
+# 従量課金の設定
+
+従量課金は、顧客のプロダクト使用量に基づいて課金するモデルです。このモデルはAPIでよく使用され、APIリクエスト数に基づいて課金を行います。
+
+スキーマ定義セクションで既に見たように、課金スキーマで従量課金プランを定義することができます。このプランでは、顧客のAPIリクエスト数に基づいて課金を行います。
+
+## プロバイダーの違い
+
+注意：異なるプロバイダー（Stripe、Lemon Squeezyなど）は、従量課金の処理方法が異なります。Makerkitでは、すべてのプロバイダーで一貫したAPIを提供していますが、使用量を課金プロバイダーに報告する方法の詳細は異なる場合があります。使用量の報告方法については、各プロバイダーのドキュメントを参照してください。
+
+## 従量課金プランの定義
+
+以下のようなスキーマを例に考えてみましょう：
+
+```typescript
+export default createBillingSchema({
+  provider,
+  products: [
+    {
+      id: 'starter',
+      name: 'Starter',
+      description: 'The perfect plan to get started',
+      currency: 'USD',
+      badge: `Value`,
+      plans: [
+        {
+          name: 'Starter Monthly',
+          id: 'starter-monthly',
+          trialDays: 7,
+          paymentType: 'recurring',
+          interval: 'month',
+          lineItems: [
+            {
+              id: 'price_1NNwYHI1i3VnbZTqI2UzaHIe',
+              name: 'Addon 2',
+              cost: 0,
+              type: 'metered',
+              unit: 'GBs',
+              tiers: [
+                {
+                    upTo: 10,
+                    cost: 0.1,
+                },
+                {
+                    upTo: 100,
+                    cost: 0.05,
+                },
+                {
+                    upTo: 'unlimited',
+                    cost: 0.01,
+                }
+              ]
+            },
+          ],
+        }
+      ],
+    }
+  ]
+});
+```
+
+このスキーマでは、顧客のGB使用量に基づいてStripeでチェックアウトを作成します：
+- 最初の10GBは1GBあたり$0.1
+- 次の90GBは1GBあたり$0.05
+- 100GB以上は1GBあたり$0.01
+
+チェックアウトが成功すると、2つのレコードが保存されます：
+
+1. **subscriptions**レコード：プランに対する顧客のサブスクリプションを表します。これは全体的なサブスクリプションレコードで、顧客ID、プランID、サブスクリプションのステータスなどの詳細が含まれます。
+2. **subscription_items**レコード：顧客が購読している品目を表します。これは課金プロバイダーに料金を報告するために必要です。
+
+MakerkitのBillingサービスは、どの課金プロバイダーに対しても統一されたインターフェースを提供します。これにより、コードを変更することなく、StripeからLemon Squeezyやその他の課金プロバイダーに切り替えることができます。
+
+## 使用量の報告
+
+使用量を報告する際には、以下の3つの情報が必要です：
+
+1. サブスクリプションID（および関連する課金プロバイダー）または顧客ID（Stripe）
+2. 品目ID（Lemon Squeezyのみ）
+3. 品目の新しい数量
+
+課金サービスは、数量と品目のコストに基づいて料金を計算し、それに応じて顧客に課金します。
+
+以下は、APIを消費する関数の例です：
+
+```typescript
+async function apiHandler(accountId: string) {
+  try {
+    // consumeApiは実行されたリクエスト数を返すと仮定
+    const quantity = await consumeApi(accountId);
+    await reportUsage(accountId, quantity);
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+
+注意：これはメタコードです。これらの関数は実際に実装する必要があります。
+
+## Stripeでの使用量報告
+
+Makerkitは、Stripeの最新の使用量報告APIを使用しています。このAPIを使用すると、サブスクリプション品目の使用量を報告できます。
+
+以前のバージョンのAPIとは異なり、サブスクリプション品目IDは不要で、顧客IDと報告するメトリック名が必要です。
+
+以下は、`api_requests`メトリックの使用量を報告する関数の例です：
+
+```typescript
+import { getBillingGatewayProvider } from '@kit/billing-gateway';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { createAccountsApi } from '@kit/accounts/api';
+
+async function reportUsageForApiRequests(
+  accountId: string,
+  quantity: number
+) {
+  // サーバーアクションクライアントを使用
+  const client = getSupabaseServerClient();
+  const api = createAccountsApi(client);
+  const subscription = await api.getSubscription(accountId);
+  
+  // サブスクリプションがアクティブでない場合は報告しない
+  if (!subscription) {
+    throw new Error('No active subscription found');
+  }
+  
+  // 課金プロバイダーを取得
+  const service = await getBillingGatewayProvider(this.client);
+  const customerId = await api.getCustomerId(accountId);
+  
+  if (!customerId) {
+    throw new Error(`No customer ID found for account ${accountId}`);
+  }
+  
+  // 使用量を課金プロバイダーに報告
+  return service.reportUsage({
+    id: customerId,
+    eventName: 'api_requests',
+    usage: {
+      quantity,
+    }
+  });
+}
+```
+
+## Lemon Squeezyでの使用量報告
+
+Lemon Squeezyでは、サブスクリプション品目の使用量を報告する必要があります。
+
+アカウントIDが与えられた場合、サブスクリプションIDと品目IDを取得し、使用量を報告します：
+
+```typescript
+import { getBillingGatewayProvider } from '@kit/billing-gateway';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { createAccountsApi } from '@kit/accounts/api';
+
+async function reportUsageForApiRequests(
+  accountId: string,
+  quantity: number
+) {
+  const client = getSupabaseServerClient();
+  const api = createAccountsApi(client);
+  const subscription = await api.getSubscription(accountId);
+  
+  if (!subscription) {
+    console.error('No active subscription found');
+    return;
+  }
+  
+  // 品目を検索
+  const {
+    data: subscriptionItem,
+    error
+  } = await client.from('subscription_items')
+    .select('id')
+    .eq('subscription_id', subscription.id)
+    .eq('product_id', 'starter-pro')
+    .eq('type', 'metered')
+    .single();
+    
+  const service = await getBillingGatewayProvider(this.client);
+  
+  // 使用量を報告
+  return service.reportUsage({
+    id: subscriptionItem.id,
+    usage: {
+      quantity,
+      action: 'increment'
+    }
+  });
+}
+```

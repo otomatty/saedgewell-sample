@@ -1,0 +1,431 @@
+/*
+* theme.utilities.css
+*
+* スタイリングユーティリティクラス
+* このファイルはコンポーネントのスタイリングに使用する汎用的なユーティリティクラスを定義します。
+*
+* 主な機能：
+* - レイアウト関連のユーティリティ
+* - アニメーション関連のユーティリティ
+* - レスポンシブデザイン用のユーティリティ
+* - その他の汎用的なスタイリングユーティリティ
+*/
+
+/* コンテナユーティリティ */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* レスポンシブコンテナ */
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* アニメーションユーティリティ */
+.animate-fade-up {
+  animation: var(--animate-fade-up);
+}
+
+.animate-fade-down {
+  animation: var(--animate-fade-down);
+}
+
+.animate-accordion-down {
+  animation: var(--animate-accordion-down);
+}
+
+.animate-accordion-up {
+  animation: var(--animate-accordion-up);
+}
+
+.animate-shimmer-slide {
+  animation: var(--animate-shimmer-slide);
+}
+
+.animate-spin-around {
+  animation: var(--animate-spin-around);
+}
+
+.animate-orbit {
+  animation: var(--animate-orbit);
+}
+
+.animate-marquee {
+  animation: var(--animate-marquee);
+}
+
+.animate-marquee-vertical {
+  animation: var(--animate-marquee-vertical);
+}
+
+.animate-ripple {
+  animation: var(--animate-ripple);
+}
+
+.animate-aurora-border {
+  animation: var(--animate-aurora-border);
+}
+
+.animate-aurora-1 {
+  animation: var(--animate-aurora-1);
+}
+
+.animate-aurora-2 {
+  animation: var(--animate-aurora-2);
+}
+
+.animate-aurora-3 {
+  animation: var(--animate-aurora-3);
+}
+
+.animate-aurora-4 {
+  animation: var(--animate-aurora-4);
+}
+
+.animate-background-position-spin {
+  animation: var(--animate-background-position-spin);
+}
+
+.animate-meteor {
+  animation: var(--animate-meteor);
+}
+
+.animate-aurora-gradient {
+  animation: var(--animate-aurora-gradient);
+}
+
+.animate-spin-slow {
+  animation: var(--animate-spin-slow);
+}
+
+.animate-spin-reverse {
+  animation: var(--animate-spin-reverse);
+}
+
+/* レイアウトユーティリティ */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flex-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+/* グリッドユーティリティ */
+.grid-center {
+  display: grid;
+  place-items: center;
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* スペーシングユーティリティ */
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+/* テキストユーティリティ */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ポジショニングユーティリティ */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.sticky {
+  position: sticky;
+}
+
+/* サイズユーティリティ */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+/* オーバーフローユーティリティ */
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.overflow-scroll {
+  overflow: scroll;
+}
+
+/* 表示・非表示ユーティリティ */
+.hidden {
+  display: none;
+}
+
+.block {
+  display: block;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.inline {
+  display: inline;
+}
+
+/* カーソルユーティリティ */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
+/* 透明度ユーティリティ */
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-100 {
+  opacity: 1;
+}
+
+/* トランジションユーティリティ */
+.transition {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* ホバーエフェクトユーティリティ */
+.hover\:opacity-75:hover {
+  opacity: 0.75;
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+.hover\:rotate-3:hover {
+  transform: rotate(3deg);
+}
+
+/* フォーカスユーティリティ */
+.focus\:outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus\:ring-2:focus {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+/* アクティブステートユーティリティ */
+.active\:scale-95:active {
+  transform: scale(0.95);
+}
+
+.active\:opacity-90:active {
+  opacity: 0.9;
+}
+
+/* 無効化ステートユーティリティ */
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
+.disabled\:cursor-not-allowed:disabled {
+  cursor: not-allowed;
+}
+
+/* グループホバーユーティリティ */
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.group:hover .group-hover\:translate-x-2 {
+  transform: translateX(0.5rem);
+}
+
+/* ダークモードユーティリティ */
+@media (prefers-color-scheme: dark) {
+  .dark\:bg-gray-900 {
+    background-color: rgb(17 24 39);
+  }
+
+  .dark\:text-white {
+    color: rgb(255 255 255);
+  }
+}
+
+/* レスポンシブユーティリティ */
+@media (min-width: 640px) {
+  .sm\:flex {
+    display: flex;
+  }
+
+  .sm\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:flex {
+    display: flex;
+  }
+
+  .md\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:flex {
+    display: flex;
+  }
+
+  .lg\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .xl\:flex {
+    display: flex;
+  }
+
+  .xl\:hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 1536px) {
+  .\2xl\:flex {
+    display: flex;
+  }
+
+  .\2xl\:hidden {
+    display: none;
+  }
+}

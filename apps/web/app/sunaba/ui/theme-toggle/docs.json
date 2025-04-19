@@ -1,0 +1,21 @@
+{
+	"id": "theme-toggle",
+	"name": "Theme Toggle",
+	"description": "ダークモード切り替えコンポーネント",
+	"category": "ui",
+	"tags": ["theme", "dark-mode", "toggle"],
+	"usage": {
+		"description": "ユーザーがテーマを切り替えるためのドロップダウンメニューを提供します。システムテーマ、ライトテーマ、ダークテーマの3つのオプションがあります。",
+		"example": "```tsx\n<ThemeToggle />\n```",
+		"props": []
+	},
+	"implementation": {
+		"description": "next-themesを使用してテーマの切り替えを実装しています。コンポーネントはマウント時にクライアントサイドでのみレンダリングされ、初期レンダリング時のハイドレーションの問題を防いでいます。",
+		"features": [
+			"システムテーマの自動検出",
+			"テーマの永続化",
+			"アニメーション付きのアイコン切り替え",
+			"アクセシビリティ対応"
+		]
+	}
+}

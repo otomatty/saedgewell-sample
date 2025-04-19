@@ -1,0 +1,13 @@
+{
+  "title": "Super Next App",
+  "description": "Super Next Appテンプレートの使用ガイド",
+  "order": 6,
+  "icon": "/icons/super-next-app.svg",
+  "status": "draft",
+  "disabled": true,
+  "badge": "開発中",
+  "badgeColor": "warning",
+  "version": "0.1.0",
+  "lastUpdated": "2024-03-10",
+  "maintainers": ["Akimasa Sugai"]
+}

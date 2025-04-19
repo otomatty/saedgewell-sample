@@ -1,0 +1,390 @@
+---
+title: "データベース設計"
+description: "データベースの設計と実装に関する情報"
+order: 3
+---
+
+# データベース実装計画
+
+## 1. データベース設計
+
+### 1.1 テーブル構造
+
+#### users テーブル
+```sql
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
+  avatar_url TEXT,
+  role TEXT NOT NULL DEFAULT 'reader',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- RLSポリシー
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own data" ON users
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own data" ON users
+  FOR UPDATE USING (auth.uid() = id);
+```
+
+#### contents テーブル
+```sql
+CREATE TABLE contents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  content_path TEXT NOT NULL,
+  author_id UUID REFERENCES users(id),
+  status TEXT NOT NULL DEFAULT 'draft',
+  version INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  published_at TIMESTAMP WITH TIME ZONE,
+  metadata JSONB DEFAULT '{}'::jsonb
+);
+
+-- インデックス
+CREATE INDEX contents_slug_idx ON contents(slug);
+CREATE INDEX contents_status_idx ON contents(status);
+CREATE INDEX contents_author_id_idx ON contents(author_id);
+
+-- RLSポリシー
+ALTER TABLE contents ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read published contents" ON contents
+  FOR SELECT USING (status = 'published');
+
+CREATE POLICY "Authors can CRUD own contents" ON contents
+  USING (author_id = auth.uid());
+```
+
+#### media_assets テーブル
+```sql
+CREATE TABLE media_assets (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  content_id UUID REFERENCES contents(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  url TEXT NOT NULL,
+  caption TEXT,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- インデックス
+CREATE INDEX media_assets_content_id_idx ON media_assets(content_id);
+
+-- RLSポリシー
+ALTER TABLE media_assets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view media assets" ON media_assets
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authors can manage media assets" ON media_assets
+  USING (EXISTS (
+    SELECT 1 FROM contents
+    WHERE contents.id = media_assets.content_id
+    AND contents.author_id = auth.uid()
+  ));
+```
+
+#### user_progress テーブル
+```sql
+CREATE TABLE user_progress (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  content_id UUID REFERENCES contents(id) ON DELETE CASCADE,
+  last_read TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  read_count INTEGER DEFAULT 1,
+  completion_status TEXT DEFAULT 'in_progress',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  UNIQUE(user_id, content_id)
+);
+
+-- インデックス
+CREATE INDEX user_progress_user_id_idx ON user_progress(user_id);
+CREATE INDEX user_progress_content_id_idx ON user_progress(content_id);
+
+-- RLSポリシー
+ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own progress" ON user_progress
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Users can update own progress" ON user_progress
+  FOR ALL USING (user_id = auth.uid());
+```
+
+## 2. マイグレーション管理
+
+### 2.1 マイグレーションファイルの構造
+
+```typescript
+// supabase/migrations/[timestamp]_initial_schema.sql
+-- 上記のテーブル作成SQLをここに配置
+
+// supabase/migrations/[timestamp]_add_indexes.sql
+-- インデックス作成SQLをここに配置
+
+// supabase/migrations/[timestamp]_add_rls_policies.sql
+-- RLSポリシー設定SQLをここに配置
+```
+
+### 2.2 シードデータ
+
+```sql
+-- supabase/seed.sql
+INSERT INTO users (email, full_name, role)
+VALUES
+  ('admin@example.com', 'Admin User', 'admin'),
+  ('author@example.com', 'Author User', 'author');
+
+INSERT INTO contents (slug, title, description, content_path, author_id, status)
+VALUES
+  ('getting-started', 'Getting Started', 'Introduction guide', '/docs/getting-started.mdx', (SELECT id FROM users WHERE role = 'admin'), 'published'),
+  ('installation', 'Installation', 'Installation guide', '/docs/installation.mdx', (SELECT id FROM users WHERE role = 'admin'), 'published');
+```
+
+## 3. データアクセス層
+
+### 3.1 Supabaseクライアント設定
+
+```typescript
+// lib/supabase/client.ts
+import { createClient } from '@supabase/supabase-js'
+import { Database } from './types'
+
+export const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+```
+
+### 3.2 型定義
+
+```typescript
+// lib/supabase/types.ts
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      users: {
+        Row: {
+          id: string
+          email: string
+          full_name: string | null
+          avatar_url: string | null
+          role: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          email: string
+          full_name?: string
+          avatar_url?: string
+          role?: string
+        }
+        Update: {
+          email?: string
+          full_name?: string
+          avatar_url?: string
+          role?: string
+        }
+      }
+      contents: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          description: string | null
+          content_path: string
+          author_id: string
+          status: string
+          version: number
+          created_at: string
+          updated_at: string
+          published_at: string | null
+          metadata: Json
+        }
+        Insert: {
+          slug: string
+          title: string
+          description?: string
+          content_path: string
+          author_id: string
+          status?: string
+          version?: number
+          metadata?: Json
+        }
+        Update: {
+          slug?: string
+          title?: string
+          description?: string
+          content_path?: string
+          status?: string
+          version?: number
+          metadata?: Json
+        }
+      }
+      // 他のテーブルの型定義も同様に
+    }
+  }
+}
+```
+
+### 3.3 データアクセス関数
+
+```typescript
+// lib/supabase/queries.ts
+import { supabase } from './client'
+import type { Database } from './types'
+
+export async function getContent(slug: string) {
+  const { data, error } = await supabase
+    .from('contents')
+    .select(`
+      *,
+      author:users(full_name, avatar_url),
+      media_assets(*)
+    `)
+    .eq('slug', slug)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateContent(
+  id: string,
+  updates: Database['public']['Tables']['contents']['Update']
+) {
+  const { data, error } = await supabase
+    .from('contents')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function trackProgress(
+  userId: string,
+  contentId: string
+) {
+  const { data, error } = await supabase
+    .from('user_progress')
+    .upsert({
+      user_id: userId,
+      content_id: contentId,
+      last_read: new Date().toISOString(),
+      read_count: 1
+    }, {
+      onConflict: 'user_id,content_id',
+      update: {
+        last_read: new Date().toISOString(),
+        read_count: supabase.raw('user_progress.read_count + 1')
+      }
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+```
+
+## 4. バックアップと復元
+
+### 4.1 バックアップ設定
+
+```bash
+# バックアップスクリプト
+#!/bin/bash
+BACKUP_DIR="backups"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# データベースバックアップ
+supabase db dump -f "$BACKUP_DIR/db_$TIMESTAMP.sql"
+
+# メディアファイルバックアップ
+supabase storage download public --output-dir "$BACKUP_DIR/media_$TIMESTAMP"
+```
+
+### 4.2 復元手順
+
+```bash
+# 復元スクリプト
+#!/bin/bash
+BACKUP_FILE="backups/db_20240308_120000.sql"
+
+# データベース復元
+supabase db reset
+supabase db push "$BACKUP_FILE"
+
+# メディアファイル復元
+supabase storage upload public backups/media_20240308_120000/*
+```
+
+## 5. 監視とメンテナンス
+
+### 5.1 パフォーマンスモニタリング
+
+```sql
+-- スロークエリの検出
+SELECT
+  calls,
+  total_exec_time / calls as avg_exec_time,
+  query
+FROM pg_stat_statements
+ORDER BY avg_exec_time DESC
+LIMIT 10;
+
+-- テーブルサイズの監視
+SELECT
+  schemaname,
+  relname,
+  pg_size_pretty(pg_total_relation_size(relid)) as total_size
+FROM pg_catalog.pg_statio_user_tables
+ORDER BY pg_total_relation_size(relid) DESC;
+```
+
+### 5.2 定期メンテナンス
+
+```sql
+-- 定期的なVACUUM
+VACUUM ANALYZE;
+
+-- インデックスの再構築
+REINDEX TABLE contents;
+REINDEX TABLE user_progress;
+
+-- 古いデータのアーカイブ
+INSERT INTO contents_archive
+SELECT *
+FROM contents
+WHERE updated_at < NOW() - INTERVAL '1 year'
+  AND status = 'archived';
+```
+
+## 6. 次のステップ
+
+1. 認証機能の実装
+2. コンテンツ管理機能の実装
+3. メディア管理機能の実装
+4. 学習進捗機能の実装 

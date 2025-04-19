@@ -1,0 +1,38 @@
+name: Fork Cleanup
+
+on:
+  fork:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Create cleanup branch
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git checkout -b cleanup-fork
+          
+      - name: Remove unnecessary files and directories
+        run: |
+          rm -rf docs/
+          rm -rf .github/template-cleanup/
+          # 必要に応じて他のファイル/ディレクトリを追加
+          
+      - name: Commit changes
+        run: |
+          git add -A
+          git commit -m "🧹 Cleanup unnecessary files and directories" || echo "No changes to commit"
+          
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: '🧹 Cleanup unnecessary files and directories'
+          body: 'このPRは不要なファイルとディレクトリを削除します。'
+          branch: cleanup-fork
+          base: main 

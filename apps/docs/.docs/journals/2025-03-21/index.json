@@ -1,0 +1,23 @@
+{
+  "date": "2025-03-21",
+  "entries": [
+    {
+      "id": "docker-jwt-authentication-debugging",
+      "title": "DockerコンテナにおけるJWT認証問題のデバッグと解決",
+      "description": "DockerコンテナにおけるJWT認証問題のデバッグと解決",
+      "tags": ["jwt", "supabase", "docker", "authentication", "troubleshooting"]
+    },
+    {
+      "id": "local-https-implementation",
+      "title": "ローカル開発環境でのHTTPS実装",
+      "description": "ローカル開発環境でHTTPSを使用するための実装、自己署名証明書を使用したサブドメインでのHTTPSアクセス",
+      "tags": ["https", "nginx", "docker", "mkcert", "開発環境"]
+    },
+    {
+      "id": "local-https-supabase-auth-implementation",
+      "title": "Docker環境でのSupabase認証実装とネットワーク問題の解決",
+      "description": "Docker環境で実行されているNext.jsアプリケーションがローカルのSupabaseインスタンスと連携し、Google認証を含む機能を正常に動作させるための実装",
+      "tags": ["docker", "supabase", "authentication", "network", "next.js"]
+    }
+  ]
+}

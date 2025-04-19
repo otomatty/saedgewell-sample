@@ -1,0 +1,169 @@
+{
+  "documentCount": 161,
+  "testDocuments": [
+    {
+      "title": "相互参照テスト",
+      "path": "contents/test/keyword-links-test-reference.mdx",
+      "docType": "contents",
+      "keywords": [],
+      "keywordLinks": [
+        {
+          "keyword": "キーワードリンクテスト",
+          "position": 95
+        },
+        {
+          "keyword": "相互参照テスト",
+          "position": 129
+        },
+        {
+          "keyword": "キーワードリンクテスト",
+          "docType": "test",
+          "position": 198
+        },
+        {
+          "keyword": "相互参照テスト",
+          "docType": "test",
+          "position": 235
+        },
+        {
+          "keyword": "キーワードリンクテスト",
+          "position": 296
+        },
+        {
+          "keyword": "相互参照テスト",
+          "position": 312
+        }
+      ]
+    },
+    {
+      "title": "キーワードリンクテスト",
+      "path": "contents/test/keyword-links-test-minimal.mdx",
+      "docType": "contents",
+      "keywords": [],
+      "keywordLinks": [
+        {
+          "keyword": "キーワードリンクテスト",
+          "position": 105
+        },
+        {
+          "keyword": "存在しないページ",
+          "position": 142
+        },
+        {
+          "keyword": "キーワードリンクテスト",
+          "docType": "test",
+          "position": 219
+        },
+        {
+          "keyword": "存在しないページ",
+          "docType": "test",
+          "position": 260
+        },
+        {
+          "keyword": "キーワードリンクテスト",
+          "position": 321
+        },
+        {
+          "keyword": "存在しないページ",
+          "position": 367
+        }
+      ]
+    },
+    {
+      "title": "シンタックスハイライトテスト",
+      "path": "contents/test/index.mdx",
+      "docType": "contents",
+      "keywords": [],
+      "keywordLinks": []
+    }
+  ],
+  "keywordResolution": {
+    "basic": {
+      "keyword": "キーワードリンクテスト",
+      "mapping": {
+        "path": "contents/test/keyword-links-test-minimal.mdx",
+        "title": "キーワードリンクテスト",
+        "description": "MDXキーワードリンク機能のテスト用ページ",
+        "docType": "contents",
+        "keywords": [],
+        "keywordLinks": [
+          {
+            "keyword": "キーワードリンクテスト",
+            "position": 105
+          },
+          {
+            "keyword": "存在しないページ",
+            "position": 142
+          },
+          {
+            "keyword": "キーワードリンクテスト",
+            "docType": "test",
+            "position": 219
+          },
+          {
+            "keyword": "存在しないページ",
+            "docType": "test",
+            "position": 260
+          },
+          {
+            "keyword": "キーワードリンクテスト",
+            "position": 321
+          },
+          {
+            "keyword": "存在しないページ",
+            "position": 367
+          }
+        ]
+      },
+      "isAmbiguous": false
+    },
+    "withDocType": {
+      "keyword": "キーワードリンクテスト",
+      "docType": "test",
+      "isAmbiguous": true,
+      "alternatives": [
+        {
+          "path": "contents/test/keyword-links-test-minimal.mdx",
+          "title": "キーワードリンクテスト",
+          "description": "MDXキーワードリンク機能のテスト用ページ",
+          "docType": "contents",
+          "keywords": [],
+          "keywordLinks": [
+            {
+              "keyword": "キーワードリンクテスト",
+              "position": 105
+            },
+            {
+              "keyword": "存在しないページ",
+              "position": 142
+            },
+            {
+              "keyword": "キーワードリンクテスト",
+              "docType": "test",
+              "position": 219
+            },
+            {
+              "keyword": "存在しないページ",
+              "docType": "test",
+              "position": 260
+            },
+            {
+              "keyword": "キーワードリンクテスト",
+              "position": 321
+            },
+            {
+              "keyword": "存在しないページ",
+              "position": 367
+            }
+          ]
+        }
+      ],
+      "error": "部分一致するドキュメントが見つかりました"
+    },
+    "nonExistent": {
+      "keyword": "存在しないページ",
+      "isAmbiguous": false,
+      "error": "キーワード \"存在しないページ\" に一致するドキュメントが見つかりませんでした。"
+    }
+  }
+}

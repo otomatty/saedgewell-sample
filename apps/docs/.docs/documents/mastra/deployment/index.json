@@ -1,0 +1,29 @@
+{
+  "title": "デプロイメント",
+  "description": "Mastraアプリケーションのデプロイ",
+  "order": 9,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "mastra-server",
+      "title": "Mastra Server",
+      "description": "Mastraサーバーの構成と設定",
+      "order": 1
+    },
+    {
+      "name": "logging-tracing",
+      "title": "ロギングとトレーシング",
+      "description": "ログの記録と分散トレーシングの実装",
+      "order": 2
+    },
+    {
+      "name": "deployment",
+      "title": "デプロイ",
+      "description": "各種環境へのデプロイ方法",
+      "order": 3
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+name: Template Sync
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *'  # 1日おきの午前0時に実行
+  workflow_dispatch:      # 手動実行も可能
+
+jobs:
+  template-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/otomatty/super-next-app.git
+          git fetch upstream
+
+      - name: Create sync branch
+        run: |
+          git checkout -b template-sync-$(date +%Y%m%d)
+          
+      - name: Run update script for specific directories
+        run: |
+          chmod +x ./scripts/update-from-template.sh
+          # packages ディレクトリの更新（ルートのpackage.jsonは除外）
+          git checkout upstream/main -- packages/
+          # もしルートのpackage.jsonが更新された場合は元に戻す
+          git checkout HEAD -- package.json
+          # tooling ディレクトリの更新
+          git checkout upstream/main -- tooling/
+          # ルートディレクトリの設定ファイルの更新（package.jsonを除く）
+          git checkout upstream/main -- *.toml
+          git checkout upstream/main -- *.yml
+          git checkout upstream/main -- .gitattributes
+          git checkout upstream/main -- .npmrc
+          git checkout upstream/main -- .nvmrc
+          # 特定のJSONファイルのみ更新（package.json以外）
+          git checkout upstream/main -- tsconfig.json
+          git checkout upstream/main -- biome.json
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: '🔄 テンプレートの更新を同期（除外ディレクトリあり）'
+          body: |
+            親テンプレートからの更新を同期します。
+            
+            更新対象：
+            - packages/
+            - tooling/
+            - ルートディレクトリの設定ファイル（package.json除く）
+            
+            除外対象：
+            - apps/
+            - docs/
+            - .cursor/
+            - package.json
+            
+            - この PR は自動生成されています
+            - コンフリクトがある場合は手動での解決が必要です
+            - マージ前にテストの実行を確認してください
+          branch: template-sync-$(date +%Y%m%d)
+          base: main
+          labels: |
+            template-sync
+            automated pr
+          commit-message: '🔄 テンプレートの更新を同期（除外ディレクトリあり）' 

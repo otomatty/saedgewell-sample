@@ -1,0 +1,159 @@
+{
+  "updateGroups": {
+    "next": {
+      "packages": ["next", "@types/next"],
+      "relatedPackages": ["react", "react-dom"],
+      "testPatterns": ["apps/**/*.test.ts", "packages/next/**/*.test.ts"]
+    },
+    "react": {
+      "packages": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "testPatterns": ["packages/ui/**/*.test.ts"]
+    },
+    "supabase": {
+      "packages": ["@supabase/supabase-js"],
+      "testPatterns": ["packages/supabase/**/*.test.ts"]
+    }
+  },
+  "safetyChecks": {
+    "requiredTests": true,
+    "typeCheck": true,
+    "lint": true,
+    "backupBeforeUpdate": true
+  },
+  "categorize": {
+    "categories": [
+      {
+        "name": "next",
+        "patterns": ["^next", "^@next"],
+        "description": "Next.js関連のパッケージ"
+      },
+      {
+        "name": "react",
+        "patterns": ["^react", "^@react", "^@types/react"],
+        "description": "React関連のパッケージ"
+      },
+      {
+        "name": "supabase",
+        "patterns": ["^@supabase", "^supabase"],
+        "description": "Supabase関連のパッケージ"
+      },
+      {
+        "name": "ui-components",
+        "patterns": [
+          "^@radix-ui/",
+          "^class-variance-authority",
+          "^cmdk",
+          "^input-otp",
+          "^vaul",
+          "^three"
+        ],
+        "description": "UIコンポーネントライブラリ"
+      },
+      {
+        "name": "storybook",
+        "patterns": ["^@storybook/", "^storybook$"],
+        "description": "Storybookとそのアドオン"
+      },
+      {
+        "name": "styling",
+        "patterns": [
+          "^@tailwindcss/",
+          "^tailwindcss",
+          "^autoprefixer",
+          "^postcss",
+          "^tailwind-merge",
+          "^tailwindcss-animate"
+        ],
+        "description": "スタイリング関連のパッケージ"
+      },
+      {
+        "name": "documentation",
+        "patterns": [
+          "^@mdx-js/",
+          "^rehype-",
+          "^remark-",
+          "^shiki$",
+          "^prismjs",
+          "^highlight.js",
+          "^mermaid",
+          "^gray-matter",
+          "^unist-util-visit"
+        ],
+        "description": "ドキュメント生成と変換関連"
+      },
+      {
+        "name": "data-management",
+        "patterns": ["^@tanstack/", "^@makerkit/", "^jotai", "^nanoid"],
+        "description": "データ管理とクエリ関連"
+      },
+      {
+        "name": "utils",
+        "patterns": [
+          "^date-fns",
+          "^camelcase-keys",
+          "^snakecase-keys",
+          "^canvas-confetti",
+          "^clsx$"
+        ],
+        "description": "ユーティリティパッケージ"
+      },
+      {
+        "name": "build-tools",
+        "patterns": [
+          "^@vitejs/",
+          "^vite$",
+          "^tsup$",
+          "^@svgr/",
+          "^babel-plugin-"
+        ],
+        "description": "ビルドツール関連"
+      },
+      {
+        "name": "icons",
+        "patterns": ["^@heroicons/", "^lucide-react"],
+        "description": "アイコンパッケージ"
+      },
+      {
+        "name": "i18n",
+        "patterns": ["^i18next", "^react-i18next"],
+        "description": "国際化関連"
+      },
+      {
+        "name": "logging",
+        "patterns": ["^pino", "^pino-pretty"],
+        "description": "ロギング関連"
+      },
+      {
+        "name": "api-clients",
+        "patterns": [
+          "^@octokit/",
+          "^@google/",
+          "^google-auth-library",
+          "^googleapis"
+        ],
+        "description": "外部APIクライアント"
+      },
+      {
+        "name": "security",
+        "patterns": ["^@edge-csrf/", "^@marsidev/react-turnstile"],
+        "description": "セキュリティ関連"
+      },
+      {
+        "name": "charts",
+        "patterns": ["^recharts", "^framer-motion"],
+        "description": "チャートとアニメーション"
+      },
+      {
+        "name": "testing",
+        "patterns": ["^@testing-library/", "^@jest/", "^jsdom"],
+        "description": "テスト関連"
+      },
+      {
+        "name": "typescript",
+        "patterns": ["^@types/", "^typescript", "^ts-"],
+        "description": "TypeScript関連"
+      }
+    ],
+    "defaultCategory": "dependencies"
+  }
+}

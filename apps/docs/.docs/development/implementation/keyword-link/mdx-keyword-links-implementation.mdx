@@ -1,0 +1,505 @@
+---
+title: 'MDXキーワードリンク機能の実装マニュアル'
+description: 'MDXファイル間のキーワードリンク機能の実装手順と設計ドキュメント'
+---
+
+# MDXキーワードリンク機能の実装マニュアル
+
+## 概要
+
+MDXドキュメント内でキーワードリンクを使用するための機能を実装します。
+キーワードリンクは `[[キーワード]]` または `[[キーワード|docType]]` の形式で記述され、
+自動的に適切なドキュメントへのリンクに変換されます。
+
+## 技術スタック
+
+### 本番環境用パッケージ
+```bash
+# MDX関連
+@mdx-js/esbuild
+@mdx-js/mdx
+@mdx-js/react
+
+# パース処理
+gray-matter
+glob
+unified
+remark-parse
+remark-mdx
+mdast-util-to-string
+
+# ファイル監視
+chokidar
+ws
+
+# キャッシュ最適化（予定）
+fs-extra
+lru-cache
+
+# デバッグ・モニタリング（予定）
+debug
+```
+
+### 開発環境用パッケージ
+```bash
+# 型定義
+@types/ws
+@types/glob
+@types/fs-extra
+@types/debug
+```
+
+## 実装状況
+
+### 1. 基本機能（フェーズ1）
+
+#### 1.1 MDXファイルの読み込み（完了）
+- [x] ファイル読み込みの基本関数
+- [x] エラーハンドリング
+- [x] 基本的なキャッシュ機能
+
+#### 1.2 フロントマターの解析（完了）
+- [x] gray-matterを使用したパース処理
+- [x] 型定義の作成
+- [x] バリデーション関数
+
+#### 1.3 キーワードリンクの構文解析（完了）
+- [x] 正規表現パターンの定義
+- [x] パース関数の実装
+- [x] AST変換ロジック
+
+#### 1.4 リンク解決機能（完了）
+- [x] 基本的なキーワードマッチング
+  - [x] 完全一致の実装
+  - [x] 部分一致の実装
+  - [x] 類似マッチ（レーベンシュタイン距離）の実装
+- [x] 高度なマッチング機能
+  - [x] コンテキストを考慮したマッチング
+  - [x] 優先度に基づくマッチング
+- [x] パス解決ロジック
+  - [x] 相対パスの解決
+  - [x] エイリアスの解決
+
+#### 1.5 UIコンポーネント（完了）
+- [x] KeywordLinkコンポーネントの基本実装
+  - [x] 基本的なスタイリング
+  - [x] クリックハンドリング
+  - [x] アクセシビリティ対応
+- [x] リンク状態の表示
+  - [x] 有効なリンクの表示
+  - [x] 無効なリンクの表示
+  - [x] 読み込み中の状態
+  - [x] エラー状態の表示
+
+### 2. キャッシュ最適化（フェーズ2・完了）
+
+#### 2.1 キャッシュ設定（完了）
+```typescript
+interface CacheConfig {
+  ttl: number;
+  maxSize: number;
+  persistToDisk: boolean;
+  version: string;
+  enableFileWatcher: boolean;
+  updateInterval: number;
+}
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  version: string;
+}
+```
+
+#### 2.2 LRUキャッシュ（完了）
+```typescript
+class CacheManager<T> {
+  private cache: Map<string, CacheEntry<T>>;
+  private config: CacheConfig;
+  private metrics: PerformanceMetrics;
+
+  constructor(config: CacheConfig) {
+    this.cache = new Map();
+    this.config = config;
+    this.metrics = {
+      indexBuildTime: 0,
+      cacheHitRate: 0,
+      resolutionTime: 0,
+      memoryUsage: 0,
+      hits: 0,
+      misses: 0,
+      totalRequests: 0
+    };
+  }
+
+  // get/set/delete メソッドの実装
+  // メモリ使用量の監視機能
+  // キャッシュヒット率の計測機能
+}
+```
+
+#### 2.3 ファイルシステムキャッシュ（完了）
+```typescript
+class FileSystemCache<T> {
+  private basePath: string;
+  private config: CacheConfig;
+
+  constructor(config: CacheConfig, basePath: string) {
+    this.config = config;
+    this.basePath = basePath;
+  }
+
+  // ファイルへの永続化機能
+  // バージョン管理機能
+  // キャッシュの整合性チェック
+}
+```
+
+### 3. エラーハンドリング（フェーズ2・完了）
+
+#### 3.1 エラー型の定義（完了）
+```typescript
+enum KeywordErrorType {
+  RESOLUTION_ERROR = 'resolution_error', // キーワード解決エラー
+  DUPLICATE_ERROR = 'duplicate_error', // 重複エラー
+  CACHE_ERROR = 'cache_error', // キャッシュエラー
+  PARSE_ERROR = 'parse_error' // パースエラー
+}
+
+interface KeywordError {
+  type: KeywordErrorType;
+  message: string;
+  details?: unknown;
+  timestamp: number;
+}
+```
+
+#### 3.2 エラーレポーター（完了）
+```typescript
+class ErrorReporter {
+  private errors: KeywordError[] = [];
+  private config: ErrorReporterConfig;
+
+  constructor(config: ErrorReporterConfig) {
+    this.config = config;
+  }
+
+  // エラー収集機能
+  report(error: KeywordResolutionError): void {
+    // エラーのログと分析
+  }
+  
+  // エラー分析と通知機能
+}
+```
+
+### 4. 統合コンポーネント（完了）
+
+#### 4.1 統合キーワード解決クラス
+```typescript
+export class KeywordResolver {
+  private documentMapper: DocumentMapper;
+  private contextMatcher: ContextAwareMatcher;
+  private priorityResolver: PriorityBasedResolver;
+  private pathResolver: PathResolver;
+  private aliasResolver: AliasResolver;
+  
+  // キーワード解決ロジック
+  async resolveKeyword(
+    keyword: string,
+    docType?: string,
+    context?: string
+  ): Promise<ResolvedKeyword> {
+    // 複数の解決ロジックを組み合わせてキーワードを解決
+  }
+  
+  // ドキュメントのランク付け
+  private async rankDocuments(
+    documents: DocumentMapping[],
+    keyword: string,
+    docType?: string,
+    context?: string,
+    strategy: ResolveStrategy = 'adaptive'
+  ): Promise<DocumentMatch[]> {
+    // 戦略に基づくフィルタリング
+    // コンテキスト考慮型マッチング
+    // 優先度に基づくソート
+  }
+}
+```
+
+#### 4.2 コンテキスト考慮型マッチャー
+```typescript
+export class ContextAwareMatcher {
+  private documentContent = '';
+  private contextKeywords: Map<string, number> = new Map();
+  
+  // コンテキスト設定
+  setContext(content: string = ''): void {
+    this.documentContent = content;
+    this.analyzeContextKeywords();
+  }
+  
+  // コンテキスト関連度に基づくソート
+  sortByContextRelevance(
+    keyword: string,
+    documents: DocumentMapping[]
+  ): DocumentMapping[] {
+    // 関連度に基づくソート
+  }
+  
+  // 関連キーワードの抽出
+  extractRelatedKeywords(
+    keyword: string,
+    documents: DocumentMapping[],
+    maxKeywords: number = 5
+  ): string[] {
+    // コンテキストから関連キーワードを抽出
+  }
+}
+```
+
+### 5. テスト（完了）
+
+#### 5.1 単体テスト（完了）
+- [x] KeywordResolverのテスト
+- [x] ContextAwareMatcherのテスト
+- [x] PriorityBasedResolverのテスト
+- [x] CacheManagerのテスト
+- [x] ErrorReporterのテスト
+
+#### 5.2 コンポーネントテスト（完了）
+- [x] KeywordLinkコンポーネントのテスト
+- [x] KeywordLinkClientコンポーネントのテスト
+
+#### 5.3 統合テスト（完了）
+- [x] サーバーコンポーネントからクライアントコンポーネントへのデータ受け渡しのテスト
+- [x] 各種状態（正常、エラー、曖昧）の表示のテスト
+- [x] APIエンドポイントのテスト
+
+### 6. パフォーマンスモニタリング（フェーズ2・完了）
+
+#### 6.1 メトリクス収集（完了）
+```typescript
+interface PerformanceMetrics {
+  cacheHitRate: number;
+  memoryUsage: number;
+  processingTime: number;
+  errorRate: number;
+  hits: number;
+  misses: number;
+  totalRequests: number;
+}
+
+class MetricsCollector {
+  private metrics: PerformanceMetrics;
+
+  constructor() {
+    this.metrics = {
+      cacheHitRate: 0,
+      memoryUsage: 0,
+      processingTime: 0,
+      errorRate: 0,
+      hits: 0,
+      misses: 0,
+      totalRequests: 0
+    };
+  }
+
+  // メトリクス収集機能
+  // 統計分析機能
+  // レポート生成機能
+}
+```
+
+## 使用方法
+
+### 1. キーワードリンクの記述
+
+```mdx
+# サンプルドキュメント
+
+[[キーワード]] を使用して他のドキュメントを参照できます。
+ドキュメントタイプを指定する場合は [[キーワード|docs]] のように記述します。
+```
+
+### 2. キャッシュの設定
+
+```typescript
+const cacheConfig: CacheConfig = {
+  ttl: 300000, // 5分
+  maxSize: 100, // 最大100エントリ
+  persistToDisk: true,
+  version: '1.0.0',
+  enableFileWatcher: true,
+  updateInterval: 30000 // 30秒
+};
+
+// キャッシュマネージャーの初期化
+const cacheManager = new CacheManager<DocumentMapping>(cacheConfig);
+```
+
+### 3. キーワード解決の使用
+
+```typescript
+// DocumentMapperの初期化
+const documentMapper = new DocumentMapper({
+  basePath: 'contents',
+  extensions: ['.mdx', '.md'],
+  ignorePaths: ['**/node_modules/**']
+});
+
+// KeywordResolverの初期化
+const keywordResolver = new KeywordResolver(documentMapper, {
+  basePath: 'contents',
+  enableContextMatching: true,
+  enablePriorityMatching: true,
+  resolveStrategy: 'adaptive'
+});
+
+// キーワードの解決
+const currentContext = '現在表示しているドキュメントの内容';
+const result = await keywordResolver.resolveKeyword('キーワード', 'docs', currentContext);
+
+if (result.mapping) {
+  // 解決成功：リンクを生成
+  console.log(`リンク先: ${result.mapping.path}`);
+  
+  // 関連キーワードがあれば表示
+  if (result.relatedKeywords?.length) {
+    console.log('関連キーワード:', result.relatedKeywords);
+  }
+} else {
+  // 解決失敗：エラーメッセージを表示
+  console.error(result.error);
+}
+```
+
+## 今後の実装予定
+
+1. ~~リンク状態表示の強化（進行中）~~
+   - ~~読み込み中の状態表示~~
+   - ~~エラー状態の表示とフィードバック~~
+   - ~~ホバー時の追加情報表示~~
+
+2. ~~ファイルシステムキャッシュの実装（計画中）~~
+   - ~~ファイルへの永続化機能~~
+   - ~~バージョン管理機能~~
+   - ~~キャッシュの整合性チェック~~
+
+3. ~~パフォーマンスモニタリングの強化（計画中）~~
+   - ~~メトリクス収集システムの充実~~
+   - ~~パフォーマンスダッシュボードの実装~~
+   - ~~最適化提案機能の追加~~
+
+4. 開発者体験の向上（計画中）
+   - デバッグ支援機能の実装
+   - ドキュメント生成機能の開発
+   - 開発者向けツールの拡充
+
+5. ~~テスト拡充と安定性向上（進行中）~~
+   - ~~単体テストの拡充~~
+   - ~~統合テストの実装~~
+   - ~~エッジケースの検証~~
+
+## 注意事項
+
+1. キャッシュの整合性
+   - TTLを適切に設定し、古いキャッシュを防ぐ
+   - バージョン管理を徹底し、互換性を保つ
+
+2. メモリ管理
+   - LRUキャッシュのサイズを監視
+   - 定期的なメモリ使用量のチェック
+
+3. エラー処理
+   - エラーの適切なログ記録
+   - ユーザーへの適切なフィードバック
+
+4. パフォーマンス
+   - キャッシュヒット率の監視
+   - 処理時間の計測と最適化
+
+## トラブルシューティング
+
+### よくある問題と解決方法
+
+1. キャッシュの不整合
+   ```typescript
+   // キャッシュの強制更新
+   await cacheManager.invalidate();
+   await cacheManager.rebuild();
+   ```
+
+2. メモリ使用量の増加
+   ```typescript
+   // メモリ使用量の確認
+   const metrics = await metricsCollector.getMetrics();
+   console.log('Memory Usage:', metrics.memoryUsage);
+   ```
+
+3. エラーの頻発
+   ```typescript
+   // エラー分析の実行
+   const analysis = await errorReporter.analyze();
+   console.log('Error Patterns:', analysis.patterns);
+   ```
+
+4. 未定義値の処理
+   ```typescript
+   // 安全なnull/undefinedチェック
+   if (context) {
+     // contextが存在する場合の処理
+   } else {
+     // contextが存在しない場合のフォールバック
+   }
+   ```
+
+## 開発者向けツール（計画中）
+
+1. デバッグログ
+   ```typescript
+   const debug = require('debug')('mdx:keyword-links');
+   debug('Cache hit rate: %d', metrics.cacheHitRate);
+   ```
+
+2. パフォーマンス分析
+   ```typescript
+   // パフォーマンス分析ツール
+   const { performance, PerformanceObserver } = require('perf_hooks');
+   
+   // マーク開始
+   performance.mark('resolve-start');
+   
+   // 処理実行
+   const result = await keywordResolver.resolveKeyword('キーワード');
+   
+   // マーク終了
+   performance.mark('resolve-end');
+   performance.measure('resolve-duration', 'resolve-start', 'resolve-end');
+   ```
+
+3. エラートレース
+   ```typescript
+   // エラートレース機能
+   try {
+     await keywordResolver.resolveKeyword('キーワード');
+   } catch (error) {
+     console.error('エラー詳細:', error.stack);
+     errorReporter.reportWithTrace(error);
+   }
+   ```
+
+## 参考情報
+
+### 関連ドキュメント
+- [[MDXキーワードリンク VSCode拡張機能の実装]]
+- Next.js公式ドキュメント
+- MDX公式ドキュメント
+
+### 技術スタック
+- Next.js
+- TypeScript
+- MDX
+- WebSocket
+- VSCode拡張API 

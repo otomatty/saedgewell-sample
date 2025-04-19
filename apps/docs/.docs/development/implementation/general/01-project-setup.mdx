@@ -1,0 +1,145 @@
+---
+title: "プロジェクトセットアップ"
+description: "プロジェクトの初期セットアップと環境構築に関する情報"
+order: 1
+---
+
+# プロジェクトセットアップ手順
+
+## 1. 開発環境の準備
+
+### 1.1 必要なツール
+- Node.js (v18.17.0以上)
+- Bun (v1.0.0以上)
+- Git
+- Cursor (推奨エディタ)
+
+### 1.2 推奨VSCode拡張機能
+- Tailwind CSS IntelliSense
+- MDX
+- Biome
+- GitLens
+
+## 2. プロジェクトの初期設定
+
+### 2.1 依存関係のインストール
+
+```bash
+# パッケージのインストール
+bun install
+
+# 開発サーバーの起動
+bun dev
+```
+
+### 2.2 環境変数の設定
+
+`.env.local`ファイルを作成し、以下の環境変数を設定：
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# GitHub
+GITHUB_ACCESS_TOKEN=your-github-access-token
+
+# その他の設定
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+## 3. データベースの初期設定
+
+### 3.1 Supabaseプロジェクトの作成
+
+1. Supabaseダッシュボードでプロジェクトを作成
+2. データベースの接続情報を取得
+3. 必要なテーブルの作成（マイグレーションファイルは後述）
+
+### 3.2 認証設定
+
+1. Supabaseダッシュボードで認証設定を行う
+2. 必要な認証プロバイダーを有効化
+   - Email/Password
+   - GitHub（オプション）
+
+## 4. ディレクトリ構造の設定
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # 認証関連ページ
+│   ├── docs/[...slug]/    # ドキュメントページ
+│   └── api/               # APIエンドポイント
+├── components/            # 共通コンポーネント
+│   ├── ui/               # UI基本コンポーネント
+│   ├── mdx/              # MDXカスタムコンポーネント
+│   └── layout/           # レイアウトコンポーネント
+├── lib/                  # ユーティリティ関数
+│   ├── supabase/        # Supabaseクライアント
+│   ├── github/          # GitHub API関連
+│   └── mdx/             # MDX処理関連
+└── content/             # MDXコンテンツ
+    └── docs/            # ドキュメント
+```
+
+## 5. 基本設定ファイルの作成
+
+### 5.1 TypeScript設定
+
+`tsconfig.json`の主要な設定：
+
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+### 5.2 ESLint設定
+
+`.eslintrc.json`の基本設定：
+
+```json
+{
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "error"
+  }
+}
+```
+
+## 6. 次のステップ
+
+1. アーキテクチャの実装
+2. データベースのセットアップ
+3. 認証機能の実装
+4. コンテンツ管理機能の実装
+
+各ステップの詳細な実装手順は、それぞれのドキュメントを参照してください。 

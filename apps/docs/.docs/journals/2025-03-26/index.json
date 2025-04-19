@@ -1,0 +1,166 @@
+{
+  "date": "2025-03-26",
+  "entries": [
+    {
+      "id": "github-jouranal-fix",
+      "title": "github jouranal fix",
+      "description": "",
+      "tags": []
+    },
+    {
+      "id": "github-pat-setup",
+      "title": "GitHub Personal Access Token の設定手順",
+      "description": "GitHub Personal Access Token を使用して公開リポジトリとの同期を行うための手順を記載します。",
+      "tags": [
+        "github",
+        "token",
+        "sync"
+      ]
+    },
+    {
+      "id": "manual-sync-test",
+      "title": "手動同期テストの手順",
+      "description": "公開リポジトリとの同期スクリプトが正しく動作するかを手動でテストする手順を記載します。",
+      "tags": [
+        "github",
+        "sync",
+        "manual-test",
+        "manual"
+      ]
+    },
+    {
+      "id": "printing-company-system-estimate",
+      "title": "印刷会社向け業務管理システム見積もり",
+      "description": "印刷会社向け業務管理システムの開発見積もり及び要件定義書",
+      "tags": [
+        "見積もり",
+        "業務管理",
+        "印刷",
+        "システム",
+        "要件定義"
+      ]
+    },
+    {
+      "id": "resume-project-item-writing-guide",
+      "title": "職務経歴書におけるプロジェクト項目の書き方：目的、役割、成果の記載ポイント",
+      "description": "",
+      "tags": [
+        "職務経歴書",
+        "履歴書",
+        "プロジェクト",
+        "書き方",
+        "役割",
+        "成果",
+        "アピール"
+      ]
+    },
+    {
+      "id": "sales-talk",
+      "title": "小規模印刷会社社長へのプレゼンテーション案",
+      "description": "",
+      "tags": [
+        "印刷",
+        "プレゼンテーション",
+        "システム開発",
+        "セールストーク"
+      ]
+    },
+    {
+      "id": "script-fix-and-resolution",
+      "title": "スクリプト修正と問題解決",
+      "description": "",
+      "tags": [
+        "スクリプト",
+        "修正",
+        "問題解決",
+        "デバッグ"
+      ]
+    }
+  ],
+  "commits": [
+    {
+      "message": "画像の静的インポートを追加し、各コンポーネントでの画像の使用方法を改善しました。また、ぼかし画像のプレースホルダーを実装し、ユーザーインターフェースの視覚的な体験を向上させました。",
+      "sha": "1bc527ced7c5cf5a119a2f536cfc83ec45e983d6",
+      "date": "2025-03-26T19:20:39Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/niinumakikaku/commit/1bc527ced7c5cf5a119a2f536cfc83ec45e983d6",
+      "repoName": "niinumakikaku",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/niinumakikaku",
+      "additions": 53,
+      "deletions": 11
+    },
+    {
+      "message": "新しいコンポーネントを追加し、問い合わせフォームの機能を強化しました。また、依存関係を更新し、全体的なコードの整理を行いました。新しい画像ファイルも追加され、ユーザーインターフェースが改善されました。",
+      "sha": "0903fda61a3598c147ac2a79b2b1e17f98a61a40",
+      "date": "2025-03-26T18:46:09Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/niinumakikaku/commit/0903fda61a3598c147ac2a79b2b1e17f98a61a40",
+      "repoName": "niinumakikaku",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/niinumakikaku",
+      "additions": 21493,
+      "deletions": 2539
+    },
+    {
+      "message": "feat: GitHubトークン関連の設定を.gitignoreに追加し、依存関係を更新\n\n- GitHubトークンやシェル設定に関するファイルを.gitignoreに追加し、セキュリティを強化\n- bun.lockとpackage.jsonにhtml-to-imageライブラリを追加し、依存関係を更新\n- 不要なDOCKER_MIGRATION.mdファイルを削除し、プロジェクトの整理を実施",
+      "sha": "d44ee78e098d9528f6041fb3e462dbc21f388585",
+      "date": "2025-03-26T15:48:24Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/saedgewell/commit/d44ee78e098d9528f6041fb3e462dbc21f388585",
+      "repoName": "saedgewell",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/saedgewell",
+      "additions": 7682,
+      "deletions": 5600
+    },
+    {
+      "message": "新しいナビゲーションメニューコンポーネントを追加し、問い合わせレポートページに分析分布コンポーネントを統合しました。また、設定ページに関連する新しいコンポーネントを追加し、全体的なユーザーインターフェースを改善しました。",
+      "sha": "26f22cae231c2fe6a6a2ad5b79675eeb67513ba6",
+      "date": "2025-03-26T11:44:27Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/niinumakikaku/commit/26f22cae231c2fe6a6a2ad5b79675eeb67513ba6",
+      "repoName": "niinumakikaku",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/niinumakikaku",
+      "additions": 5461,
+      "deletions": 299
+    },
+    {
+      "message": "新しいコンポーネントとページを追加し、ドキュメントを整備しました。画像ファイルも追加され、全体的なスタイルとレイアウトが改善されました。",
+      "sha": "03249b6c932cbe59f367eb88b81f4c2ec4f2d61f",
+      "date": "2025-03-26T09:37:38Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/niinumakikaku/commit/03249b6c932cbe59f367eb88b81f4c2ec4f2d61f",
+      "repoName": "niinumakikaku",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/niinumakikaku",
+      "additions": 24589,
+      "deletions": 143
+    },
+    {
+      "message": "first commit",
+      "sha": "fb9da8e78043ae05dd09ed9b1481a750d41e4dcd",
+      "date": "2025-03-26T09:37:17Z",
+      "authorName": "otomatty",
+      "authorLogin": "otomatty",
+      "authorAvatar": "https://avatars.githubusercontent.com/u/119780981?v=4",
+      "commitUrl": "https://github.com/otomatty/niinumakikaku/commit/fb9da8e78043ae05dd09ed9b1481a750d41e4dcd",
+      "repoName": "niinumakikaku",
+      "repoOwner": "otomatty",
+      "repoUrl": "https://github.com/otomatty/niinumakikaku",
+      "additions": 1,
+      "deletions": 0
+    }
+  ]
+}

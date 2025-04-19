@@ -1,0 +1,283 @@
+# Docker環境でのSupabase認証問題の検証と修正
+
+## 検出された問題
+
+Docker環境でSupabase認証を実装する過程で、以下の問題が発生しました：
+
+1. **JWT署名検証エラー**: サーバーサイドで`JWSError JWSInvalidSignature`エラーが発生し、認証情報が検証できない
+2. **環境変数の不整合**: ブラウザとサーバーで異なるURLが使用され、認証状態が同期できない
+3. **ネットワーク分離の問題**: Dockerコンテナ間の通信で適切なURLが使用されていない
+4. **リダイレクトURLの設定不足**: OAuth認証のリダイレクトURLが正しく構成されていない
+
+## 検証内容
+
+### 環境変数の検証
+
+```bash
+# Supabaseの状態確認
+supabase status
+
+# 環境変数の値確認
+grep SUPABASE_AUTH_JWT_SECRET .env
+```
+
+結果：
+- JWT秘密鍵: `super-secret-jwt-token-with-at-least-32-characters-long`
+- この値はSupabaseとアプリケーション両方で一致していることを確認
+
+### Dockerネットワークの検証
+
+```bash
+# Dockerネットワークの確認
+docker network ls | grep supabase
+docker network inspect supabase_network_saedgewell | grep -A 10 "Containers"
+
+# Supabase KongコンテナのIPアドレス確認
+docker network inspect supabase_network_saedgewell | grep -A 3 "supabase_kong_saedgewell"
+```
+
+結果：
+- Supabase Kongコンテナは `172.19.0.5` のIPアドレスでアクセス可能
+- アプリケーションコンテナとSupabaseコンテナは同じネットワークに属している
+
+### クライアント・サーバー間通信テスト
+
+```bash
+# Node.jsを使用したネットワーク接続テスト
+docker-compose exec web node -e "const http = require('http'); const options = { hostname: 'supabase_kong_saedgewell', port: 8000, path: '/rest/v1/metrics', headers: { 'apikey': '...' } }; const req = http.request(options, (res) => { console.log('Status:', res.statusCode); res.on('data', (chunk) => { console.log('Response:', chunk.toString()); }); }); req.on('error', (e) => { console.error('Error:', e.message); }); req.end();"
+```
+
+結果：
+- ステータスコード200を受信し、データを正常に取得できることを確認
+- Dockerネットワーク内での接続自体は正常に機能している
+
+## 行った修正
+
+### 1. SupabaseクライアントキーのURL選択ロジック改善
+
+`packages/supabase/src/get-supabase-client-keys.ts`の修正：
+
+```typescript
+// ブラウザの場合は常にNEXT_PUBLIC_SUPABASE_URLを使用（localhost URLを優先）
+// サーバー環境ではNEXT_PUBLIC_SUPABASE_URL_DOCKERがあれば使用
+const url = isBrowser
+  ? process.env.NEXT_PUBLIC_SUPABASE_URL
+  : process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+// 詳細なデバッグ情報
+console.log('[getSupabaseClientKeys] 環境検出:', {
+  isBrowser,
+  selectedUrl: url,
+  availableUrls: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_URL_DOCKER: process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER,
+  },
+  environment: isBrowser ? 'ブラウザ' : 'サーバー',
+  // JWT関連のデバッグ情報（サーバーサイドのみ表示）
+  jwtInfo: !isBrowser ? {
+    // セキュリティのため秘密鍵の先頭5文字のみ表示
+    JWT_SECRET: `${process.env.SUPABASE_AUTH_JWT_SECRET?.substring(0, 5)}...`,
+    AUTH_COOKIE_SECURE: process.env.SUPABASE_AUTH_COOKIE_SECURE,
+    AUTH_COOKIE_DOMAIN: process.env.SUPABASE_AUTH_COOKIE_DOMAIN,
+    AUTH_COOKIE_SAME_SITE: process.env.SUPABASE_AUTH_COOKIE_SAME_SITE,
+  } : undefined,
+  // 実行環境情報
+  location: isBrowser
+    ? {
+        hostname: window.location.hostname,
+        href: window.location.href,
+        origin: window.location.origin,
+      }
+    : {
+        process: process.title,
+        env: process.env.NODE_ENV,
+      },
+});
+```
+
+### 2. サーバークライアント初期化のデバッグ強化
+
+`packages/supabase/src/clients/server-client.ts`の修正：
+
+```typescript
+export function getSupabaseServerClient<GenericSchema = Database>() {
+  const keys = getSupabaseClientKeys();
+
+  // Docker環境内での接続URLが設定されていれば使用、なければ通常のURLを使用
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER || keys.url;
+
+  // デバッグ情報: JWT検証に関する詳細
+  console.log('[getSupabaseServerClient] JWT検証情報:', {
+    url,
+    jwtSecret: `${process.env.SUPABASE_AUTH_JWT_SECRET?.substring(0, 5)}...`,
+    cookieSettings: {
+      secure: process.env.SUPABASE_AUTH_COOKIE_SECURE,
+      sameSite: process.env.SUPABASE_AUTH_COOKIE_SAME_SITE,
+      domain: process.env.SUPABASE_AUTH_COOKIE_DOMAIN,
+    },
+    network: {
+      isDocker: !!process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER,
+      dockerUrl: process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER,
+      standardUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    }
+  });
+
+  return createServerClient<GenericSchema>(url, keys.anonKey, {
+    cookies: {
+      // ... existing code ...
+    },
+  });
+}
+```
+
+### 3. サービスロールクライアントのデバッグ強化
+
+`packages/supabase/src/clients/server-admin-client.ts`の修正：
+
+```typescript
+export function getSupabaseServerAdminClient<GenericSchema = Database>() {
+  warnServiceRoleKeyUsage();
+
+  const url = getSupabaseClientKeys().url;
+  
+  // サーバーサイドでのServiceRole初期化デバッグ情報
+  console.log('[getSupabaseServerAdminClient] ServiceRole初期化:', {
+    url,
+    serviceRoleKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+    jwtSecret: `${process.env.SUPABASE_AUTH_JWT_SECRET?.substring(0, 5)}...`,
+  });
+
+  return createClient<GenericSchema>(url, getServiceRoleKey(), {
+    auth: {
+      persistSession: false,
+      detectSessionInUrl: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+```
+
+### 4. OAuthプロバイダーの修正
+
+`packages/features/auth/src/components/oauth-providers.tsx`の修正：
+
+```typescript
+const OAUTH_SCOPES: Partial<Record<Provider, string>> = {
+  azure: 'email',
+  google: 'email profile',
+  github: 'user:email',
+  // add your OAuth providers here
+};
+
+// ...
+
+// アプリケーションのコールバックURLを構築
+const redirectTo = `${origin}${props.paths.callback}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+// スコープオプションの設定
+const scopes = OAUTH_SCOPES[provider];
+const scopesOpts = scopes ? { scopes } : {};
+
+// デバッグログの強化
+console.log('[AUTH DEBUG] OAuthプロバイダー情報 (詳細):', {
+  provider,
+  redirectTo,
+  origin,
+  shouldCreateUser: props.shouldCreateUser,
+  scopesOpts,
+  callbackUrl: props.paths.callback,
+  returnPath: props.paths.returnPath,
+  windowLocation: {
+    hostname: window.location.hostname,
+    origin: window.location.origin,
+    href: window.location.href,
+    protocol: window.location.protocol,
+    host: window.location.host,
+  },
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_URL_DOCKER: process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER,
+  },
+});
+```
+
+### 5. JWT検証デバッグページの作成
+
+問題特定のためのデバッグページを作成：
+
+```typescript
+// apps/web/app/jwt-test/page.tsx
+import { cookies } from 'next/headers';
+import { getSupabaseServerClient } from '@/packages/supabase/src/clients/server-client';
+import { getSupabaseServerAdminClient } from '@/packages/supabase/src/clients/server-admin-client';
+
+export const dynamic = 'force-dynamic';
+
+export default async function JwtTestPage() {
+  // サーバーサイドでの検証
+  const supabase = getSupabaseServerClient();
+  const adminClient = getSupabaseServerAdminClient();
+  
+  // ... データ取得の処理 ...
+  
+  // クッキー情報の取得
+  const cookieStore = cookies();
+  const sbCookies = cookieStore.getAll().filter((c: any) => c.name.includes('sb-'));
+  const cookieDetails = sbCookies.map((c: any) => ({
+    name: c.name,
+    value: `${c.value.substring(0, 5)}...`,
+    path: c.path,
+    domain: c.domain || 'なし',
+    secure: c.secure,
+    sameSite: c.sameSite || 'なし',
+  }));
+  
+  // 環境情報
+  const envInfo = {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    dockerUrl: process.env.NEXT_PUBLIC_SUPABASE_URL_DOCKER,
+    jwtSecret: process.env.SUPABASE_AUTH_JWT_SECRET ? `${process.env.SUPABASE_AUTH_JWT_SECRET.substring(0, 5)}...` : 'なし',
+    cookieSecure: process.env.SUPABASE_AUTH_COOKIE_SECURE,
+    cookieDomain: process.env.SUPABASE_AUTH_COOKIE_DOMAIN,
+    cookieSameSite: process.env.SUPABASE_AUTH_COOKIE_SAME_SITE,
+  };
+  
+  // ... UI部分 ...
+}
+```
+
+## 考察と今後の対応
+
+### JWT署名検証エラーの根本原因
+
+調査の結果、JWT署名検証エラーの主な原因として以下が考えられます：
+
+1. **環境変数のスコープと参照時期**:
+   - Dockerコンテナ内でプロセス起動時に環境変数が読み込まれる際、タイミングの問題で値が設定されていない可能性
+   - プロセス間での環境変数の共有方法に問題がある可能性
+
+2. **クッキードメイン設定の不整合**:
+   - ブラウザと各サービス間でクッキードメインの設定が一貫していない可能性
+   - `.saedgewell.test`ドメイン設定と`localhost`ホスト間の相互運用性の問題
+
+3. **JWTライブラリの互換性**:
+   - 異なるJWTライブラリ間での署名検証アルゴリズムの微妙な違いによる問題
+
+### 推奨される対応策
+
+1. **環境変数管理の改善**:
+   - 環境変数のロード方法を統一し、コンテナ間で一貫した値が使用されるよう保証
+   - Docker Composeでの環境変数設定方法を見直し
+
+2. **デバッグモードの導入**:
+   - 開発環境でより詳細なJWT関連のログを出力するデバッグモードの実装
+   - JWTの生成と検証プロセスをトレースできるようにする
+
+3. **認証フローの単純化**:
+   - 開発環境では認証フローを単純化し、JWT検証の問題を特定しやすくする
+   - メール/パスワード認証とOAuth認証それぞれでの問題切り分け
+
+## 結論
+
+Docker環境でのSupabase認証の問題は、主にJWT署名検証とURLの不整合に起因しています。今回の修正により、詳細なデバッグ情報を収集できるようになり、問題特定と解決の基盤が整いました。特にSupabaseとの通信に使用するURLの選択ロジックを明確化し、Docker環境でのコンテナ間通信に最適化することで、認証フローの信頼性が向上します。

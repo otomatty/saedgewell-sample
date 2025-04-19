@@ -1,0 +1,67 @@
+# Makerkit アプリケーションへの新しい Turborepo アプリケーションの追加
+
+## Makerkit アプリケーションに新しい Turborepo アプリケーションを追加する方法について
+
+これは**高度なトピック**です - モノレポ内に新しいアプリを配置し、Makerkit リポジトリからの更新を継続して取得したい場合にのみ、これらの手順に従ってください。
+
+ある意味では、新しいリポジトリを作成することが最も簡単な方法かもしれません。ただし、アプリケーションをモノレポ内に保持し、Makerkit リポジトリからの更新を取得し続けたい場合は、以下の手順に従うことができます。
+
+---
+
+`web` 以外のアプリケーションに更新を取り込むために、`git subtree` を使用できます。
+
+基本的に、`apps/web` にサブツリーを作成し、サブツリー用の新しいリモートブランチを作成します。新しいアプリケーションを作成する際、このサブツリーを新しいアプリケーションにプルします。これにより、`apps/web` フォルダと同期を保つことができます。
+
+### 1. サブツリーの作成
+
+まず、`apps/web` フォルダのサブツリーを作成する必要があります。`web` という名前のブランチを作成し、`apps/web` フォルダのサブツリーを作成します。`web-branch` という名前のブランチを作成し、`apps/web` フォルダのサブツリーを作成します。
+
+```bash
+git subtree split --prefix=apps/web --branch web-branch
+```
+
+### 2. 新しいアプリケーションの作成
+
+これで、`apps` フォルダに新しいアプリケーションを作成できます。例えば、`api` という名前の新しいアプリケーションを作成してみましょう。
+
+`apps/web` フォルダと同じ構造を持つ新しいアプリ `pdf-chat` を `apps/pdf-chat` に作成したい場合は、以下のようにします：
+
+```bash
+git subtree add --prefix=apps/pdf-chat origin web-branch --squash
+```
+
+これで `apps/pdf-chat` フォルダに `apps/web` フォルダの内容が表示されるはずです。
+
+### 3. 新しいアプリケーションの更新
+
+新しいアプリケーションを更新したい場合は、以下の手順に従ってください：
+
+#### Makerkit リポジトリからの更新の取得
+
+以下のコマンドで Makerkit リポジトリからすべての変更が更新されます：
+
+```bash
+git pull upstream main
+```
+
+#### web-branch の更新のプッシュ
+
+Makerkit リポジトリから更新を取得した後、ブランチを再度分割して `web-branch` に更新をプッシュできます：
+
+```bash
+git subtree split --prefix=apps/web --branch web-branch
+```
+
+これで、`web-branch` に更新をプッシュできます：
+
+```bash
+git push origin web-branch
+```
+
+#### 新しいアプリケーションへの更新の取り込み
+
+これで、新しいアプリケーションに更新を取り込むことができます：
+
+```bash
+git subtree pull --prefix=apps/pdf-chat origin web-branch --squash
+``` 

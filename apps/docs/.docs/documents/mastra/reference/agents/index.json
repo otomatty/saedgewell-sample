@@ -1,0 +1,35 @@
+{
+  "title": "エージェント",
+  "description": "エージェントAPIリファレンス",
+  "order": 4,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "get-agent",
+      "title": "getAgent()",
+      "description": "getAgent関数のリファレンス",
+      "order": 1
+    },
+    {
+      "name": "create-tool",
+      "title": "createTool()",
+      "description": "createTool関数のリファレンス",
+      "order": 2
+    },
+    {
+      "name": "generate",
+      "title": "generate()",
+      "description": "generate関数のリファレンス",
+      "order": 3
+    },
+    {
+      "name": "stream",
+      "title": "stream()",
+      "description": "stream関数のリファレンス",
+      "order": 4
+    }
+  ]
+}

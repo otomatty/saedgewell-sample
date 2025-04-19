@@ -1,0 +1,236 @@
+---
+title: 'Next.js Supabase Kitでの課金スキーマの設定'
+description: 'Makerkitアプリケーションでの課金プランの設定方法を学ぶ'
+icon: 'database'
+order: 2
+---
+
+# Next.js Supabase Kitでの課金スキーマの設定
+
+Makerkitアプリケーションでの課金プランの設定方法について説明します。
+
+## 課金スキーマの概要
+
+課金スキーマは、課金プロバイダーのスキーマを複製します。これにより：
+
+- UI（価格表、課金セクションなど）でデータを表示できます
+- 正しいチェックアウトセッションを作成できます
+- シートごとの課金などの機能を正しく動作させることができます
+
+課金スキーマはすべての課金プロバイダーで共通です。プロバイダーによって実行可能な機能に違いがある場合、スキーマはルールの検証と強制を試みますが、データの正確性を確保するのは開発者の責任です。
+
+スキーマは3つの主要なエンティティに基づいています：
+
+1. **プロダクト**: 販売する主要な製品（例：「Proプラン」、「スタータープラン」など）
+2. **プラン**: 製品の価格プラン（例：「月額」、「年額」など）
+3. **ラインアイテム**: プランの明細項目（例：「定額サブスクリプション」、「従量課金」、「シートごとの課金」など）
+
+## スキーマの重要性
+
+プランのIDを正しく設定することは非常に重要です。これらは以下の目的で使用されます：
+
+- 正しいチェックアウトの作成
+- DBへのデータ投入
+
+設定は慎重に、一歩ずつ行い、十分にテストしてください。
+
+## 課金プロバイダーの設定
+
+課金プロバイダーは`process.env.NEXT_PUBLIC_BILLING_PROVIDER`として設定され、デフォルトは`stripe`です。
+
+これは`apps/web/config/billing.config.ts`ファイルで設定されています：
+
+```tsx
+export default createBillingSchema({
+  // DBのconfig.billing_providerも選択したプロバイダーに合わせて更新してください
+  provider,
+  // プロダクトの設定
+  products: []
+});
+```
+
+## プロダクトの設定
+
+プロダクトは販売する主要な製品です。以下のフィールドで定義されます：
+
+```tsx
+export default createBillingSchema({
+  provider,
+  products: [
+    {
+      id: 'starter',
+      name: 'Starter',
+      description: '始めるのに最適なプラン',
+      currency: 'USD',
+      badge: `Value`,
+      plans: [],
+    }
+  ]
+});
+```
+
+フィールドの説明：
+
+- `id`: プロダクトの一意の識別子（プロバイダーのIDと同じである必要はありません）
+- `name`: プロダクトの名前
+- `description`: プロダクトの説明
+- `currency`: プロダクトの通貨
+- `badge`: プロダクトに表示するバッジ（例：「Value」、「Popular」など）
+- `enableDiscountField`: UIで割引フィールドを有効にするかどうか
+
+これらのフィールドの大部分は、UIの価格表を生成するために使用されます。
+
+## プランの設定
+
+プランは製品の価格プランです。以下のフィールドで定義されます：
+
+```tsx
+export default createBillingSchema({
+  provider,
+  products: [
+    {
+      id: 'starter',
+      name: 'Starter',
+      description: '始めるのに最適なプラン',
+      currency: 'USD',
+      badge: `Value`,
+      plans: [
+        {
+          name: 'Starter Monthly',
+          id: 'starter-monthly',
+          trialDays: 7,
+          paymentType: 'recurring',
+          interval: 'month',
+          lineItems: [],
+        }
+      ],
+    }
+  ]
+});
+```
+
+フィールドの説明：
+
+- `name`: プランの名前
+- `id`: プランの一意の識別子
+- `trialDays`: 試用期間の日数
+- `paymentType`: 支払いタイプ（recurring：定期、one-time：一回払い）
+- `interval`: 支払い間隔（month：月次、year：年次）
+- `lineItems`: プランの明細項目
+
+## ラインアイテムの種類
+
+ラインアイテムには以下の3種類があります：
+
+1. **定額サブスクリプション（flat）**: 固定金額の定期支払い（例：月額$10）
+2. **従量課金（metered）**: 使用量に基づく課金（例：1,000リクエストあたり$0.10）
+3. **シートごとの課金（per-seat）**: ユーザー数に基づく課金（例：シートあたり$10）
+
+Stripeを使用する場合は複数のラインアイテムを追加できますが、Lemon Squeezyの場合は1つのみです。
+
+### 定額サブスクリプション
+
+```tsx
+lineItems: [
+  {
+    id: 'price_1NNwYHI1i3VnbZTqI2UzaHIe',
+    name: 'Addon 2',
+    cost: 9.99,
+    type: 'flat',
+  },
+]
+```
+
+### 従量課金
+
+```tsx
+lineItems: [
+  {
+    id: 'price_1NNwYHI1i3VnbZTqI2UzaHIe',
+    name: 'Addon 2',
+    cost: 0,
+    type: 'metered',
+    unit: 'GBs',
+    tiers: [
+      {
+        upTo: 10,
+        cost: 0.1,
+      },
+      {
+        upTo: 100,
+        cost: 0.05,
+      },
+      {
+        upTo: 'unlimited',
+        cost: 0.01,
+      }
+    ]
+  },
+]
+```
+
+### シートごとの課金
+
+```tsx
+lineItems: [
+  {
+    id: 'price_1NNwYHI1i3VnbZTqI2UzaHIe',
+    name: 'Addon 2',
+    cost: 0,
+    type: 'per_seat',
+    tiers: [
+      {
+        upTo: 3,
+        cost: 0,
+      },
+      {
+        upTo: 5,
+        cost: 7.99,
+      },
+      {
+        upTo: 'unlimited',
+        cost: 5.99,
+      }
+    ]
+  },
+]
+```
+
+## カスタムプラン
+
+価格表に表示するが実際の課金は不要なプラン（カスタムプラン、無料プラン、未提供のプランなど）を設定する場合：
+
+```tsx
+{
+  name: 'Enterprise',
+  id: 'enterprise',
+  paymentType: 'recurring',
+  label: 'common:contactUs',
+  href: '/contact',
+  custom: true,
+  interval: 'month',
+  lineItems: [],
+  buttonLabel: 'common:contactUs',
+}
+```
+
+カスタムプランの特別なフィールド：
+
+- `custom`: カスタムプランであることを示すフラグ
+- `label`: 価格表に表示するラベルの翻訳キー
+- `href`: ユーザーが問い合わせできるページへのリンク
+- `buttonLabel`: カスタムボタンのラベル（翻訳キーまたは文字列）
+
+## 実装のベストプラクティス
+
+1. **段階的な設定**
+   - 一度に1つのプロダクト/プランを設定
+   - 各設定後に十分なテストを実施
+
+2. **データの整合性**
+   - プロバイダーの設定と一致していることを確認
+   - IDの正確な設定を確認
+
+3. **UIの考慮**
+   - 価格表の表示を確認
+   - カスタムプランの適切な表示を確認

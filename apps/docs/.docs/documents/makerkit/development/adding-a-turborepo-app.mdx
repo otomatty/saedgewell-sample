@@ -1,0 +1,97 @@
+---
+title: 'Turborepoパッケージの追加'
+description: 'Makerkitアプリケーションに新しいTurborepoパッケージを追加する方法を学ぶ'
+icon: 'package'
+order: 13
+---
+
+# Makerkitアプリケーションに新しいTurborepoパッケージを追加する
+
+これは上級者向けのトピックです - apps/webのアプリケーションにフォルダを追加する代わりに、Makerkitアプリケーションに新しいパッケージを追加したいと確信している場合にのみ、これらの手順に従ってください。アプリケーションに新しいページやコンポーネントを追加するためにこれを行う必要はありません。
+
+Makerkitアプリケーションに新しいパッケージを追加するには、以下の手順に従う必要があります。
+
+まず、以下のコマンドを入力して、Makerkitアプリケーションに新しいパッケージを作成します：
+
+```bash
+turbo gen
+```
+
+Turborepoは作成したいパッケージの名前を入力するよう求めます。作成したいパッケージの名前を入力してEnterキーを押します。
+
+パッケージに依存関係を追加したくない場合は、Enterキーを押してこのステップをスキップできます。
+
+このコマンドは、packagesディレクトリの下に`@kit/<package-name>`という名前の新しいパッケージを生成します。`my-package`と名付けた場合、パッケージは`@kit/my-package`という名前になります。
+
+最後に、パッケージに変更を加えた際に高速リフレッシュが機能するようにするには、Makerkitアプリケーションのルートにあるapps/webのnext.config.mjsファイルにパッケージを追加する必要があります。
+
+```javascript
+const INTERNAL_PACKAGES = [
+  // すべての内部パッケージ,
+  '@kit/my-package',
+];
+```
+
+## パッケージからモジュールをエクスポートする
+
+デフォルトでは、パッケージはindex.tsファイルを使用して単一のモジュールをエクスポートします。パッケージディレクトリに新しいファイルを作成し、index.tsファイルからエクスポートするか、パッケージディレクトリにエクスポートファイルを作成し、package.jsonファイルのexportsフィールドに追加することで、より多くのエクスポートを追加できます。
+
+### index.tsからモジュールをエクスポートする
+
+パッケージからモジュールをエクスポートする最も簡単な方法は、パッケージディレクトリに新しいファイルを作成し、index.tsファイルからエクスポートすることです。
+
+```typescript
+// packages/@kit/my-package/src/my-module.ts
+export function myModule() {
+  return 'Hello from my module';
+}
+```
+
+次に、index.tsファイルからモジュールをエクスポートします。
+
+```typescript
+// packages/@kit/my-package/src/index.ts
+export * from './my-module';
+```
+
+### package.jsonのexportsフィールドを使用してエクスポートする
+
+これはツリーシェイキングに非常に役立ちます。パッケージディレクトリにmy-module.tsという名前のファイルがあると仮定すると、package.jsonファイルのexportsフィールドに追加することでエクスポートできます。
+
+```json
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./my-module": "./src/my-module.ts"
+  }
+}
+```
+
+#### これを行うタイミング：
+
+- より良いツリーシェイキングを確保するために、依存関係を共有しない2つのモジュールをエクスポートする場合。例えば、エクスポートにクライアントとサーバーの両方のモジュールが含まれている場合。
+- パッケージの組織化を改善するため
+
+例えば、パッケージディレクトリにclientとserverという2つのエクスポートを作成し、package.jsonファイルのexportsフィールドに追加します。
+
+```json
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts"
+  }
+}
+```
+
+クライアントモジュールは`import { client } from '@kit/my-package/client'`を使用してインポートできます。
+サーバーモジュールは`import { server } from '@kit/my-package/server'`を使用してインポートできます。
+
+これで、パッケージ名を使用してインポートすることで、アプリケーションでパッケージを使用できるようになりました。
+
+```typescript
+import { myModule } from '@kit/my-package';
+console.log(myModule());
+```
+
+これで完了です！Makerkitアプリケーションに新しいパッケージを正常に追加しました。🎉

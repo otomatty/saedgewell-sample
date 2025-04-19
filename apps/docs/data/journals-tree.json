@@ -1,0 +1,262 @@
+[
+  {
+    "title": "2025-03-20",
+    "order": 0,
+    "slug": "2025-03-20",
+    "children": [
+      {
+        "title": "Supabase本番環境からローカル環境へのデータ同期手順",
+        "description": "本番環境のSupabaseデータベースのデータをローカル開発環境に同期し、同じデータを使用して開発を行うための手順",
+        "date": "2025-03-20",
+        "author": "Akimasa Sugai",
+        "tags": "['supabase', 'database', '開発環境', 'データ同期']",
+        "slug": "2025-03-20/supabase-production-to-local-sync",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-21",
+    "order": 0,
+    "slug": "2025-03-21",
+    "children": [
+      {
+        "title": "DockerコンテナにおけるJWT認証問題のデバッグと解決",
+        "description": "DockerコンテナにおけるJWT認証問題のデバッグと解決",
+        "date": "2025-03-21",
+        "author": "Akimasa Sugai",
+        "tags": "['jwt', 'supabase', 'docker', 'authentication', 'troubleshooting']",
+        "slug": "2025-03-21/docker-jwt-authentication-debugging",
+        "children": []
+      },
+      {
+        "title": "ローカル開発環境でのHTTPS実装",
+        "date": "2025-03-21",
+        "author": "Akimasa Sugai",
+        "tags": "['https', 'nginx', 'docker', 'mkcert', '開発環境']",
+        "slug": "2025-03-21/local-https-implementation",
+        "children": []
+      },
+      {
+        "title": "Docker環境でのSupabase認証実装とネットワーク問題の解決",
+        "date": "2025-03-21",
+        "author": "Akimasa Sugai",
+        "tags": "['docker', 'supabase', 'authentication', 'network', 'next.js']",
+        "slug": "2025-03-21/local-https-supabase-auth-implementation",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-22",
+    "order": 0,
+    "slug": "2025-03-22",
+    "children": []
+  },
+  {
+    "title": "2025-03-23",
+    "order": 0,
+    "slug": "2025-03-23",
+    "children": [
+      {
+        "title": "モノレポにおける環境変数管理",
+        "date": "2024-03-23",
+        "authors": "['saedgewell-team']",
+        "tags": "['環境変数', 'モノレポ', 'Next.js', 'Turbo']",
+        "slug": "2025-03-23/environment-variables",
+        "children": []
+      },
+      {
+        "title": "Supabase JWT検証エラー解決記録",
+        "date": "2025-03-23",
+        "author": "開発者",
+        "tags": "['supabase', 'jwt', 'troubleshooting', 'docker']",
+        "slug": "2025-03-23/supabase-jwt-error-resolution",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-24",
+    "order": 0,
+    "slug": "2025-03-24",
+    "children": [
+      {
+        "title": "Docker環境での認証エラー解決",
+        "date": "2025-03-24",
+        "slug": "2025-03-24/docker-auth-supabase",
+        "children": []
+      },
+      {
+        "title": "DockerネットワークのIPv4、IPv6に関するメモ",
+        "date": "2025-03-24",
+        "slug": "2025-03-24/docker-network-ipv",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-25",
+    "order": 0,
+    "slug": "2025-03-25",
+    "children": [
+      {
+        "title": "Docker移行コンフリクト解消手順",
+        "description": "",
+        "date": "2025-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['Docker', '移行', 'コンフリクト解消']",
+        "slug": "2025-03-25/docker-migration-conflict-resolution",
+        "children": []
+      },
+      {
+        "title": "Dockerコンテナにパッケージをインストールする方法",
+        "date": "2024-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['docker', 'package-management', 'bun', 'troubleshooting']",
+        "slug": "2025-03-25/docker-package-install",
+        "children": []
+      },
+      {
+        "title": "feature/docker-migrationブランチからmainブランチへのマージ作業: 環境構築とアプリケーション構造改善",
+        "description": "",
+        "date": "2025-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['Docker', 'マージ', '移行', 'アプリケーション構造', '環境構築', 'Nginx', 'Supabase']",
+        "slug": "2025-03-25/feature-docker-migration-to-main-merge-env-and-app-refactor",
+        "children": []
+      },
+      {
+        "title": "ジャーナルディレクトリ自動作成機能の改善",
+        "description": "bunを使った環境に合わせてジャーナルディレクトリの自動作成機能とコミット情報取得機能を改善",
+        "date": "2025-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['journals', 'automation', 'bun', 'typescript']",
+        "slug": "2025-03-25/journal-directory-automation",
+        "children": []
+      },
+      {
+        "title": "AIタイトル生成機能を使ったジャーナルエントリー作成",
+        "description": "AIを活用してタイトル候補を生成し、ジャーナルエントリーを効率的に作成する方法",
+        "date": "2025-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['Journal', 'AI', 'Productivity', 'Documentation']",
+        "slug": "2025-03-25/journal-entry-ai-title-generator",
+        "children": []
+      },
+      {
+        "title": "TypeScript言語サーバーの問題と解決策",
+        "date": "2024-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['TypeScript', 'VSCode', 'TS Server', 'Performance']",
+        "slug": "2025-03-25/ts-server-problem",
+        "children": []
+      },
+      {
+        "title": "ウェブサイト改修完了報告",
+        "description": "",
+        "date": "2025-03-25",
+        "author": "Akimasa Sugai",
+        "tags": "['ウェブサイト', '改修', '完了報告']",
+        "slug": "2025-03-25/website-revamp-completion-report",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-26",
+    "order": 0,
+    "slug": "2025-03-26",
+    "children": [
+      {
+        "title": "Github Jouranal Fix",
+        "slug": "2025-03-26/github-jouranal-fix",
+        "children": []
+      },
+      {
+        "title": "GitHub Personal Access Token の設定手順",
+        "description": "GitHub Personal Access Token を使用して公開リポジトリとの同期を行うための手順を記載します。",
+        "status": "draft",
+        "tags": "['github', 'token', 'sync']",
+        "slug": "2025-03-26/github-pat-setup",
+        "children": []
+      },
+      {
+        "title": "印刷会社向け業務管理システム見積もり",
+        "description": "印刷会社向け業務管理システムの開発見積もり及び要件定義書",
+        "status": "private",
+        "tags": "['印刷', '業務管理', 'システム', '見積もり', '要件定義']",
+        "slug": "2025-03-26/printing-company-system-estimate",
+        "children": []
+      },
+      {
+        "title": "職務経歴書におけるプロジェクト項目の書き方：目的、役割、成果の記載ポイント",
+        "description": "",
+        "date": "2025-03-26",
+        "author": "Akimasa Sugai",
+        "tags": "['職務経歴書', '履歴書', 'プロジェクト', '書き方', '役割', '成果', 'アピール']",
+        "slug": "2025-03-26/resume-project-item-writing-guide",
+        "children": []
+      },
+      {
+        "title": "小規模印刷会社社長へのプレゼンテーション案",
+        "date": "2025-03-26",
+        "tags": "['印刷', 'プレゼンテーション', 'システム開発', 'セールストーク']",
+        "slug": "2025-03-26/sales-talk",
+        "children": []
+      },
+      {
+        "title": "スクリプト修正と問題解決",
+        "description": "",
+        "date": "2025-03-26",
+        "author": "Akimasa Sugai",
+        "tags": "['スクリプト', '修正', '問題解決', 'デバッグ']",
+        "slug": "2025-03-26/script-fix-and-resolution",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-27",
+    "order": 0,
+    "slug": "2025-03-27",
+    "children": [
+      {
+        "title": "料金表の更新",
+        "date": "2025-03-27",
+        "slug": "2025-03-27/pricing-table-renewal",
+        "children": []
+      }
+    ]
+  },
+  {
+    "title": "2025-03-28",
+    "order": 0,
+    "slug": "2025-03-28",
+    "children": []
+  },
+  {
+    "title": "2025-03-29",
+    "order": 0,
+    "slug": "2025-03-29",
+    "children": []
+  },
+  {
+    "title": "2025-03-30",
+    "order": 0,
+    "slug": "2025-03-30",
+    "children": []
+  },
+  {
+    "title": "2025-03-31",
+    "order": 0,
+    "slug": "2025-03-31",
+    "children": []
+  },
+  {
+    "title": "2025-04-01",
+    "order": 0,
+    "slug": "2025-04-01",
+    "children": []
+  }
+]

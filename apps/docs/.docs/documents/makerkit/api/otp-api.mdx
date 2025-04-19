@@ -1,0 +1,282 @@
+---
+title: 'OTP API'
+description: 'アプリケーションでワンタイムパスワード（OTP）を扱うためのシンプルなインターフェース'
+icon: 'key'
+order: 6
+---
+
+# OTP API
+
+OTP APIは、アプリケーションでワンタイムパスワード（OTP）を扱うためのシンプルなインターフェースです。
+このパッケージは、アプリケーションでワンタイムパスワードまたはトークンを生成、送信、検証するための完全なソリューションを提供します。安全なトークンの保存と検証のためにSupabaseと統合されています。
+
+SaaS Kitでは、アカウントの削除、チームの削除、ユーザーの削除などの破壊的なアクションに使用されています。ただし、以下のような他の目的にも使用できます：
+
+- カスタムの破壊的なアクション
+- oAuthアカウント接続
+- その他
+
+## 概要
+
+OTPパッケージは以下を提供します：
+
+- 安全なトークン生成：設定可能な有効期限付きの時間制限トークンを作成
+- メール配信：カスタマイズ可能なテンプレートでメールを介してOTPコードを送信
+- 検証UI：すぐに使える検証フォームコンポーネント
+- トークン管理：トークンの取り消し、検証、ステータスの確認
+
+## インストール
+
+Makerkitを使用している場合、このパッケージはすでに含まれています。手動インストールの場合：
+
+```bash
+pnpm add @kit/otp
+```
+
+## 基本的な使用方法
+
+### OTPの作成と送信
+
+OTPを作成して送信するには、`createToken`メソッドを使用できます：
+
+```tsx
+import { createOtpApi } from '@kit/otp/api';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+
+// APIインスタンスを作成
+const client = getSupabaseServerClient();
+const api = createOtpApi(client);
+
+// OTPメールを生成して送信
+await api.createToken({
+  userId: user.id,
+  purpose: 'email-verification',
+  expiresInSeconds: 3600, // 1時間
+  metadata: { redirectTo: '/verify-email' }
+});
+
+// OTPを含むメールを送信
+await api.sendOtpEmail({
+  email: userEmail,
+  otp: token.token
+});
+```
+
+### OTPの検証
+
+OTPを検証するには、`verifyToken`メソッドを使用できます：
+
+```tsx
+// トークンを検証
+const result = await api.verifyToken({
+  token: submittedToken,
+  purpose: 'email-verification'
+});
+
+if (result.valid) {
+  // トークンが有効、操作を続行
+  const { userId, metadata } = result;
+  // 検証成功の処理
+} else {
+  // トークンが無効または期限切れ
+  // 検証失敗の処理
+}
+```
+
+## サーバーアクション
+
+このパッケージには、OTPメールを送信するためのすぐに使えるサーバーアクションが含まれています：
+
+```tsx
+import { sendOtpEmailAction } from '@kit/otp/server/server-actions';
+
+// フォーム送信ハンドラー内で
+const result = await sendOtpEmailAction({
+  email: userEmail,
+  purpose: 'password-reset',
+  expiresInSeconds: 1800 // 30分
+});
+
+if (result.success) {
+  // OTPが正常に送信された
+} else {
+  // エラー処理
+}
+```
+
+注意：emailパラメータは検証メカニズムとしてのみ使用され、実際に使用されるメールアドレスはユーザーに関連付けられたものです。
+
+## 検証UIコンポーネント
+
+このパッケージには、すぐに使えるOTP検証フォームが含まれています：
+
+```tsx
+import { VerifyOtpForm } from '@kit/otp/components';
+
+function MyVerificationPage() {
+  return (
+    <VerifyOtpForm
+      purpose="password-reset"
+      email={userEmail}
+      onSuccess={(otp) => {
+        // 検証成功の処理
+        // サーバーでの検証にOTPを使用
+      }}
+      CancelButton={
+        <Button variant="outline" onClick={handleCancel}>
+          キャンセル
+        </Button>
+      }
+    />
+  );
+}
+```
+
+## API リファレンス
+
+### createOtpApi(client)
+
+OTP APIのインスタンスを作成します。
+
+パラメータ：
+
+- `client`: Supabaseクライアントインスタンス
+
+戻り値：以下のメソッドを持つOTP APIインスタンス：
+
+### api.createToken(params)
+
+新しいワンタイムトークンを作成します。
+
+パラメータ：
+
+- `params.userId`（オプション）：トークンに関連付けるユーザーID
+- `params.purpose`：トークンの目的（例：'password-reset'）
+- `params.expiresInSeconds`（オプション）：トークンの有効期限（秒単位、デフォルト：3600）
+- `params.metadata`（オプション）：トークンと一緒に保存する追加データ
+- `params.description`（オプション）：トークンの説明
+- `params.tags`（オプション）：文字列タグの配列
+- `params.scopes`（オプション）：権限スコープの配列
+- `params.revokePrevious`（オプション）：同じ目的の以前のトークンを取り消すかどうか（デフォルト：true）
+
+戻り値：
+
+```tsx
+{
+  id: string;           // トークンのデータベースID
+  token: string;        // ユーザーに送信する実際のトークン
+  expiresAt: string;    // 有効期限のタイムスタンプ
+  revokedPreviousCount: number; // 以前に取り消されたトークンの数
+}
+```
+
+### api.verifyToken(params)
+
+ワンタイムトークンを検証します。
+
+パラメータ：
+
+- `params.token`：検証するトークン
+- `params.purpose`：トークンの目的（作成時に使用した目的と一致する必要があります）
+- `params.userId`（オプション）：追加検証のためのユーザーID
+- `params.requiredScopes`（オプション）：必要な権限スコープの配列
+- `params.maxVerificationAttempts`（オプション）：許可される最大検証試行回数
+
+戻り値：
+
+```tsx
+{
+  valid: boolean;       // トークンが有効かどうか
+  userId?: string;      // トークンに関連付けられたユーザーID（有効な場合）
+  metadata?: object;    // トークンに関連付けられたメタデータ（有効な場合）
+  message?: string;     // エラーメッセージ（無効な場合）
+  scopes?: string[];    // 権限スコープ（有効な場合）
+  purpose?: string;     // トークンの目的（有効な場合）
+}
+```
+
+### api.revokeToken(params)
+
+将来の使用を防ぐためにトークンを取り消します。
+
+パラメータ：
+
+- `params.id`：取り消すトークンのID
+- `params.reason`（オプション）：取り消しの理由
+
+戻り値：
+
+```tsx
+{
+  success: boolean;     // トークンが正常に取り消されたかどうか
+}
+```
+
+### api.getTokenStatus(params)
+
+トークンのステータスを取得します。
+
+パラメータ：
+
+- `params.id`：トークンのID
+
+戻り値：
+
+```tsx
+{
+  exists: boolean;      // トークンが存在するかどうか
+  purpose?: string;     // トークンの目的
+  userId?: string;      // トークンに関連付けられたユーザーID
+  createdAt?: string;   // 作成タイムスタンプ
+  expiresAt?: string;   // 有効期限タイムスタンプ
+  usedAt?: string;      // トークンが使用された時間（使用された場合）
+  revoked?: boolean;    // トークンが取り消されたかどうか
+  revokedReason?: string; // 取り消しの理由（取り消された場合）
+  verificationAttempts?: number; // 検証試行回数
+  lastVerificationAt?: string;  // 最後の検証試行タイムスタンプ
+  lastVerificationIp?: string;  // 最後の検証試行のIPアドレス
+  isValid?: boolean;    // トークンがまだ有効かどうか
+}
+```
+
+### api.sendOtpEmail(params)
+
+OTPコードを含むメールを送信します。
+
+パラメータ：
+
+- `params.email`：送信先のメールアドレス
+- `params.otp`：メールに含めるOTPコード
+
+戻り値：メールが送信されると解決するPromise
+
+## データベーススキーマ
+
+このパッケージは、Supabaseデータベースの`nonces`テーブルを使用し、以下の構造を持ちます：
+
+- `id`：UUID主キー
+- `client_token`：クライアントに送信されたハッシュ化トークン
+- `nonce`：安全に保存されたトークンハッシュ
+- `user_id`：auth.usersへのオプション参照
+- `purpose`：目的識別子（例：'password-reset'）
+- ステータスフィールド：`expires_at`、`created_at`、`used_at`など
+- 監査フィールド：`verification_attempts`、`last_verification_at`など
+- 拡張性フィールド：`metadata`、`scopes`
+
+## ベストプラクティス
+
+- 特定の目的を使用する：トークンには常に説明的で具体的な目的識別子を使用してください。
+- 短い有効期限：トークンの有効期限は、ユースケースに必要な最小限に設定してください。
+- 検証失敗の処理：検証が失敗した場合は、明確なエラーメッセージを提供してください。
+- トークンの保護：トークンをクライアント側のコードやURLで公開したり、ログに記録したりしないでください。
+
+## 使用例
+
+- メール検証
+- 二要素認証
+- アカウント削除の確認
+- 重要なアクションの検証
+
+各ユースケースは、異なる目的識別子を使用する必要があります。目的は常にトークン作成時に使用したものと一致する必要があります。
+
+トークンに特定のデータを割り当てる必要がある場合は、`email-verification-12345`のように一意の識別子で目的を変更できます。

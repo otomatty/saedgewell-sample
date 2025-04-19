@@ -1,0 +1,62 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "globalDependencies": ["**/.env"],
+  "ui": "stream",
+  "globalEnv": [
+    "NEXT_PUBLIC_PRODUCT_NAME",
+    "NEXT_PUBLIC_DEFAULT_THEME_MODE",
+    "NEXT_PUBLIC_THEME_COLOR",
+    "NEXT_PUBLIC_THEME_COLOR_DARK",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "GEMINI_API_KEY",
+    "LOGGER",
+    "CAPTCHA_SECRET_TOKEN"
+  ],
+  "tasks": {
+    "topo": {
+      "dependsOn": ["^topo"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts", "dist/**"]
+    },
+    "build:vercel": {
+      "dependsOn": ["^build:vercel"],
+      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts", "dist/**"]
+    },
+    "vercel": {
+      "dependsOn": ["build"],
+      "outputs": [".next/**"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "format": {
+      "outputs": [".biome/**"],
+      "outputLogs": "new-only"
+    },
+    "lint": {
+      "dependsOn": ["^topo"],
+      "outputs": [".biome/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^topo"],
+      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+    },
+    "test": {
+      "dependsOn": ["^topo"]
+    },
+    "clean": {
+      "cache": false
+    },
+    "//#clean": {
+      "cache": false
+    },
+    "license#dev": {
+      "outputLogs": "errors-only"
+    }
+  }
+}

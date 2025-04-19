@@ -1,0 +1,10 @@
+{
+  "title": "Roadmaps",
+  "description": "今後の開発計画と進捗状況",
+  "order": 8,
+  "icon": "/icons/roadmap.svg",
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-04-01",
+  "maintainers": ["Akimasa Sugai"]
+}

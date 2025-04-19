@@ -1,0 +1,117 @@
+---
+title: 'チームアカウントナビゲーション設定の構成'
+description: 'Next.js Supabaseアプリケーションのチームアカウントナビゲーションのセットアップ方法を学びます'
+icon: 'layout-grid'
+order: 7
+---
+
+# チームアカウントナビゲーション設定の構成
+
+チームアカウントナビゲーションは`apps/web/config/team-account-navigation.config.tsx`で設定されています。この設定は、チームアカウントのメニューを定義するために使用されます。デフォルトでは、ダッシュボード、設定、メンバー、課金（有効な場合）の4つのルートがあります。
+
+一度に異なるビュー（例えば、モバイルメニュー）を構築できるように、一箇所で定義しています。
+
+サイドバーにさらにルートを追加するには、このファイルを更新してください。
+
+`apps/web/config/team-account-navigation.config.tsx`
+
+```tsx
+import {
+  CreditCard,
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  Users,
+} from 'lucide-react';
+import { NavigationConfigSchema } from '@kit/ui/navigation-schema';
+import featureFlagsConfig from '~/config/feature-flags.config';
+import pathsConfig from '~/config/paths.config';
+
+const iconClasses = 'w-4';
+
+const getRoutes = (account: string) => [
+  {
+    label: 'common:routes.application',
+    children: [
+      {
+        label: 'common:routes.dashboard',
+        path: pathsConfig.app.accountHome.replace('[account]', account),
+        Icon: <LayoutDashboard className={iconClasses} />,
+        end: true,
+      },
+      {
+        label: 'common:routes.chat',
+        path: pathsConfig.app.accountHome.replace('[account]', account) + '/chat',
+        Icon: <MessageSquare className={iconClasses} />,
+        end: false,
+      },
+    ],
+  },
+  {
+    label: 'common:settingsTabLabel',
+    collapsible: false,
+    children: [
+      {
+        label: 'common:routes.settings',
+        path: createPath(pathsConfig.app.accountSettings, account),
+        Icon: <Settings className={iconClasses} />,
+      },
+      {
+        label: 'common:routes.members',
+        path: createPath(pathsConfig.app.accountMembers, account),
+        Icon: <Users className={iconClasses} />,
+      },
+      featureFlagsConfig.enableTeamAccountBilling
+        ? {
+            label: 'common:routes.billing',
+            path: createPath(pathsConfig.app.accountBilling, account),
+            Icon: <CreditCard className={iconClasses} />,
+          }
+        : undefined,
+    ].filter(Boolean),
+  },
+];
+
+export function getTeamAccountSidebarConfig(account: string) {
+  return NavigationConfigSchema.parse({
+    routes: getRoutes(account),
+    style: process.env.NEXT_PUBLIC_TEAM_NAVIGATION_STYLE,
+    sidebarCollapsed: process.env.NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED,
+  });
+}
+
+function createPath(path: string, account: string) {
+  return path.replace('[account]', account);
+}
+```
+
+## レイアウトスタイル
+
+`NEXT_PUBLIC_TEAM_NAVIGATION_STYLE`環境変数を設定することで、ナビゲーションのスタイルを選択できます。デフォルトのスタイルは`sidebar`です。
+
+```
+NEXT_PUBLIC_TEAM_NAVIGATION_STYLE=sidebar
+```
+
+または、スタイルを`header`に設定することもできます：
+
+```
+NEXT_PUBLIC_TEAM_NAVIGATION_STYLE=header
+```
+
+## 旧設定
+
+古いバージョン（例：2024年10月25日以前）を実行している場合、以下のようなフラットなルートを許可する古いバージョンを実行しています：
+
+```tsx
+const routes = [
+  {
+    label: 'common:dashboardTabLabel',
+    path: pathsConfig.app.accountHome.replace('[account]', account),
+    Icon: <LayoutDashboard className={iconClasses} />,
+    end: true,
+  }
+];
+```
+
+注意：最新の機能と最適化を使用するには、最新バージョンに更新してください。

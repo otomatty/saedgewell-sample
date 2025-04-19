@@ -1,0 +1,584 @@
+# フェーズ6: 環境構築自動化
+
+このフェーズでは、開発環境の構築と起動を自動化し、チームメンバーが簡単に環境を利用できるようにします。また、CI/CD統合の基盤も作成します。
+
+## 目標
+
+- 環境構築の自動化
+- 初期設定プロセスの簡素化
+- 開発ワークフローの効率化
+- CI/CDパイプラインの準備
+- サブドメイン認証共有の自動設定
+
+## タスク
+
+### 6.1 プロジェクト初期化スクリプト
+
+- [ ] 新規開発者向け環境構築スクリプト (`scripts/setup/init-project.sh`)
+
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== プロジェクト初期化 ==="
+  echo "このスクリプトはプロジェクトの初期設定を行います。"
+
+  # ステップ1: 必要なツールのチェック
+  echo "1/6: 依存ツールを確認しています..."
+  DEPS=("docker" "docker compose" "bun" "git" "curl")
+  MISSING=()
+
+  for DEP in "${DEPS[@]}"; do
+    if ! command -v ${DEP% *} &> /dev/null; then
+      MISSING+=("$DEP")
+    fi
+  done
+
+  if [ ${#MISSING[@]} -ne 0 ]; then
+    echo "❌ 以下のツールをインストールしてください:"
+    for TOOL in "${MISSING[@]}"; do
+      echo " - $TOOL"
+    done
+    exit 1
+  fi
+  echo "✅ 必要なツールが揃っています"
+
+  # ステップ2: 環境変数ファイルの設定
+  echo "2/6: 環境変数ファイルを設定しています..."
+  if [ ! -f ".env" ]; then
+    cp .env.example .env
+    echo "✅ .env ファイルを作成しました。必要に応じて編集してください。"
+  else
+    echo "✅ .env ファイルは既に存在しています"
+  fi
+
+  # ステップ3: 依存関係のインストール
+  echo "3/6: 依存関係をインストールしています..."
+  bun install
+  echo "✅ 依存関係をインストールしました"
+
+  # ステップ4: ホストファイルの設定
+  echo "4/6: ホストファイルを設定しています..."
+  ./scripts/dev/setup-hosts.sh
+  echo "✅ ホストファイル設定が完了しました"
+
+  # ステップ5: Supabase設定ファイルの初期化
+  echo "5/6: Supabaseを初期化しています..."
+  if [ ! -d "supabase" ]; then
+    mkdir -p supabase/config
+    cp docker/supabase/config.toml supabase/config/
+    echo "✅ Supabase設定を初期化しました"
+  else
+    echo "✅ Supabase設定は既に存在しています"
+  fi
+
+  # ステップ6: 初回Docker起動
+  echo "6/6: 開発環境を起動しています..."
+  ./scripts/dev/start-dev.sh
+
+  echo ""
+  echo "=== 初期化完了 ==="
+  echo "開発環境が正常に初期化されました！"
+  echo ""
+  echo "アクセスURL:"
+  echo "- Web: http://web.localhost"
+  echo "- Docs: http://docs.localhost"
+  echo "- Admin: http://admin.localhost"
+  echo "- Supabase: http://localhost:54323"
+  echo ""
+  echo "詳細な使い方は README.md を参照してください。"
+  ```
+
+### 6.2 ワンコマンド起動・停止スクリプト
+
+- [ ] 環境一括起動スクリプト (`scripts/dev/start-all.sh`)
+
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== 開発環境一括起動 ==="
+
+  # ステップ1: ホスト設定の確認
+  echo "1/4: ホスト設定を確認しています..."
+  ./scripts/dev/setup-hosts.sh
+
+  # ステップ2: 環境変数の読み込み
+  echo "2/4: 環境変数を読み込んでいます..."
+  if [ -f ".env" ]; then
+    source .env
+  else
+    echo "❌ .env ファイルが見つかりません。初期化スクリプトを実行してください。"
+    exit 1
+  fi
+
+  # ステップ3: Docker環境の起動
+  echo "3/4: Docker環境を起動しています..."
+  
+  # アーキテクチャ検出
+  ARCH=$(uname -m)
+  if [ "$ARCH" = "arm64" ]; then
+    echo "Apple Silicon環境を検出しました。最適化設定を適用します。"
+    docker compose -f docker-compose.yml -f docker-compose.apple-silicon.yml up -d
+  else
+    docker compose up -d
+  fi
+
+  # ステップ4: 健全性チェック
+  echo "4/4: サービスの健全性を確認しています..."
+  sleep 5 # サービスの起動を待機
+  
+  ./scripts/test/test-apps-health.sh
+
+  echo ""
+  echo "=== 開発環境起動完了 ==="
+  echo "すべてのサービスが起動しました！"
+  echo ""
+  echo "アクセスURL:"
+  echo "- Web: http://web.localhost"
+  echo "- Docs: http://docs.localhost"
+  echo "- Admin: http://admin.localhost"
+  echo "- Supabase: http://localhost:54323"
+  echo ""
+  echo "環境を停止するには: ./scripts/dev/stop-all.sh"
+  ```
+
+- [ ] 環境一括停止スクリプト (`scripts/dev/stop-all.sh`)
+
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== 開発環境停止 ==="
+
+  # Docker環境を停止
+  echo "1/2: Docker環境を停止しています..."
+  docker compose down
+
+  # キャッシュ状態の保存
+  echo "2/2: キャッシュ状態を保存しています..."
+  echo "キャッシュを保存しました: $(date)" > .cache-state
+
+  echo ""
+  echo "=== 開発環境停止完了 ==="
+  echo "すべてのサービスを停止しました。リソースを解放しました。"
+  ```
+
+### 6.3 認証初期設定の自動化
+
+- [ ] Supabase認証初期設定スクリプト (`scripts/auth/setup-auth.sh`)
+
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== Supabase認証設定 ==="
+
+  # 必要な変数を確認
+  if [ ! -f ".env" ]; then
+    echo "❌ .env ファイルが見つかりません。初期化スクリプトを実行してください。"
+    exit 1
+  fi
+
+  # 環境変数を読み込み
+  source .env
+
+  # Supabaseが起動しているか確認
+  if ! docker compose ps | grep -q "supabase.*running"; then
+    echo "Supabaseを起動しています..."
+    docker compose up -d supabase
+    echo "Supabaseサービスの起動を待機しています..."
+    sleep 10
+  fi
+
+  # Supabase認証設定のセットアップ
+  echo "Supabase認証設定を行っています..."
+
+  # SupabaseのURLとキーを取得
+  SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://localhost:54321}
+  SUPABASE_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+  SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+
+  if [ -z "$SUPABASE_KEY" ] || [ -z "$SUPABASE_SERVICE_KEY" ]; then
+    echo "Supabaseキーを取得しています..."
+    SUPABASE_KEY=$(docker compose exec supabase cat /var/lib/openresty/data/keys/project_apikeys | grep anon | awk '{print $4}' | tr -d '",' || echo "")
+    SUPABASE_SERVICE_KEY=$(docker compose exec supabase cat /var/lib/openresty/data/keys/project_apikeys | grep service_role | awk '{print $4}' | tr -d '",' || echo "")
+    
+    # .envファイルに追記
+    if [ ! -z "$SUPABASE_KEY" ]; then
+      echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_KEY" >> .env
+      echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_KEY" >> .env
+      echo "✅ キーを.envファイルに保存しました"
+    else
+      echo "❌ Supabaseキーの取得に失敗しました"
+      exit 1
+    fi
+  fi
+
+  # サイトURLとリダイレクトURLの設定
+  echo "認証URLを設定しています..."
+  curl -X PUT "$SUPABASE_URL/auth/v1/config" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "site_url": "http://web.localhost",
+      "additional_redirect_urls": [
+        "http://web.localhost/api/auth/callback",
+        "http://docs.localhost/api/auth/callback",
+        "http://admin.localhost/api/auth/callback"
+      ]
+    }'
+
+  # Cookie設定
+  echo "共有認証用のCookie設定を行っています..."
+  curl -X PUT "$SUPABASE_URL/auth/v1/config" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "cookie": {
+        "domain": ".localhost",
+        "same_site": "lax",
+        "secure": false
+      }
+    }'
+
+  echo "✅ Supabase認証設定が完了しました"
+  echo ""
+  echo "=== 設定完了 ==="
+  echo "サブドメイン間での認証共有が有効になりました。"
+  ```
+
+### 6.4 CI/CD基盤の構築
+
+- [ ] GitHub Actions ワークフロー設定ファイル (`.github/workflows/docker-build.yml`)
+
+  ```yaml
+  name: Docker Build
+
+  on:
+    push:
+      branches: [ main, develop ]
+    pull_request:
+      branches: [ main, develop ]
+
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+          
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+          
+        - name: Build and test
+          run: |
+            # Buildkitを有効化
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            
+            # Dockerイメージのビルド
+            docker compose build
+            
+            # ローカルホスト設定
+            echo "127.0.0.1 web.localhost docs.localhost admin.localhost api.localhost" | sudo tee -a /etc/hosts
+            
+            # 環境の起動
+            docker compose up -d
+            
+            # サービスの起動を待機
+            sleep 15
+            
+            # ヘルスチェック
+            bash scripts/test/test-apps-health.sh
+            
+            # 認証環境テスト
+            bash scripts/test/test-auth-sharing.sh --ci-mode
+  ```
+
+- [ ] CI用テストスクリプト (`scripts/test/test-auth-sharing.sh`)の修正
+
+  ```bash
+  #!/bin/bash
+  set -e
+
+  # CI環境用フラグ
+  CI_MODE=false
+  if [ "$1" = "--ci-mode" ]; then
+    CI_MODE=true
+  fi
+
+  echo "=== 認証共有テスト ==="
+
+  # ドメイン到達性テスト
+  echo "1/3: ドメイン到達性テスト..."
+  for DOMAIN in web.localhost docs.localhost admin.localhost api.localhost; do
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$DOMAIN)
+    if [[ $HTTP_CODE == 200 || $HTTP_CODE == 204 ]]; then
+      echo "✅ $DOMAIN にアクセス可能 (HTTP $HTTP_CODE)"
+    else
+      echo "❌ $DOMAIN にアクセスできません (HTTP $HTTP_CODE)"
+      exit 1
+    fi
+  done
+
+  # Supabase Auth API接続テスト
+  echo "2/3: Supabase Auth API接続テスト..."
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://api.localhost/auth/v1/health)
+  if [[ $HTTP_CODE == 200 || $HTTP_CODE == 204 ]]; then
+    echo "✅ Supabase Auth APIは正常に動作しています (HTTP $HTTP_CODE)"
+  else
+    echo "❌ Supabase Auth APIにアクセスできません (HTTP $HTTP_CODE)"
+    exit 1
+  fi
+
+  # CORS設定テスト
+  echo "3/3: CORS設定テスト..."
+  for DOMAIN in web.localhost docs.localhost admin.localhost; do
+    CORS_RESULT=$(curl -s -I -H "Origin: http://$DOMAIN" http://api.localhost/auth/v1/ | grep -i "Access-Control-Allow-Origin")
+    if [[ $CORS_RESULT == *"$DOMAIN"* ]]; then
+      echo "✅ $DOMAIN からのCORSリクエストが許可されています"
+    else
+      echo "❌ $DOMAIN からのCORSリクエストが失敗しました"
+      exit 1
+    fi
+  done
+
+  # CI環境ではここで終了
+  if $CI_MODE; then
+    echo "✅ すべての自動テストが成功しました！"
+    exit 0
+  fi
+
+  # 手動認証フローテスト（開発環境のみ）
+  echo "4/5: 手動認証フローテスト..."
+  echo "注意: このテストには手動の操作が必要です。"
+  echo ""
+  echo "手順:"
+  echo "1. ブラウザで http://web.localhost にアクセスしてください"
+  echo "2. ログインフローを実行してください"
+  echo "3. ログイン後、http://docs.localhost にアクセスし、自動的にログイン状態になっているか確認してください"
+  echo "4. 同様に http://admin.localhost でも確認してください"
+  echo "5. いずれかのアプリでログアウトし、他のアプリでもログアウト状態になっているか確認してください"
+  echo ""
+  echo "テストの結果を入力してください（y/n）:"
+  read RESULT
+
+  if [ "$RESULT" = "y" ]; then
+    echo "✅ 認証フローテスト成功！"
+  else
+    echo "❌ 認証フローテスト失敗。設定を確認してください。"
+    exit 1
+  fi
+
+  # Cookie検証テスト
+  echo "5/5: Cookie設定の確認..."
+  echo "お使いのブラウザの開発者ツールでCookieを確認し、以下を確認してください:"
+  echo "1. 'sb-auth' Cookieが .localhost ドメインに設定されているか"
+  echo "2. SameSite属性が 'lax' に設定されているか"
+  echo "3. Path属性が '/' に設定されているか"
+  echo ""
+  echo "上記の条件がすべて満たされていますか？（y/n）:"
+  read COOKIE_RESULT
+
+  if [ "$COOKIE_RESULT" = "y" ]; then
+    echo "✅ Cookie設定テスト成功！"
+  else
+    echo "❌ Cookie設定テスト失敗。設定を確認してください。"
+    exit 1
+  fi
+
+  echo "=== 認証テスト完了 ==="
+  ```
+
+### 6.5 開発ドキュメントの整備
+
+- [ ] 開発環境セットアップガイド (`docs/development-setup.md`)
+
+  ```markdown
+  # 開発環境セットアップガイド
+
+  このガイドでは、Docker化されたNext.js + Supabase環境のセットアップ方法を説明します。
+
+  ## 前提条件
+
+  以下のツールがインストールされていることを確認してください：
+
+  - Docker Desktop (最新バージョン)
+  - Bun 1.2.4以上
+  - Git
+  - curl
+
+  ## クイックスタート
+
+  ### 1. リポジトリのクローン
+
+  ```bash
+  git clone https://github.com/your-org/your-repo.git
+  cd your-repo
+  ```
+
+  ### 2. 自動セットアップ
+
+  プロジェクトの初期化スクリプトを実行します：
+
+  ```bash
+  ./scripts/setup/init-project.sh
+  ```
+
+  このスクリプトは以下の処理を自動的に行います：
+
+  - 依存関係のインストール
+  - 環境変数の設定
+  - ホストファイルの設定
+  - Dockerコンテナのビルドと起動
+  - Supabase認証設定
+
+  ### 3. 開発環境へのアクセス
+
+  セットアップが完了したら、以下のURLでアプリケーションにアクセスできます：
+
+  - **Web**: http://web.localhost
+  - **Docs**: http://docs.localhost
+  - **Admin**: http://admin.localhost
+  - **Supabase Studio**: http://localhost:54323
+
+  ## 手動セットアップ
+
+  自動セットアップに問題がある場合は、以下の手順で手動セットアップを行うことができます。
+
+  ### 1. 依存関係のインストール
+
+  ```bash
+  bun install
+  ```
+
+  ### 2. 環境変数の設定
+
+  ```bash
+  cp .env.example .env
+  ```
+
+  ### 3. ホストファイルの設定
+
+  ```bash
+  ./scripts/dev/setup-hosts.sh
+  ```
+
+  ### 4. Docker環境の起動
+
+  ```bash
+  ./scripts/dev/start-dev.sh
+  ```
+
+  ### 5. Supabase認証設定
+
+  ```bash
+  ./scripts/auth/setup-auth.sh
+  ```
+
+  ## 開発ワークフロー
+
+  ### 環境の起動
+
+  ```bash
+  ./scripts/dev/start-all.sh
+  ```
+
+  ### 環境の停止
+
+  ```bash
+  ./scripts/dev/stop-all.sh
+  ```
+
+  ### 特定のアプリだけを起動
+
+  ```bash
+  ./scripts/dev/start-profile.sh web
+  ```
+
+  ### 認証テスト
+
+  ```bash
+  ./scripts/test/test-auth-sharing.sh
+  ```
+
+  ## トラブルシューティング
+
+  ### Dockerコンテナの問題
+
+  - すべてのコンテナを再起動：`docker compose restart`
+  - ログの確認：`docker compose logs -f [service_name]`
+
+  ### ホストファイルの問題
+
+  - 手動でホストファイルを編集：`sudo vi /etc/hosts`
+  - 以下の行が含まれていることを確認：
+    ```
+    127.0.0.1 web.localhost docs.localhost admin.localhost api.localhost
+    ```
+
+  ### Supabase認証の問題
+
+  - Cookieの確認：ブラウザ開発者ツールでCookieタブを確認
+  - Supabase設定の確認：`http://localhost:54323/project/default/auth/url-configuration`
+
+  ## Apple Siliconでの注意事項
+
+  Apple Silicon（M1/M2）Macでは、最適なパフォーマンスを得るために以下の設定を推奨します：
+
+  1. Docker Desktop設定でVirtioFSを有効化
+  2. メモリ割り当てを8GB以上に設定
+  3. アーキテクチャ特化スクリプトを使用：`./scripts/dev/start-for-arch.sh`
+  ```
+
+## Apple Siliconでの環境構築自動化
+
+M1/M2 Mac（Apple Silicon）での環境構築自動化時の注意点：
+
+1. **アーキテクチャの自動検出**:
+   - スクリプト内で`uname -m`を使用してアーキテクチャを検出
+   - 必要に応じてARM64向け最適化を自動適用
+
+2. **Rosettaエミュレーション対応**:
+   - 必要に応じてRosettaエミュレーションを指定
+   - 互換性問題が発生した場合のフォールバック方法を提供
+
+3. **パフォーマンス最適化**:
+   - VirtioFSの自動有効化確認
+   - メモリ・CPU割り当ての最適化チェック
+
+4. **Bunバージョン互換性**:
+   - Apple Silicon互換のBunバージョン検証
+   - 依存関係の互換性確認
+
+## 検証ポイント
+
+- 初期化スクリプトが正常に動作するか
+- 認証設定が自動的に行われるか
+- CI/CDパイプラインでテストが成功するか
+- サブドメイン間で認証状態が共有されるか
+- スクリプトがさまざまなOSで動作するか
+
+## エラーと解決策
+
+| エラー | 解決策 |
+|-------|--------|
+| 初期化スクリプトの失敗 | エラーログを確認し、必要な依存関係をインストール |
+| ホストファイル権限エラー | 管理者権限で実行するか、手動で/etc/hostsを編集 |
+| Supabase認証設定エラー | API呼び出しの応答を確認し、正しいキーが使用されているか確認 |
+| サブドメインの解決失敗 | DNSキャッシュをクリア、ブラウザキャッシュをクリア |
+| CI/CDパイプラインの失敗 | ワークフローログを確認し、必要な環境変数を設定 |
+
+## 次のステップ
+
+これでフェーズ6が完了し、Docker環境の構築と共有認証の設定が完全に自動化されました。今後は以下の点に注力することが推奨されます：
+
+1. 本番環境へのデプロイパイプラインの構築
+2. コンテナのセキュリティ対策の実施
+3. パフォーマンスモニタリングの導入
+
+フェーズ6を完了することで、Docker環境を使用した開発ワークフローが効率化され、チーム全体の生産性が向上します。 

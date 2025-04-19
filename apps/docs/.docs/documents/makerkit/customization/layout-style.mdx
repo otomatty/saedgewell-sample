@@ -1,0 +1,50 @@
+---
+title: 'SaaSのデフォルトレイアウトスタイルを更新する'
+description: 'Makerkitアプリケーションのデフォルトレイアウトスタイルを更新する方法を学ぶ'
+icon: 'layout'
+order: 6
+---
+
+# SaaSのデフォルトレイアウトスタイルを更新する
+
+デフォルトでは、Makerkitはユーザーワークスペースとチームワークスペースの両方にサイドバーレイアウトスタイルを使用しています。
+
+`NEXT_PUBLIC_USER_NAVIGATION_STYLE`と`NEXT_PUBLIC_TEAM_NAVIGATION_STYLE`環境変数を設定することで、レイアウトスタイルを変更できます。デフォルトのスタイルは`sidebar`です。
+
+レイアウトスタイルを`header`に設定するには、環境変数を更新します：
+
+```
+NEXT_PUBLIC_TEAM_NAVIGATION_STYLE=header
+NEXT_PUBLIC_USER_NAVIGATION_STYLE=header
+```
+
+## サイドバーレイアウト
+
+デフォルトのレイアウトスタイルはサイドバーです：
+
+![サイドバーレイアウト](./_images/turbo-sidebar-layout.webp)
+
+サイドバーレイアウトをカスタマイズして、展開または折りたたみに設定できます。デフォルトでは、常に展開されています。
+
+```
+NEXT_PUBLIC_HOME_SIDEBAR_COLLAPSED=true
+NEXT_PUBLIC_TEAM_SIDEBAR_COLLAPSED=true
+```
+
+各ワークスペースの設定を個別に決定できます。
+
+### ホバー時にサイドバーを自動展開する
+
+以下の環境変数を設定することで、ホバー時にサイドバーを自動展開するように設定できます：
+
+```
+NEXT_PUBLIC_EXPAND_SIDEBAR_ON_HOVER=true
+```
+
+これは、SupabaseやOpenAIなど、多くのSaaSアプリで一般的に使用されているパターンです。
+
+## ヘッダーレイアウト
+
+こちらがヘッダーレイアウトです：
+
+![ヘッダーレイアウト](./_images/turbo-header-layout.webp)

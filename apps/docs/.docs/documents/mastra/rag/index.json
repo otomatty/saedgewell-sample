@@ -1,0 +1,35 @@
+{
+  "title": "RAG",
+  "description": "検索拡張生成 (Retrieval Augmented Generation)",
+  "order": 7,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "overview",
+      "title": "概要",
+      "description": "Mastraでの検索拡張生成の概要",
+      "order": 1
+    },
+    {
+      "name": "chunking-embedding",
+      "title": "チャンキングと埋め込み",
+      "description": "文書のチャンキングと埋め込みの実装",
+      "order": 2
+    },
+    {
+      "name": "vector-databases",
+      "title": "ベクトルデータベース",
+      "description": "Mastraで利用可能なベクトルデータベース",
+      "order": 3
+    },
+    {
+      "name": "retrieval",
+      "title": "検索",
+      "description": "効果的な検索と取得の実装方法",
+      "order": 4
+    }
+  ]
+}

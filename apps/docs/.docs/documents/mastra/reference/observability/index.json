@@ -1,0 +1,37 @@
+{
+  "title": "可観測性",
+  "description": "可観測性APIリファレンス",
+  "order": 12,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "subdirectories": [
+    {
+      "name": "providers",
+      "title": "プロバイダー",
+      "description": "可観測性プロバイダー",
+      "order": 1
+    }
+  ],
+  "files": [
+    {
+      "name": "logger",
+      "title": "Logger",
+      "description": "Loggerクラスのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "otel-config",
+      "title": "OTelConfig",
+      "description": "OTelConfig設定のリファレンス",
+      "order": 3
+    },
+    {
+      "name": "create-logger",
+      "title": ".createLogger()",
+      "description": "createLogger()メソッドのリファレンス",
+      "order": 4
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+files:
+  # 除外したいディレクトリやファイルを指定
+  - path: "docs/"
+    cleanup: true  # trueで除外、falseで保持
+  - path: ".github/template-cleanup/"
+    cleanup: true  # cleanup設定自体も除外
+  # 必要に応じて他のパスを追加
+    
+# クリーンアップ後の処理
+post_cleanup:
+  # クリーンアップ後に削除する空のディレクトリがある場合は指定
+  remove_empty_dirs: true 

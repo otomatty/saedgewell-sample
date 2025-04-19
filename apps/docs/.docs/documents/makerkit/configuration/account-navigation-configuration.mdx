@@ -1,0 +1,145 @@
+---
+title: '個人アカウントナビゲーション設定の構成'
+description: 'Next.js Supabaseアプリケーションの個人アカウントナビゲーションのセットアップ方法を学びます'
+icon: 'layout'
+order: 6
+---
+
+# 個人アカウントナビゲーション設定の構成
+
+個人アカウントナビゲーションは`apps/web/config/personal-account-navigation.config.tsx`で設定されています。この設定は、個人アカウントのナビゲーションメニューを定義するために使用されます。デフォルトでは、ホームページ、設定、課金（有効な場合）の3つのルートがあります。
+
+一度に異なるビュー（例えば、モバイルメニュー）を構築できるように、一箇所で定義しています。
+
+## 設定
+
+個人ワークスペースのルーティング設定は`apps/web/config/personal-account-navigation.config.tsx`で定義します：
+
+`apps/web/config/personal-account-navigation.config.tsx`
+
+```tsx
+import { CreditCard, Home, User } from 'lucide-react';
+import { z } from 'zod';
+import { NavigationConfigSchema } from '@kit/ui/navigation-schema';
+import featureFlagsConfig from '~/config/feature-flags.config';
+import pathsConfig from '~/config/paths.config';
+
+const iconClasses = 'w-4';
+
+const routes = [
+  {
+    label: 'common:routes.application',
+    children: [
+      {
+        label: 'common:routes.home',
+        path: pathsConfig.app.home,
+        Icon: <Home className={iconClasses} />,
+        end: true,
+      },
+    ],
+  },
+  {
+    label: 'common:routes.settings',
+    children: [
+      {
+        label: 'common:routes.profile',
+        path: pathsConfig.app.personalAccountSettings,
+        Icon: <User className={iconClasses} />,
+      },
+      featureFlagsConfig.enablePersonalAccountBilling
+        ? {
+            label: 'common:routes.billing',
+            path: pathsConfig.app.personalAccountBilling,
+            Icon: <CreditCard className={iconClasses} />,
+          }
+        : undefined,
+    ].filter(route => !!route),
+  },
+] satisfies z.infer<typeof NavigationConfigSchema>['routes'];
+
+export const personalAccountNavigationConfig = NavigationConfigSchema.parse({
+  routes,
+  style: process.env.NEXT_PUBLIC_USER_NAVIGATION_STYLE,
+  sidebarCollapsed: process.env.NEXT_PUBLIC_HOME_SIDEBAR_COLLAPSED,
+});
+```
+
+この設定では、ルートグループを定義できます。`children`属性を設定することで、ルートの子要素を追加できます（簡単にするために、ここではi18n文字列を使用していません）：
+
+`apps/web/config/personal-account-navigation.config.tsx`
+
+```tsx
+const routes = [{
+  label: 'あなたのストア',
+  children: [
+    {
+      label: 'ダッシュボード',
+      path: '/dashboard',
+      Icon: <DashboardIcon className={iconClasses} />,
+      children: [
+        {
+          label: '注文',
+          path: '/orders',
+          Icon: <ShoppingCartIcon className={iconClasses} />,
+        },
+        {
+          label: '在庫',
+          path: '/inventory',
+          Icon: <InventoryIcon className={iconClasses} />,
+        },
+      ]
+    },
+  ]
+}];
+```
+
+## レイアウトスタイル
+
+`NEXT_PUBLIC_USER_NAVIGATION_STYLE`環境変数を設定することで、ナビゲーションのスタイルを選択できます。デフォルトのスタイルは`sidebar`です。
+
+```
+NEXT_PUBLIC_USER_NAVIGATION_STYLE=sidebar
+```
+
+または、スタイルを`header`に設定することもできます：
+
+```
+NEXT_PUBLIC_TEAM_NAVIGATION_STYLE=header
+```
+
+## 旧設定
+
+古いバージョン（例：2024年10月25日以前）を実行している場合、フラットなルートを許可する古いバージョンを実行しています：
+
+`apps/web/config/personal-account-navigation.config.tsx`
+
+```tsx
+const routes = [
+  {
+    label: 'common:homeTabLabel',
+    path: pathsConfig.app.home,
+    Icon: <Home className={iconClasses} />,
+    end: true,
+  },
+  {
+    label: 'account:accountTabLabel',
+    path: pathsConfig.app.personalAccountSettings,
+    Icon: <User className={iconClasses} />,
+  },
+];
+
+if (featureFlagsConfig.enablePersonalAccountBilling) {
+  routes.push({
+    label: 'common:billingTabLabel',
+    path: pathsConfig.app.personalAccountBilling,
+    Icon: <CreditCard className={iconClasses} />,
+  });
+}
+
+export const personalAccountSidebarConfig = SidebarConfigSchema.parse({
+  routes,
+  style: process.env.NEXT_PUBLIC_USER_NAVIGATION_STYLE,
+});
+```
+
+注意：最新の機能と最適化を使用するには、最新バージョンに更新してください。

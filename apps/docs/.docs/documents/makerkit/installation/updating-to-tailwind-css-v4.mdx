@@ -1,0 +1,239 @@
+---
+title: 'Tailwind CSS v4へのアップデート'
+description: 'MakerkitをTailwind CSS v4にアップデートするためのガイド。コードベースを最新のTailwind CSSバージョンに移行するために知っておくべきすべてのこと。'
+icon: 'paintbrush'
+order: 12
+---
+
+# MakerkitをTailwind CSS v4にアップデートするためのガイドライン
+
+MakerkitはもともとTailwind CSS v3で構築され、その後Tailwind CSS v4に更新されました。このガイドでは、手動で更新する場合に必要な変更点と移行手順について説明します。
+
+手動で更新したくない場合は、Makerkitの最新の変更をプルしてください。これまでに記述したコードに必要な変更点については、以下を参考にしてください。
+
+## 主要な変更点の概要
+
+- **Tailwind CSSバージョンの更新**: v3.4.17からv4.0.0にアップグレード
+- **CSS設計**: コンポーネントベースのCSS設計に移行し、スタイルシートを分離
+- **ファイル構造**: CSSファイルをモジュラーコンポーネントに再編成
+- **スタイリングの変更**: 新しいスタイリングパターンで様々なUIコンポーネントを更新
+
+## ファイル構造の変更
+
+CSS構造が複数のファイルに再編成されました：
+
+`apps/web/styles/*.css`
+
+```
+styles/
+├── globals.css
+├── theme.css
+├── theme.utilities.css
+├── shadcn-ui.css
+├── markdoc.css
+└── makerkit.css
+```
+
+- **globals.css**: アプリケーション全体のグローバルスタイル
+- **theme.css**: テーマ変数と色
+- **theme.utilities.css**: テーマのユーティリティクラス
+- **shadcn-ui.css**: ShadcN UI固有のスタイル
+- **markdoc.css**: Markdown/ドキュメントのスタイル
+- **makerkit.css**: Makerkit固有のコンポーネント
+
+## 既存のスタイルを維持する
+
+既存のテーマカラーを維持したい場合は、`shadcn-ui.css`ファイルを更新し、テーマの同じ変数を保持してください。
+
+注意: テーマカラーを更新するには、`hsl`関数を使用する必要があります。
+
+`apps/web/styles/shadcn-ui.css`
+
+```css
+@layer base {
+  :root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(224 71.4% 4.1%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(224 71.4% 4.1%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(224 71.4% 4.1%);
+    --primary: hsl(220.9 39.3% 11%);
+    --primary-foreground: hsl(210 20% 98%);
+    --secondary: hsl(220 14.3% 95.9%);
+    --secondary-foreground: hsl(220.9 39.3% 11%);
+    --muted: hsl(220 14.3% 95.9%);
+    --muted-foreground: hsl(220 8.9% 46.1%);
+    --accent: hsl(220 14.3% 95.9%);
+    --accent-foreground: hsl(220.9 39.3% 11%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(210 20% 98%);
+    --border: hsl(214.3 31.8% 94.4%);
+    --input: hsl(214.3 31.8% 91.4%);
+    --ring: hsl(224 71.4% 4.1%);
+    --radius: 0.5rem;
+    --chart-1: hsl(12 76% 61%);
+    --chart-2: hsl(173 58% 39%);
+    --chart-3: hsl(197 37% 24%);
+    --chart-4: hsl(43 74% 66%);
+    --chart-5: hsl(27 87% 67%);
+    --sidebar-background: hsl(0 0% 98%);
+    --sidebar-foreground: hsl(240 5.3% 26.1%);
+    --sidebar-primary: hsl(240 5.9% 10%);
+    --sidebar-primary-foreground: hsl(0 0% 98%);
+    --sidebar-accent: hsl(240 4.8% 95.9%);
+    --sidebar-accent-foreground: hsl(240 5.9% 10%);
+    --sidebar-border: hsl(220 13% 91%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  }
+  .dark {
+    --background: hsl(224 71.4% 4.1%);
+    --foreground: hsl(210 20% 98%);
+    --card: hsl(224 71.4% 4.1%);
+    --card-foreground: hsl(210 20% 98%);
+    --popover: hsl(224 71.4% 4.1%);
+    --popover-foreground: hsl(210 20% 98%);
+    --primary: hsl(210 20% 98%);
+    --primary-foreground: hsl(220.9 39.3% 11%);
+    --secondary: hsl(215 27.9% 13%);
+    --secondary-foreground: hsl(210 20% 98%);
+    --muted: hsl(215 27.9% 13%);
+    --muted-foreground: hsl(217.9 10.6% 64.9%);
+    --accent: hsl(215 27.9% 13%);
+    --accent-foreground: hsl(210 20% 98%);
+    --destructive: hsl(0 62.8% 30.6%);
+    --destructive-foreground: hsl(210 20% 98%);
+    --border: hsl(215 27.9% 13%);
+    --input: hsl(215 27.9% 13%);
+    --ring: hsl(216 12.2% 83.9%);
+    --chart-1: hsl(220 70% 50%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
+    --sidebar-background: hsl(224 71.4% 4.1%);
+    --sidebar-foreground: hsl(240 4.8% 95.9%);
+    --sidebar-primary: hsl(224.3 76.3% 48%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(215 27.9% 13%);
+    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+    --sidebar-border: hsl(240 3.7% 15.9%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  }
+}
+```
+
+## 破壊的変更
+
+### 1. クラス名の更新
+
+- `space-x-`と`space-y-`を`gap-x-`と`gap-y-`に置き換え
+- シャドウユーティリティを更新：
+  - `shadow` → `shadow-xs`
+  - `shadow-sm` → `shadow-xs`
+  - `shadow-lg` → `shadow-xl`
+
+注意: v3から動的間隔を使用して間隔が変更されたため、カスタム間隔値を更新する必要がある場合があります。
+
+### 2. 角丸（ボーダーラディウス）の変更
+
+角丸ユーティリティを更新：
+- `rounded-sm` → `rounded-xs`
+- その他の角丸値は同じままにする
+
+### 3. カラーシステムの変更
+
+テーマは、特にダークモードでより見栄えの良いカラーシステムに更新されました。
+
+### 4. レイアウトの更新
+
+フレックスギャップ間隔：
+- `space-x-`を`gap-x-`に置き換え
+- `space-y-`を`gap-y-`に置き換え
+
+### 5. コンテナの変更
+
+```css
+/* 古い */
+.container {
+  @apply max-sm:px-4;
+}
+/* 新しい */
+@utility container {
+  margin-inline: auto;
+  @apply xl:max-w-[80rem] px-8;
+}
+```
+
+### アウトラインユーティリティ
+
+```css
+/* 古い */
+focus:outline-none
+/* 新しい */
+focus:outline-hidden
+```
+
+### シャドウユーティリティ
+
+```css
+/* 古い */
+shadow-sm
+/* 新しい */
+shadow-xs
+```
+
+## 移行手順
+
+### 依存関係の更新
+
+```json
+{
+  "dependencies": {
+    "tailwindcss": "4.0.0",
+    "@tailwindcss/postcss": "^4.0.0"
+  }
+}
+```
+
+Tailwind CSS v4アップグレードでは、`tailwindcss-animate`依存関係が`apps/web/package.json`の一部になったため、`package.json`から削除する必要があります。
+
+### PostCSS設定の更新
+
+```javascript
+module.exports = {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+};
+```
+
+### CSSファイル
+
+- 既存のグローバルスタイルを適切な新しいCSSファイルに移動
+- 新しいCSSファイルを含むようにインポートステートメントを更新
+- 古い`tailwind.config.ts`を削除し、新しいCSS構造に置き換え
+
+### コンポーネントの更新
+
+- 間隔ユーティリティを使用するすべてのコンポーネントを確認
+- シャドウユーティリティを更新
+- 色の使用方法を確認して更新
+- フレックスとグリッドのギャップユーティリティを更新
+
+## テストチェックリスト
+
+- [ ] すべてのコンポーネントが正しくレンダリングされることを確認
+- [ ] レスポンシブレイアウトを確認
+- [ ] ダークモード機能をテスト
+- [ ] シャドウと立体感のスタイルを確認
+- [ ] コンテナレイアウトをテスト
+- [ ] カラーシステムの実装を確認
+- [ ] フォームコンポーネントのスタイリングを確認
+- [ ] ナビゲーションコンポーネントをテスト
+- [ ] モーダルとオーバーレイのスタイリングを確認
+- [ ] タイポグラフィのスケーリングを確認
+
+## 追加リソース
+
+- [Tailwind CSS v4ドキュメント](https://tailwindcss.com/docs)

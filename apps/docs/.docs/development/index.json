@@ -1,0 +1,11 @@
+{
+  "title": "ドキュメントサイト",
+  "description": "ドキュメントサイトの使い方",
+  "order": 1,
+  "icon": "/icons/library.svg",
+  "status": "published",
+  "disabled": false,
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-10",
+  "maintainers": ["Akimasa Sugai"]
+}

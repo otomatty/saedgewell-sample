@@ -1,0 +1,38 @@
+---
+title: "[Feature Request] YAML形式のIssueテンプレートをサポートしてください"
+description: "GitHub Pull Requests拡張機能において、YAML形式（.yml）のIssueテンプレートをサポートしてもらいたいという要望です。"
+date: 2025-03-22
+repository_url: "https://github.com/microsoft/vscode-pull-request-github"
+issue_number: "#6722"
+---
+# 機能リクエスト
+
+## 説明
+GitHub Pull Requests and Issues拡張機能において、YAML形式（.yml）のIssueテンプレートのサポートを要望します。現在、拡張機能は`.github/ISSUE_TEMPLATE/`ディレクトリ内のMarkdown（.md）テンプレートは認識しますが、YAML形式のテンプレートは認識されません。
+
+## 現在の挙動
+VSCode拡張機能で新しいIssueを作成する際：
+- `.github/ISSUE_TEMPLATE/`内のMarkdown（.md）テンプレートのみが認識され表示されます
+- 同じディレクトリ内のYAML（.yml）テンプレートは完全に無視されます
+- そのため、2種類のテンプレート（GitHub Web用のYAMLとVSCode用のMarkdown）を維持する必要があります
+
+## 期待する挙動
+- 拡張機能がYAMLとMarkdownの両方のIssueテンプレートを認識して表示すること
+- GitHub Web同様にYAMLテンプレートをフォーム形式でレンダリングできるのが理想ですが、それが技術的に難しい場合は、YAML形式のままでも表示できるようにすることが望ましいです
+- フォーマットに関係なく、利用可能なすべてのテンプレートから選択できること
+
+## 現在のディレクトリ構造と回避策
+
+現在は両方のフォーマットで重複したテンプレートを維持しています：
+
+```
+.github/
+└── ISSUE_TEMPLATE/
+    ├── BUG-REPORT.yml      # GitHub Web用（表示されない）
+    ├── BUG-REPORT.md       # VSCode用（表示される）
+    ├── FEATURE-REQUEST.yml # GitHub Web用（表示されない）
+    ├── FEATURE-REQUEST.md  # VSCode用（表示される）
+    └── config.yml          # テンプレート設定
+```
+
+これは両方のバージョンを手動で同期し続ける必要があるため理想的ではありません。拡張機能がYAML形式をサポートすれば、重複したテンプレートを維持する必要がなくなります。 

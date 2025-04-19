@@ -1,0 +1,78 @@
+---
+title: 'feature/docker-migrationブランチからmainブランチへのマージ作業: 環境構築とアプリケーション構造改善'
+description: ''
+date: '2025-03-25'
+author: 'Akimasa Sugai'
+tags: ['Docker', 'マージ', '移行', 'アプリケーション構造', '環境構築', 'Nginx', 'Supabase']
+---
+
+# feature/docker-migrationブランチからmainブランチへのマージ作業: 環境構築とアプリケーション構造改善
+
+# Docker移行ブランチのマージ作業記録
+
+## 概要
+
+`feature/docker-migration`ブランチから`main`ブランチへの統合作業の記録です。この作業では、Docker環境の構築とアプリケーション構造の改善を含む大規模な変更を統合しました。
+
+## マージ作業の流れ
+
+### 1. 初期状態の確認
+- `feature/docker-migration`ブランチと`main`ブランチの差分を確認
+- 一時的なマージブランチ`feature/docker-migration-merge-main`が作成され、部分的なマージが行われていた
+
+### 2. マージ作業
+1. 不要なPRテンプレートファイルの削除をコミット
+2. `feature/docker-migration`ブランチの変更を`main`ブランチに直接マージ
+3. コンフリクトの解決と変更の確認
+4. マージ内容のコミットとプッシュ
+
+## 主な変更内容
+
+### 1. Docker環境の構築
+- `docker-compose.yml`と`docker-compose.apple-silicon.yml`の追加
+- 各サービス用のDockerfileの追加
+  - `docker/admin/Dockerfile`
+  - `docker/docs/Dockerfile`
+  - `docker/web/Dockerfile`
+  - `docker/shared/base.Dockerfile`
+- Nginx設定ファイルの追加と更新
+  - 証明書設定
+  - サーバー設定
+
+### 2. アプリケーション構造の改善
+- ディレクトリ構造の整理
+  - `apps/web/app/(public)` → `apps/web/app`への移動
+  - コンポーネントの再配置
+- 認証関連の改善
+  - Supabase認証の設定更新
+  - クライアント設定の最適化
+
+### 3. ドキュメントとスクリプトの更新
+- ジャーナル関連ファイルの追加と更新
+- 開発用スクリプトの更新
+  - `scripts/dev/`ディレクトリの整理
+  - 新しいスクリプトの追加
+
+## 技術的な詳細
+
+### 変更されたファイル数
+- 新規追加: 多数のドキュメントファイルとDocker設定
+- 修正: アプリケーションコンポーネントとスクリプト
+- 削除: 不要なテンプレートと古い設定ファイル
+
+### 重要な設定変更
+- Docker環境の構築
+- Nginx設定の更新
+- Supabase関連の設定変更
+
+## 今後の課題
+
+1. Docker環境のテストと検証
+2. 新しいディレクトリ構造での動作確認
+3. CI/CDパイプラインの更新（必要に応じて）
+
+## 参考情報
+
+- コミットハッシュ: `162054f`
+- マージ日時: 2024年3月25日
+- 関連PR: #6 (feature/docker-migration-merge-main)

@@ -1,0 +1,75 @@
+---
+title: Docker環境での認証エラー解決
+date: 2025-03-24
+---
+# 背景
+
+Docker環境での認証エラーが発生した。
+
+# 問題点
+## 1. Supabase URL設定の不一致:
+.envファイルでは NEXT_PUBLIC_SUPABASE_URL=https://supabase.saedgewell.test と設定
+Docker環境では http://host.docker.internal:54321 に自動調整されている
+この調整は正しいですが、Docker内外での一貫性が必要です
+
+### 解決策
+環境変数設定としては NEXT_PUBLIC_SUPABASE_URL_DOCKER=http://host.docker.internal:54321 と明示的に指定するとより明確になります
+
+## 2. リダイレクトURL設定の不一致:
+
+Supabase設定(config.toml)では:
+```
+site_url = "https://web.saedgewell.test"
+additional_redirect_urls = ["https://web.saedgewell.test", "https://web.saedgewell.test/auth/callback", ...]
+```
+
+.envファイルでは:
+```
+SITE_URL=http://saedgewell.test
+ADDITIONAL_REDIRECT_URLS=http://web.saedgewell.test,http://docs.saedgewell.test,...
+```
+
+問題点: httpsとhttpの混在、異なるドメイン使用（web.saedgewell.test vs saedgewell.test）
+
+### 解決策
+- ローカル環境においては、httpの方を使用する
+
+## 3. 認証コールバックパスの不一致:
+ b
+- アプリコード(apps/web/app/auth/callback/route.ts)では /auth/callback というパスを使用
+    - これは正しい
+- Supabaseは内部で/auth/v1/callbackを使用して自サービスに戻り、その後アプリに転送
+    - そのまま転送していることが問題？
+
+## 4. ホスト名解決の問題:
+- ホストマシンの/etc/hostsでは127.0.0.1 supabase.saedgewell.testと設定
+- Docker内ではhost.docker.internalという特殊名が使われる
+- NGINXではproxy_pass http://192.168.65.254:54321と特定IPを指定
+
+## 5. プロトコル不一致:
+- 認証フローではhttpsが要求されるが、Docker環境ではhttpで接続している
+- NGINXではhttpsからhttpへのプロキシが行われている
+
+
+## まとめ
+- Docker環境では Supabase URL を http://host.docker.internal:54321 に明示的に設定
+- ローカル環境では http の方を使用する
+- SUPABASE_AUTH_COOKIE_SECURE=false にして http 環境でのクッキー送信を許可
+- アプリコードでは/auth/callback を使用するので他の部分を修正する
+
+
+## カスタムドメインでやった結果
+- supabaseの内部処理の影響でうまくいかなかった?
+- .testのようなドメインをGCPで設定しても以下のような警告が表示される
+
+```
+無効なリダイレクト: 末尾はパブリック トップレベル ドメイン（.com、.org など）にする必要があります。
+無効なリダイレクト: 有効な最上位のプライベート ドメインであるドメインを使用する必要があります。 最上位のプライベート ドメイン .
+```
+つまりGCPに設定できるのは実質localhost:54321のみということ?
+
+## 結論
+- カスタムドメインではうまくいかなかった
+- ローカル環境ではhttpの方を使用する
+- アプリコードでは/auth/callback を使用するがそこに到達できていない?
+

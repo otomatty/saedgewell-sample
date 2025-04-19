@@ -1,0 +1,105 @@
+# 前提条件と目標
+
+## プロジェクトの現状
+
+### 開発環境
+- **OS**:
+  - 主に macOS 24.3.0
+  - 開発者により、Intel MacとM1/M2 Mac (Apple Silicon)の両方が使用されている
+- **Docker Desktop**:
+  - インストール済み (最低バージョン要件: 24.0.0)
+- **パッケージマネージャ**:
+  - Bun 1.2.4
+- **Node.js**:
+  - v20.10.0以上
+
+### アプリケーション構成
+```
+saedgewell/
+├── apps/
+│   ├── web/     # メインアプリ (Next.js, Port: 7510)
+│   ├── docs/    # ドキュメントサイト (Next.js, Port: 7511)
+│   └── admin/   # 管理パネル (Next.js, Port: 7512)
+├── packages/
+│   ├── supabase/  # Supabase関連の共通コード
+│   ├── ui/        # 共通UIコンポーネント
+│   ├── features/auth        # 認証関連の共通コード
+│   └── [その他共通パッケージ]
+└── supabase/    # Supabaseの設定とマイグレーション
+```
+
+### 使用技術
+- **フレームワーク**: Next.js 15.2.3
+- **データベース**: Supabase (PostgreSQL)
+- **認証**: Supabase Auth
+- **UI**: Shadcn UI
+- **スタイリング**: Tailwind CSS
+- **モノレポ管理**: Turborepo
+
+### 現在の開発フロー
+- Turboを使用した並列開発
+- Supabase CLIによるローカルDB管理
+- 環境変数は`.env.local`で管理
+- ポート構成:
+  - Web: 7510
+  - Docs: 7511
+  - Admin: 7512
+  - Supabase API: 54321
+  - Supabase Studio: 54323
+  - PostgreSQL: 54322
+
+## 目標
+
+### 主要目標
+- **開発環境のDocker化**:
+  - 環境差異によるバグの削減
+  - 新規開発者のオンボーディング簡素化
+  - 「自分の環境では動くのに」問題の解消
+
+### サブドメイン統合
+- 複数アプリケーションを単一のドメイン下で統合:
+  - web.localhost
+  - docs.localhost
+  - admin.localhost
+  - api.localhost (APIルート専用)
+
+### 認証と状態管理
+- 単一のSupabaseインスタンスによる認証管理
+- アプリケーション間でのログイン状態の共有
+- セキュアな環境変数・シークレット管理
+
+### 開発効率の向上
+- **ホットリロードの維持**: ファイル変更の即時反映
+- **高速なビルド**: Turboとキャッシュの最適化
+- **リソース効率**: 必要なコンテナのみの起動
+- **簡単な環境構築**: 単一コマンドでの環境構築
+
+### マルチアーキテクチャ対応
+- Intel MacとApple Silicon (M1/M2)の両方に最適化
+- アーキテクチャによる差異の最小化
+- 各開発者の環境を考慮した設計
+
+## 移行後のワークフロー
+
+移行完了後の想定ワークフローは以下の通りです：
+
+1. リポジトリのクローン: `git clone <repository-url>`
+2. 環境構築: `bun run setup`
+3. 開発環境起動: `docker compose up -d`
+4. ブラウザでアクセス:
+   - http://web.localhost
+   - http://docs.localhost
+   - http://admin.localhost
+   - http://localhost:54323 (Supabase Studio)
+
+## 技術的要件
+
+### 最小限のシステム要件
+- **CPU**: 4コア以上
+- **メモリ**: 8GB以上
+- **ストレージ**: 10GB以上の空き容量
+- **Docker Desktop**:
+  - CPUs: 4以上
+  - Memory: 8GB以上
+  - Swap: 2GB以上
+  - Apple Siliconの場合: VirtioFS有効化推奨 

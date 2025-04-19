@@ -1,0 +1,84 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+.bun
+
+# testing
+coverage
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# production
+build
+dist
+**/dist
+**/dist/
+packages/*/dist/
+apps/*/dist/
+tooling/*/dist/
+
+
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env
+.env.local
+.env.development
+.env.production
+.env.docker
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# turbo
+.turbo
+
+# ide
+.idea/
+.vscode/
+.zed
+
+# contentlayer
+.contentlayer/
+*storybook.log
+
+
+# database
+supabase/seed.sql
+
+
+# database
+supabase/seed.sql
+
+# cache
+.cache/
+*/.cache/
+**/.cache/
+/secrets/
+
+# GitHubトークンやシェル設定
+.github_token.sh
+**/.github_token.sh
+.github_credentials
+**/.github_credentials
+.token
+**/.token

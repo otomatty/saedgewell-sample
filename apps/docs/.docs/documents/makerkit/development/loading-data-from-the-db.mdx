@@ -1,0 +1,224 @@
+---
+title: 'Supabaseからデータを読み込む'
+description: 'このページではSupabaseデータベースからデータを読み込み、Next.jsアプリケーションで表示する方法を学びます'
+icon: 'database-zap'
+order: 5
+---
+
+# Supabaseデータベースからデータを読み込む方法
+
+このページでは、Supabaseデータベースからデータを読み込み、Next.jsアプリケーションで表示する方法を学びます。
+
+データベースが必要なデータをサポートするようになったので、アプリケーションにデータを読み込み始めることができます。Supabaseデータベースからデータを読み込むために、`@makerkit/data-loader-supabase-nextjs`パッケージを使用します。
+
+`@makerkit/data-loader-supabase-nextjs`パッケージの使用方法の詳細については、ドキュメントを確認してください。
+
+この便利なパッケージを使用すると、Supabaseデータベースからデータを読み込み、ページネーションをサポートしたサーバーコンポーネントで表示することができます。
+
+以下のスニペットでは、次のことを行います：
+
+1. データベースからユーザーのワークスペースデータを読み込みます。これにより、ワークスペースはユーザーレイアウトによって読み込まれるため、さらなるラウンドトリップなしでユーザーのアカウントIDを取得できます。
+2. データベースからユーザーのタスクを読み込みます。
+3. タスクをテーブルに表示します。
+4. 検索入力を使用してタイトルでタスクをフィルタリングします。
+
+コードを見てみましょう：
+
+```tsx
+import { use } from 'react';
+import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
+import { getSupabaseServerClient } from '@kit/supabase/server-client';
+import { Button } from '@kit/ui/button';
+import { Heading } from '@kit/ui/heading';
+import { If } from '@kit/ui/if';
+import { Input } from '@kit/ui/input';
+import { PageBody } from '@kit/ui/page';
+import { Trans } from '@kit/ui/trans';
+import { createI18nServerInstance } from '~/lib/i18n/i18n.server';
+import { withI18n } from '~/lib/i18n/with-i18n';
+import { TasksTable } from './_components/tasks-table';
+import { UserAccountHeader } from './_components/user-account-header';
+import { loadUserWorkspace } from './_lib/server/load-user-workspace';
+
+interface SearchParams {
+  page?: string;
+  query?: string;
+}
+
+export const generateMetadata = async () => {
+  const i18n = await createI18nServerInstance();
+  const title = i18n.t('account:homePage');
+
+  return {
+    title,
+  };
+};
+
+function UserHomePage(props: { searchParams: SearchParams }) {
+  const client = getSupabaseServerClient();
+  const { user } = use(loadUserWorkspace());
+  const page = parseInt(props.searchParams.page ?? '1', 10);
+  const query = props.searchParams.query ?? '';
+
+  return (
+    <>
+      <UserAccountHeader
+        title={<Trans i18nKey={'common:homeTabLabel'} />}
+        description={<Trans i18nKey={'common:homeTabDescription'} />}
+      />
+
+      <PageBody className={'space-y-4'}>
+        <div className={'flex items-center justify-between'}>
+          <div>
+            <Heading level={4}>
+              <Trans i18nKey={'tasks:tasksTabLabel'} defaults={'Tasks'} />
+            </Heading>
+          </div>
+
+          <div className={'flex items-center space-x-2'}>
+            <form className={'w-full'}>
+              <Input
+                name={'query'}
+                defaultValue={query}
+                className={'w-full lg:w-[18rem]'}
+                placeholder={'Search tasks'}
+              />
+            </form>
+          </div>
+        </div>
+
+        <ServerDataLoader
+          client={client}
+          table={'tasks'}
+          page={page}
+          where={{
+            account_id: {
+              eq: user.id,
+            },
+            title: {
+              textSearch: query ? `%${query}%` : undefined,
+            },
+          }}
+        >
+          {(props) => {
+            return (
+              <div className={'flex flex-col space-y-8'}>
+                <If condition={props.count === 0 && query}>
+                  <div className={'flex flex-col space-y-2.5'}>
+                    <p>
+                      <Trans
+                        i18nKey={'tasks:noTasksFound'}
+                        values={{ query }}
+                      />
+                    </p>
+
+                    <form>
+                      <input type="hidden" name={'query'} value={''} />
+                      <Button variant={'outline'} size={'sm'}>
+                        <Trans i18nKey={'tasks:clearSearch'} />
+                      </Button>
+                    </form>
+                  </div>
+                </If>
+
+                <TasksTable {...props} />
+              </div>
+            );
+          }}
+        </ServerDataLoader>
+      </PageBody>
+    </>
+  );
+}
+
+export default withI18n(UserHomePage);
+```
+
+少し分解してみましょう：
+
+1. 必要なコンポーネントと関数をインポートします。
+2. 検索パラメータを型付けするための`SearchParams`インターフェースを定義します。
+3. ページメタデータを生成するための`generateMetadata`関数を定義します。
+4. データベースからユーザーのワークスペースとタスクを読み込む`UserHomePage`コンポーネントを定義します。
+5. データベースからタスクを読み込む`ServerDataLoader`コンポーネントを定義します。
+6. タスクをテーブルにレンダリングし、タイトルでタスクをフィルタリングするための検索入力を提供します。
+7. `withI18n` HOCを使用して`UserHomePage`コンポーネントをエクスポートします。これはコンポーネントのi18nインスタンスをブートストラップするのに役立ちます。
+
+## タスクテーブル
+
+次に、タスクテーブルコンポーネントを見てみましょう：
+
+```tsx
+'use client';
+import Link from 'next/link';
+import { ColumnDef } from '@tanstack/react-table';
+import { Pencil } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@kit/ui/button';
+import { DataTable } from '@kit/ui/enhanced-data-table';
+import { Database } from '~/lib/database.types';
+
+type Task = Database['public']['Tables']['tasks']['Row'];
+
+export function TasksTable(props: {
+  data: Task[];
+  page: number;
+  pageSize: number;
+  pageCount: number;
+}) {
+  const columns = useGetColumns();
+
+  return (
+    <div>
+      <DataTable {...props} columns={columns} />
+    </div>
+  );
+}
+
+function useGetColumns(): ColumnDef<Task>[] {
+  const { t } = useTranslation('tasks');
+
+  return [
+    {
+      header: t('task'),
+      cell: ({ row }) => (
+        <Link
+          className={'hover:underline'}
+          href={`/home/tasks/${row.original.id}`}
+        >
+          {row.original.title}
+        </Link>
+      ),
+    },
+    {
+      header: t('createdAt'),
+      accessorKey: 'created_at',
+    },
+    {
+      header: t('updatedAt'),
+      accessorKey: 'updated_at',
+    },
+    {
+      header: '',
+      id: 'actions',
+      cell: ({ row }) => {
+        const id = row.original.id;
+
+        return (
+          <div className={'flex justify-end space-x-2'}>
+            <Link href={`/home/tasks/${id}`}>
+              <Button variant={'ghost'} size={'icon'}>
+                <Pencil className={'h-4'} />
+              </Button>
+            </Link>
+          </div>
+        );
+      },
+    },
+  ];
+}
+```
+
+このスニペットでは、タスクをテーブルにレンダリングする`TasksTable`コンポーネントを定義しています。テーブルをレンダリングするために、`@kit/ui/enhanced-data-table`パッケージの`DataTable`コンポーネントを使用しています。
+
+また、テーブルの列を返す`useGetColumns`フックも定義しています。列ヘッダーを翻訳するために、`react-i18next`パッケージの`useTranslation`フックを使用しています。

@@ -1,0 +1,27 @@
+{
+  "title": "MakerKit",
+  "description": "MakerKitテンプレートのカスタマイズガイド",
+  "order": 4,
+  "thumbnail": "https://makerkit.dev/",
+  "icon": "https://makerkit.dev/favicon.ico",
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-10",
+  "maintainers": ["Akimasa Sugai"],
+  "tags": {
+    "type": ["template", "boilerplate"],
+    "tech": ["nextjs", "react", "supabase", "tailwindcss"]
+  },
+  "links": {
+    "website": "https://makerkit.dev/",
+    "github": "https://github.com/makerkit/next-supabase-saas-kit",
+    "docs": "https://makerkit.dev/docs/next-supabase-saas-kit"
+  },
+  "features": [
+    "認証システム",
+    "サブスクリプション管理",
+    "マルチテナント",
+    "ダッシュボード",
+    "管理者パネル"
+  ]
+}

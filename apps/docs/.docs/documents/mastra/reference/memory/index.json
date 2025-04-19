@@ -1,0 +1,41 @@
+{
+  "title": "メモリ",
+  "description": "メモリAPIリファレンス",
+  "order": 7,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "memory-class",
+      "title": "Memory Class",
+      "description": "Memoryクラスのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "create-thread",
+      "title": ".createThread()",
+      "description": "createThread()メソッドのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "query",
+      "title": ".query()",
+      "description": "query()メソッドのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "get-thread-by-id",
+      "title": ".getThreadById()",
+      "description": "getThreadById()メソッドのリファレンス",
+      "order": 4
+    },
+    {
+      "name": "get-threads-by-resource-id",
+      "title": ".getThreadsByResourceId()",
+      "description": "getThreadsByResourceId()メソッドのリファレンス",
+      "order": 5
+    }
+  ]
+}

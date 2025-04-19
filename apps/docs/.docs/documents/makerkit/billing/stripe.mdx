@@ -1,0 +1,116 @@
+---
+title: 'Stripe課金の設定'
+description: 'Makerkit Next.js Supabase SaaS KitでのStripeの設定方法を学ぶ'
+icon: 'credit-card'
+order: 3
+---
+
+# Stripe課金の設定
+
+Makerkit Next.js Supabase SaaS KitでのStripeの設定方法について説明します。
+
+## 基本設定
+
+Stripeはローカル設定とDB両方でデフォルトの課金プロバイダーとして設定されているため、Stripeを使用する場合は特別な設定は不要です。
+
+Stripeを使用するには、以下の環境変数を設定する必要があります：
+
+```bash
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+```
+
+`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`は公開可能な値であり、どこにでも追加できますが、シークレットキーは`.env`ファイルには追加しないでください。
+
+開発中は、リポジトリにコミットされない`.env.local`に配置できます。本番環境では、ホスティングプロバイダーの環境変数として設定してください。
+
+## Stripe CLI
+
+Stripe CLIを使用すると、Stripeイベントをローカルホストで直接受信できます。インストールと使用には様々な方法がありますが、すでにインストールされているDockerの使用を推奨します。
+
+まず、使用するプロジェクトでStripeアカウントにログインします：
+
+```bash
+docker run --rm -it --name=stripe -v ~/.config/stripe:/root/.config/stripe stripe/stripe-cli:latest login
+```
+
+次に、以下のコマンドでStripeイベントの受信を開始できます：
+
+```bash
+pnpm run stripe:listen
+```
+
+初回セットアップ時にはサインインが必要です。これは一度だけの作業です。サインイン後は、CLIを使用してStripeイベントを受信できます。
+
+イベントの受信を開始したら、ターミナルに表示されるwebhookシークレットをコピーし、`.env.local`ファイルの`STRIPE_WEBHOOK_SECRET`環境変数として設定してください：
+
+```bash
+STRIPE_WEBHOOK_SECRET=*your_webhook_secret*
+```
+
+イベントを受信できない場合は、以下を確認してください：
+
+- webhookシークレットが正しいこと
+- サインインしたアカウントがアプリで使用しているものと同じであること
+
+## Stripeカスタマーポータルの設定
+
+Stripeでは、ユーザーが請求情報、請求書、プラン設定を管理できるようにカスタマーポータルの設定が必要です。
+
+- ユーザーがプランを切り替えられる設定を有効にしてください
+- キャンセル時の動作をニーズに応じて設定してください
+
+![Stripeカスタマーポータルの設定](./_images/stripe-customer-portal.webp)
+
+## 本番環境でのWebhook設定
+
+本番環境に移行する際は、StripeでwebhookのURLと受信するイベントを設定する必要があります。
+
+webhookのパスは`/api/billing/webhook`です。アプリが`https://myapp.com`でホストされている場合、`https://myapp.com/api/billing/webhook`を入力する必要があります。
+
+**公開URLの使用について**
+webhookには公開URLを使用してください。VercelのプレビューURLなどのプライベートURLを使用すると、Stripeからwebhookを受信できません。
+
+URLが公開アクセス可能であることを確認するには、ブラウザのシークリットモードでアクセスしてみてください。
+
+Makerkitには以下のイベントが必要です：
+
+- `checkout.session.completed`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+
+一回払いを使用する場合は、以下も追加してください：
+
+- `checkout.session.async_payment_failed`
+- `checkout.session.async_payment_succeeded`
+
+アプリケーションが追加のイベントを必要とする場合は追加できますが、必ずハンドリングしてください。
+
+追加のイベントは`api/billing/webhook/route.ts`ファイルにハンドラーを追加することで処理できます。
+
+## カード情報なしのトライアル設定
+
+Makerkitでは、カード情報を収集せずにトライアルを設定できます。これはユーザーに無料トライアルを提供したい場合に便利です。
+
+これを行うには、`STRIPE_ENABLE_TRIAL_WITHOUT_CC`環境変数を`true`に設定する必要があります：
+
+```bash
+STRIPE_ENABLE_TRIAL_WITHOUT_CC=true
+```
+
+もちろん、無料トライアルを提供するプランにはトライアル期間も設定する必要があります。
+
+## 実装のベストプラクティス
+
+1. **セキュリティ**
+   - シークレットキーの適切な管理
+   - 環境変数の適切な設定
+
+2. **Webhook設定**
+   - 必要なイベントの確認
+   - エンドポイントの公開アクセス確認
+
+3. **トライアル設定**
+   - ビジネスニーズに合わせた設定
+   - 適切なトライアル期間の設定

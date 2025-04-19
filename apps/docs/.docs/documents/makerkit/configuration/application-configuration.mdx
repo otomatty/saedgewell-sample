@@ -1,0 +1,35 @@
+---
+title: 'アプリケーション設定の構成'
+description: 'Next.js Supabaseアプリケーションの全体設定のセットアップ方法を学びます'
+icon: 'settings'
+order: 2
+---
+
+# アプリケーション設定の構成
+
+アプリケーション設定は`apps/web/config/app.config.ts`で設定されています。この設定にはアプリケーション全体の変数が保存されています。
+
+この設定はアプリケーションレベルで設定されます。設定はアプリがインポートするパッケージに伝播されるため、パッケージの動作とロジックを制御できます。これにより、各アプリケーションが独自の設定を定義するため、同じモノレポで複数のアプリをホストすることも可能になります。
+
+推奨されるのは、この設定を直接更新するのではなく、以下の環境変数を定義してデフォルトの動作をオーバーライドすることです。設定は`AppConfigSchema`というZodスキーマを使用して検証されるため、何か問題があればエラーが表示されます。
+
+```ts
+const appConfig = AppConfigSchema.parse({
+  name: process.env.NEXT_PUBLIC_PRODUCT_NAME,
+  title: process.env.NEXT_PUBLIC_SITE_TITLE,
+  description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION,
+  url: process.env.NEXT_PUBLIC_SITE_URL,
+  locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
+  theme: process.env.NEXT_PUBLIC_DEFAULT_THEME_MODE,
+  themeColor: process.env.NEXT_PUBLIC_THEME_COLOR,
+  themeColorDark: process.env.NEXT_PUBLIC_THEME_COLOR_DARK,
+  production,
+});
+```
+
+例えば、製品名とアプリのURLを設定するには、以下の変数を更新します：
+
+```
+NEXT_PUBLIC_SITE_URL=https://myapp.com
+NEXT_PUBLIC_PRODUCT_NAME="My wonderful AI App"
+```

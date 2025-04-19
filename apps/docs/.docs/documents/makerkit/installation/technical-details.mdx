@@ -1,0 +1,76 @@
+---
+title: '技術詳細'
+description: 'Makerkitが使用する技術スタックとモノレポ構造の詳細な説明'
+icon: 'code'
+order: 2
+---
+
+# Next.js Supabase SaaSボイラープレートの技術詳細
+
+Makerkitは、Next.js App Router、Supabase、Shadcn UI、React Query、Zod、Lucide、Nodemailerなどを使用しています。
+
+このキットはTurborepoモノレポとして構築されており、主に以下の技術を使用しています：
+
+- **Next.js App Router**（より高速なビルドのためにTurbopackを使用）
+- **Supabase**：データベース、認証、ストレージ用
+- **Shadcn UI**：UIコンポーネント用
+- **React Query**：クライアントサイドのデータフェッチング用
+- **Zod**：データバリデーション用
+- **Lucide**：アイコン用
+- **Nodemailer**：メール送信用、またはHTTP経由のResend（エッジランタイム用）
+
+Makerkitのモジュラーアーキテクチャにより、機能の追加や削除が容易で、アプリケーションをニーズに合わせてカスタマイズできます。
+
+さらに、このキットはVercel、Cloudflare、またはその他のホスティングプロバイダーに簡単にデプロイできるように設計されています。また、エッジレンダリングをサポートしているため、Cloudflare Workersにアプリケーションをデプロイして高速化することも可能です。
+
+## モノレポ構造
+
+以下は、複数のアプリケーション（またはパッケージ）間で共有できる再利用可能なパッケージです：
+
+- **@kit/ui**：共有UIコンポーネントとスタイル（Shadcn UIといくつかのカスタムコンポーネントを使用）
+- **@kit/shared**：共有コードとユーティリティ
+- **@kit/supabase**：Supabaseのスキーマと管理ロジックを定義するパッケージ
+- **@kit/i18n**：翻訳管理のためのユーティリティを定義する国際化パッケージ
+- **@kit/billing**：サブスクリプション管理のためのスキーマとロジックを定義する課金パッケージ
+- **@kit/billing-gateway**：支払いゲートウェイ管理のためのスキーマとロジックを定義する課金ゲートウェイパッケージ
+- **@kit/email-templates**：react.emailパッケージを使用してメールテンプレートを定義
+- **@kit/mailers**：メールサービスプロバイダー（Resend、Cloudflare、SendGrid、Mailgunなど）を抽象化するメーラーパッケージ
+- **@kit/monitoring**：サードパーティサービス（Sentry、Baselimeなど）でアプリケーションを監視するためのスキーマとロジックを定義する統合監視パッケージ
+- **@kit/database-webhooks**：データベース変更後のアクション（メール送信、レコード更新など）を定義するデータベースWebhooksパッケージ
+- **@kit/cms**：コンテンツ管理のためのスキーマとロジックを定義するCMSパッケージ
+- **@kit/next**：Next.js固有のユーティリティ
+
+アプリケーションに追加できる機能：
+
+- **@kit/auth**：認証パッケージ（Supabaseを使用）
+- **@kit/accounts**：個人アカウント管理のためのコンポーネントとロジックを定義するパッケージ
+- **@kit/team-accounts**：チーム管理のためのコンポーネントとロジックを定義するパッケージ
+- **@kit/admin**：ユーザー、サブスクリプションなどを管理するためのスキーマとロジックを定義する管理パッケージ
+- **@kit/notifications**：通知管理のためのスキーマとロジックを定義する通知パッケージ
+
+アプリケーションに追加できる課金パッケージ：
+
+- **@kit/stripe**：Stripe管理のためのスキーマとロジックを定義するStripeパッケージ。@kit/billing-gatewayパッケージで使用され、Stripe APIを抽象化します。
+- **@kit/lemon-squeezy**：Lemon Squeezy管理のためのスキーマとロジックを定義するLemon Squeezyパッケージ。@kit/billing-gatewayパッケージで使用され、Lemon Squeezy APIを抽象化します。
+
+アプリケーションに追加できるCMS：
+
+- **@kit/keystatic**：Keystatic管理のためのスキーマとロジックを定義するKeystaticパッケージ。@kit/cmsパッケージで使用され、Keystatic APIを抽象化します。
+- **@kit/wordpress**：WordPress管理のためのスキーマとロジックを定義するWordPressパッケージ。@kit/cmsパッケージで使用され、WordPress APIを抽象化します。
+
+また、リリース後に計画されているもの：
+
+- **@kit/plugins**：既存のプラグインを別のパッケージに移動
+- **@kit/analytics**：ユーザー行動を追跡するための統合アナリティクスパッケージ
+
+## アプリケーション設定
+
+設定は`apps/web/config`フォルダで定義されています。ここでは以下の設定ファイルを見つけることができます：
+
+- **app.config.ts**：アプリケーション設定（名前、説明など）
+- **auth.config.ts**：認証設定
+- **billing.config.ts**：課金設定
+- **feature-flags.config.ts**：機能フラグ設定
+- **paths.config.ts**：パス設定（ルート、APIパスなど）
+- **personal-account-sidebar.config.ts**：個人アカウントサイドバー設定（リンク、アイコンなど）
+- **team-account-sidebar.config.ts**：チームアカウントサイドバー設定（リンク、アイコンなど）

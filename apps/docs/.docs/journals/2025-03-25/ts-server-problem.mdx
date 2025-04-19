@@ -1,0 +1,84 @@
+---
+title: 'TypeScript言語サーバーの問題と解決策'
+date: '2024-03-25'
+author: 'Akimasa Sugai'
+tags: ['TypeScript', 'VSCode', 'TS Server', 'Performance']
+---
+
+# TypeScript言語サーバーの問題と解決策
+
+## 発生した問題
+
+- VSCodeで「tsconfig.jsonを初期化しています」という表示が長時間続く
+- TypeScriptのLintエラーが全く表示されなくなる
+- コード補完や型チェックが機能しなくなる
+
+## 原因
+
+TypeScript言語サーバー（TS Server）が正常に機能していない状態に陥っています。以下が主な原因として考えられます：
+
+1. TS Serverがハングしている
+2. プロジェクトサイズが大きすぎてメモリ不足になっている
+3. tsconfig.jsonの設定に問題がある
+4. VSCodeとTypeScript拡張機能の相互作用に問題が発生している
+5. キャッシュが破損している
+
+## 解決策
+
+### 即時解決方法（優先順位順）
+
+1. **TS Serverの再起動**
+   - コマンドパレット（Cmd+Shift+P）を開き、「TypeScript: Restart TS Server」を実行
+   - これが最も簡単かつ効果的な解決策であることが多い
+
+2. **VSCodeの再起動**
+   - VSCodeを完全に終了し、再起動する
+
+3. **VSCodeウィンドウのリロード**
+   - コマンドパレット（Cmd+Shift+P）から「Developer: Reload Window」を実行
+
+### 問題が再発する場合の対処法
+
+4. **TypeScript拡張機能の再インストール**
+   - VSCodeの拡張機能パネルでTypeScript関連の拡張機能を削除して再インストール
+
+5. **キャッシュのクリア**
+   ```bash
+   # Macの場合
+   rm -rf ~/Library/Application\ Support/Code/User/workspaceStorage/
+   # Windowsの場合
+   rm -rf %APPDATA%\Code\User\workspaceStorage\
+   ```
+
+6. **node_modulesの再インストール**
+   ```bash
+   rm -rf node_modules
+   npm install
+   ```
+
+7. **VSCodeの設定チェック**
+   - `settings.json`で以下の設定を確認・修正：
+     ```json
+     "typescript.tsserver.log": "verbose",
+     "typescript.tsserver.maxTsServerMemory": 4096, // メモリ使用量の制限（MB）
+     "typescript.disableAutomaticTypeAcquisition": false
+     ```
+
+## 予防策
+
+1. **プロジェクトの最適化**
+   - 不要な`node_modules`を定期的に整理
+   - `tsconfig.json`の`include`/`exclude`設定を最適化して対象ファイル数を減らす
+
+2. **TypeScriptのバージョン管理**
+   - TypeScriptを最新バージョンに保つ
+   - プロジェクト内のTypeScriptバージョンとVSCodeのTypeScript拡張機能のバージョンを合わせる
+
+3. **定期的なメンテナンス**
+   - 定期的にTS Serverを再起動する習慣をつける
+   - VSCodeとその拡張機能を最新に保つ
+
+## 関連リソース
+
+- [TypeScript Server Performance](https://github.com/microsoft/TypeScript/wiki/Performance)
+- [VSCode TypeScript Performance](https://code.visualstudio.com/docs/languages/typescript#_using-newer-typescript-versions)

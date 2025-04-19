@@ -1,0 +1,17 @@
+{
+  "title": "React",
+  "description": "ユーザーインターフェースを構築するためのJavaScriptライブラリ",
+  "type": "docType",
+  "icon": "/icons/react.svg",
+  "status": "published",
+  "category": "document",
+  "order": 3,
+  "version": "18.0.0",
+  "lastUpdated": "2024-03-15",
+  "maintainers": ["Akimasa Sugai"],
+  "thumbnail": "https://react.dev",
+  "tags": {
+    "type": ["official"],
+    "tech": ["react"]
+  }
+}

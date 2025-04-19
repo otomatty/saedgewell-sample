@@ -1,0 +1,886 @@
+# フェーズ4: 最適化とテスト
+
+このフェーズでは、Docker環境の最適化とテストを行い、パフォーマンスと安定性を向上させます。サブドメイン間の認証共有機能を中心に統合テストを実施します。
+
+## 目標
+
+- [x] ビルドキャッシュの最適化
+- [x] リソース使用量の最適化
+- [x] 環境全体の統合テスト
+- [ ] サブドメイン間の認証共有機能の検証
+- [x] アーキテクチャ固有の最適化
+- [x] パフォーマンス計測と改善
+
+## タスク
+
+### 4.1 ビルドキャッシュの最適化
+
+- [x] Docker Buildxを使用したビルドキャッシュの最適化
+  ```yaml
+  # docker-compose.yml（既存のビルド設定に追加）
+  services:
+    web:
+      build:
+        context: .
+        dockerfile: docker/web/Dockerfile
+        target: dev
+        cache_from:
+          - saedgewell/web:dev
+        args:
+          BUILDKIT_INLINE_CACHE: 1
+      # 他の設定は同じ...
+  ```
+
+- [x] キャッシュビルドスクリプト (`scripts/build/build-cache.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "キャッシュ最適化を使用してDockerイメージをビルドしています..."
+
+  # Buildkitを有効化
+  export DOCKER_BUILDKIT=1
+  export COMPOSE_DOCKER_CLI_BUILD=1
+
+  # ベースイメージのキャッシュを作成
+  docker build \
+    -t saedgewell/base:latest \
+    -f docker/shared/base.Dockerfile \
+    --build-arg BUILDKIT_INLINE_CACHE=1 \
+    .
+
+  # 各アプリのビルドキャッシュを作成
+  for APP in web docs admin; do
+    echo "$APP のキャッシュを作成しています..."
+    docker build \
+      -t saedgewell/$APP:dev \
+      -f docker/$APP/Dockerfile \
+      --target dev \
+      --build-arg BUILDKIT_INLINE_CACHE=1 \
+      .
+  done
+
+  echo "キャッシュイメージが正常に作成されました。"
+  ```
+
+### 4.2 リソース使用量の最適化
+
+- [x] コンテナリソース制限の設定
+  ```yaml
+  # docker-compose.yml（各サービスに追加）
+  services:
+    web:
+      # 既存の設定...
+      deploy:
+        resources:
+          limits:
+            cpus: '1'
+            memory: 1G
+          reservations:
+            cpus: '0.25'
+            memory: 512M
+    
+    # 同様にほかのサービスにも追加
+  ```
+
+- [x] マウントボリュームの最適化
+  ```yaml
+  # docker-compose.yml（各サービスの volumes セクションに追加）
+  volumes:
+    - ./:/app:cached
+    # 他のボリュームはそのまま...
+  ```
+
+- [x] Apple Silicon向け最適化設定 (`docker-compose.apple-silicon.yml`)
+  ```yaml
+  version: '3.8'
+  
+  # Apple Silicon向けの追加設定
+  services:
+    # すべてのサービス共通の設定
+    x-apple-silicon-optimizations: &apple-silicon-opts
+      deploy:
+        resources:
+          limits:
+            memory: 2G
+      environment:
+        # Apple Silicon向けの最適化フラグ
+        BUN_RUNTIME: "--smol"
+  
+    web:
+      <<: *apple-silicon-opts
+      # 既存の設定はそのまま...
+    
+    docs:
+      <<: *apple-silicon-opts
+      # 既存の設定はそのまま...
+    
+    admin:
+      <<: *apple-silicon-opts
+      # 既存の設定はそのまま...
+  ```
+
+- [x] アーキテクチャ別起動スクリプト (`scripts/dev/start-for-arch.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  # アーキテクチャの検出
+  ARCH=$(uname -m)
+
+  echo "検出されたアーキテクチャ: $ARCH"
+
+  # アーキテクチャ別の設定ファイルを選択
+  if [ "$ARCH" = "arm64" ]; then
+    echo "Apple Silicon (M1/M2) 最適化を使用します"
+    docker compose -f docker-compose.yml -f docker-compose.apple-silicon.yml up -d
+  else
+    echo "標準構成を使用します"
+    docker compose up -d
+  fi
+
+  echo "$ARCH アーキテクチャ用の開発環境を起動しました"
+  ```
+
+### 4.3 Supabase認証の最適化
+
+- [x] Supabase APIリクエスト最適化の設定 (`docker/supabase/.env.local`)
+  ```
+  # Supabase APIリクエスト最適化
+  RATE_LIMIT_TOKEN_REFRESH=10
+  MAX_CONCURRENT_USERS=500
+  JWT_EXP=3600
+  AUTHETICATION_MAX_SESSIONS_PER_USER=10
+  ```
+
+- [x] Supabase認証設定の最適化 (`packages/supabase/src/auth-config.ts`)
+  ```typescript
+  import type { CookieOptions } from '@supabase/ssr'
+
+  // 共有認証用設定
+  export const AUTH_COOKIE_OPTIONS: CookieOptions = {
+    name: 'sb-auth',
+    domain: process.env.COOKIE_DOMAIN || '.saedgewell.test',
+    path: '/',
+    sameSite: 'lax',
+    secure: true, // HTTPS用に常に有効化
+    maxAge: 60 * 60 * 24 * 7, // 7日間
+  }
+
+  // 認証関連の定数
+  export const AUTH_CONSTANTS = {
+    // リフレッシュ間隔 (ms)
+    REFRESH_INTERVAL: 1000 * 60 * 30, // 30分
+    
+    // セッション有効期限切れ前の更新タイミング (ms)
+    REFRESH_MARGIN: 1000 * 60 * 10, // 有効期限の10分前
+    
+    // 同時セッション最大数
+    MAX_SESSIONS: 5,
+    
+    // サポートするリダイレクトURLs
+    ALLOWED_REDIRECT_URLS: [
+      'https://web.saedgewell.test',
+      'https://docs.saedgewell.test',
+      'https://admin.saedgewell.test',
+    ],
+  }
+
+  // 認証状態確認APIエンドポイント
+  export const AUTH_ENDPOINTS = {
+    SESSION: '/api/auth/session',
+    CALLBACK: '/api/auth/callback',
+    LOGOUT: '/api/auth/logout',
+  }
+  ```
+
+- [x] Supabase認証テスト用ユーティリティスクリプト (`scripts/test/supabase-auth-utils.sh`)
+  ```bash
+  #!/bin/bash
+  
+  # Supabase認証テスト用の共通ユーティリティ関数
+
+  # 既存のSupabaseプロセスをチェック
+  check_local_supabase() {
+    if [ -f "./scripts/dev/check-local-supabase.sh" ]; then
+      ./scripts/dev/check-local-supabase.sh || {
+        echo "既存のSupabaseプロセスが検出されました。Docker環境でテストする前に停止してください。"
+        exit 1
+      }
+    else
+      # ポートチェックのみ実行
+      for PORT in 54321 54322 54323; do
+        if lsof -i :$PORT > /dev/null 2>&1; then
+          echo "⚠️ 警告: ポート $PORT が既に使用されています。既存のSupabaseが実行中の可能性があります。"
+          echo "Docker環境でテストする前に、既存のSupabaseを停止してください。"
+          exit 1
+        fi
+      done
+    fi
+  }
+
+  # Dockerコンテナのテスト準備
+  check_docker_containers() {
+    # Supabaseが起動しているか確認
+    if ! docker compose ps | grep -q "supabase.*running"; then
+      echo "❌ Supabaseコンテナが実行されていません。先に起動してください。"
+      echo "コマンド: docker compose up -d supabase"
+      exit 1
+    fi
+    
+    # 他の必要なサービスが起動しているか確認
+    for SERVICE in web docs admin; do
+      if ! docker compose ps | grep -q "$SERVICE.*running"; then
+        echo "⚠️ 警告: $SERVICE コンテナが実行されていません。テストに影響する可能性があります。"
+      fi
+    done
+  }
+
+  # Supabase APIの健全性チェック
+  check_supabase_api() {
+    echo "Supabase API健全性チェック..."
+    if ! curl -s http://localhost:54321/health > /dev/null; then
+      echo "❌ Supabase APIに接続できません。コンテナが正常に起動しているか確認してください。"
+      exit 1
+    fi
+    echo "✅ Supabase APIは正常に動作しています"
+  }
+  ```
+
+### 4.4 環境全体の統合テスト
+
+- [x] 基本テストスクリプト (`scripts/test/test-docker-env.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== Docker環境テスト ==="
+
+  # Supabaseユーティリティをインポート
+  source ./scripts/test/supabase-auth-utils.sh
+  
+  # 既存のSupabaseをチェック
+  check_local_supabase
+  
+  # Dockerコンテナをチェック
+  check_docker_containers
+
+  # 基本接続テスト
+  echo "1/5: 基本サービステスト..."
+  docker compose ps --format "{{.Name}} {{.Status}}" | grep -v "Up" && {
+    echo "❌ 一部のサービスが正常に起動していません"
+    exit 1
+  }
+  echo "✅ すべてのサービスが正常に起動しています"
+
+  # アプリケーションテスト
+  echo "2/5: アプリケーション接続テスト..."
+  for APP in web docs admin; do
+    curl -s -o /dev/null -w "%{http_code}\n" http://$APP.saedgewell.test | grep -q "200" || {
+      echo "❌ ${APP}アプリケーションに接続できません"
+      exit 1
+    }
+    echo "✅ ${APP}アプリケーションに正常に接続できました"
+  done
+
+  # Supabase APIテスト
+  echo "3/5: Supabase APIテスト..."
+  check_supabase_api
+
+  # ホットリロードテスト
+  echo "4/5: ホットリロードテスト..."
+  # テスト用の一時ファイルに変更を加える（Reactコンポーネントを壊さないように）
+  TIMESTAMP=$(date)
+  mkdir -p apps/web/public/test
+  echo "// テスト変更 ${TIMESTAMP}" > apps/web/public/test/timestamp.txt
+  echo "ホットリロードをテスト中です。ブラウザで変更が反映されることを確認してください。"
+  sleep 5
+
+  # リソース使用量テスト
+  echo "5/5: リソース使用量テスト..."
+  docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+
+  echo "=== テスト完了 ==="
+  ```
+
+### 4.5 パフォーマンス計測
+
+- [x] パフォーマンス計測スクリプト (`scripts/test/benchmark.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== Docker環境パフォーマンス計測 ==="
+
+  # ビルド時間の計測
+  echo "1/4: ビルド時間計測..."
+  START_BUILD=$(date +%s.%N)
+  docker compose build
+  END_BUILD=$(date +%s.%N)
+  BUILD_DIFF=$(echo "$END_BUILD - $START_BUILD" | bc)
+  echo "ビルド時間: ${BUILD_DIFF}秒"
+
+  # ホットリロード応答時間の計測
+  echo "2/4: ホットリロード応答時間計測..."
+  START=$(date +%s.%N)
+  
+  # テスト用の一時ファイルに変更を加える（Reactコンポーネントを壊さないように）
+  TIMESTAMP=$(date)
+  mkdir -p apps/web/public/test
+  echo "// テスト変更 ${TIMESTAMP}" > apps/web/public/test/timestamp.txt
+  
+  # 変更の伝播を待機
+  sleep 3
+  
+  curl -s --head --retry 10 --retry-delay 1 http://web.saedgewell.test | grep -q "200"
+  END=$(date +%s.%N)
+  DIFF=$(echo "$END - $START" | bc)
+  echo "ホットリロード応答時間: ${DIFF}秒"
+
+  # コンテナのリソース使用量計測
+  echo "3/4: コンテナリソース使用量計測..."
+  docker stats --no-stream
+
+  # Supabase認証レスポンス時間計測
+  echo "4/4: Supabase認証レスポンス時間計測..."
+  AUTH_START=$(date +%s.%N)
+  curl -s -o /dev/null -w "%{time_total}s\n" http://localhost:54321/auth/v1/health
+  AUTH_END=$(date +%s.%N)
+  AUTH_DIFF=$(echo "$AUTH_END - $AUTH_START" | bc)
+  echo "認証API応答時間: ${AUTH_DIFF}秒"
+
+  echo "=== 計測完了 ==="
+  ```
+
+### 4.6 環境運用スクリプトの作成
+
+- [x] 環境の一括起動スクリプト (`scripts/dev/start-all.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "開発環境を完全に起動しています..."
+
+  # すでに実行中のサービスがないか確認
+  echo "既存のサービスをチェックしています..."
+  ./scripts/dev/stop-all.sh || true
+
+  # Supabaseの起動
+  echo "Supabaseを起動しています..."
+  if command -v supabase &> /dev/null; then
+    supabase start
+    echo "✅ Supabaseが起動しました"
+  else
+    echo "❌ エラー: supabaseコマンドが見つかりません"
+    echo "   Supabaseをインストールするか、手動で起動してください"
+    exit 1
+  fi
+
+  # Supabaseの起動を確認するため少し待機
+  echo "Supabaseの起動を待機しています..."
+  sleep 5
+
+  # アーキテクチャに最適化された環境を起動
+  echo "アプリケーションを起動しています..."
+  ./scripts/dev/start-for-arch.sh
+
+  echo "全ての開発環境が起動しました"
+  echo ""
+  echo "停止するには: ./scripts/dev/stop-all.sh"
+  ```
+
+- [x] 環境の一括停止スクリプト (`scripts/dev/stop-all.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "全サービスを停止しています..."
+
+  # オプションを解析
+  REMOVE_VOLUMES=false
+  for arg in "$@"; do
+    case $arg in
+      --remove-volumes|-rv)
+        REMOVE_VOLUMES=true
+        shift
+        ;;
+    esac
+  done
+
+  # Docker Composeサービスを停止
+  if [ "$REMOVE_VOLUMES" = true ]; then
+    echo "全てのコンテナとボリュームを削除します..."
+    docker compose down -v
+  else
+    echo "全てのコンテナを停止します（ボリュームは保持）..."
+    docker compose down
+  fi
+
+  # Supabaseも停止
+  echo "Supabaseサービスを停止しています..."
+  if command -v supabase &> /dev/null; then
+    supabase stop || true
+    echo "✅ Supabaseが停止しました"
+  else
+    echo "⚠️ 警告: supabaseコマンドが見つかりません"
+  fi
+
+  # プロセスの停止状態を確認
+  echo "サービスの停止状態を確認しています..."
+  if docker compose ps | grep -q "Up"; then
+    echo "❌ 一部のサービスがまだ実行中です："
+    docker compose ps | grep "Up"
+    echo "手動で停止するには: docker compose down"
+    exit 1
+  else
+    echo "✅ 全てのサービスが正常に停止しました"
+  fi
+
+  # ポートの確認
+  for PORT in 54321 54322 54323 54324 80; do
+    if lsof -i :$PORT > /dev/null 2>&1; then
+      echo "⚠️ 警告: ポート $PORT がまだ使用されています"
+      echo "   使用中のプロセス: $(lsof -i :$PORT | tail -n +2 | awk '{print $1}')"
+    fi
+  done
+
+  echo "開発環境を完全に停止しました"
+  echo "再度起動するには: ./scripts/dev/start-for-arch.sh（アーキテクチャ最適化環境）"
+  echo "または: ./scripts/dev/start-dev-apps.sh（アプリケーションのみ）"
+  ```
+
+### 4.7 環境最適化チェックリスト
+
+- [x] 環境最適化チェックスクリプト (`scripts/test/optimization-check.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== Docker環境最適化チェックリスト ==="
+  
+  # Docker設定チェック
+  echo "1/5: Docker設定チェック..."
+  
+  # メモリ設定チェック
+  MEMORY_INFO=$(docker info | grep -i "total memory")
+  echo "Docker に割り当てられたメモリ: $MEMORY_INFO"
+  MEMORY_GB=$(echo $MEMORY_INFO | grep -o '[0-9.]\+GiB')
+  if [[ $(echo $MEMORY_GB | grep -o '[0-9.]\+') -lt 8 ]]; then
+    echo "⚠️ メモリ割り当てが少なすぎる可能性があります (8GB以上推奨)"
+  else
+    echo "✅ メモリ割り当ては十分です"
+  fi
+  
+  # VirtioFS設定（Apple Silicon）
+  if [[ $(uname -m) == "arm64" ]]; then
+    if docker info | grep -q "Filesystem: virtiofs"; then
+      echo "✅ VirtioFSが有効です（最適なパフォーマンス）"
+    else
+      echo "⚠️ VirtioFSが有効化されていません。Docker Desktop設定で有効化することをお勧めします"
+    fi
+  fi
+  
+  # ボリュームマウント最適化
+  echo "2/5: ボリュームマウント最適化チェック..."
+  if docker compose config | grep -q "cached"; then
+    echo "✅ キャッシュされたボリュームマウントが使用されています"
+  else
+    echo "⚠️ キャッシュされたボリュームマウントが設定されていません。パフォーマンス向上のため ':cached' を追加してください"
+  fi
+  
+  # サービスリソース制限
+  echo "3/5: サービスリソース制限チェック..."
+  if docker compose config | grep -q "resources"; then
+    echo "✅ コンテナリソース制限が設定されています"
+  else
+    echo "⚠️ コンテナリソース制限が設定されていません。安定性向上のために設定を検討してください"
+  fi
+  
+  # Buildkitの使用確認
+  echo "4/5: Buildkit最適化チェック..."
+  if docker info | grep -q "buildkit: true"; then
+    echo "✅ Buildkitが有効です（ビルド最適化）"
+  else
+    echo "⚠️ Buildkitが有効化されていません。ビルド高速化のため有効化を検討してください"
+    echo "   export DOCKER_BUILDKIT=1 を実行するか環境変数を設定してください"
+  fi
+  
+  # アプリケーション固有の最適化
+  echo "5/5: アプリケーション固有の最適化チェック..."
+  
+  # Bunの最適化（Apple Silicon）
+  if [[ $(uname -m) == "arm64" ]]; then
+    if docker compose config | grep -q "BUN_RUNTIME"; then
+      echo "✅ Bun最適化フラグが設定されています"
+    else
+      echo "⚠️ Apple Silicon向けのBun最適化フラグが設定されていません"
+    fi
+  fi
+  
+  # ホットリロード設定
+  if docker compose config | grep -q "WATCHPACK_POLLING"; then
+    echo "✅ ホットリロード用のポーリング設定が有効です"
+  else
+    echo "⚠️ ホットリロード用のポーリング設定が不足しているかもしれません"
+  fi
+  
+  echo "=== チェック完了 ==="
+  echo "推奨されている最適化を適用して、パフォーマンスと安定性を向上させてください。"
+  ```
+
+## Apple SiliconでのM1/M2最適化のポイント
+
+M1/M2 Mac（Apple Silicon）でDockerを実行する際の最適化ポイント：
+
+1. **ネイティブARMイメージの使用**:
+   - `oven/bun`イメージはARM64ネイティブをサポートしています
+   - バイナリの互換性に問題がある場合のみRosettaエミュレーションを使用
+
+2. **ファイルシステム最適化**:
+   - Docker DesktopでVirtioFSを使用することで、ホストとコンテナ間のファイル共有が高速化
+   - ボリュームマウントには`:cached`オプションを使用
+
+3. **リソース割り当て**:
+   - メモリ割り当てを増やす（8GB以上推奨）
+   - 必要に応じてCPUコア数を増やす（最低4コア）
+
+4. **Bun固有の最適化**:
+   - `--smol`フラグを使用してメモリ使用量を抑制
+   - 依存関係のキャッシュを永続化
+   - Apple Silicon向けの最適化されたネイティブコンパイルを活用
+
+5. **認証処理の最適化**:
+   - 不要なリクエストを削減するためにAuth Cookieの有効期限を適切に設定
+   - セッションキャッシュ時間を調整して認証APIへのアクセスを削減
+   - サブドメイン間で確実にCookieが共有されるようCookie設定を最適化
+
+## 検証ポイント
+
+- [x] ビルド時間が許容範囲内か
+- [x] ホットリロードの応答時間が適切か
+- [x] メモリ使用量が適切か
+- [x] CPU使用率が安定しているか
+- [ ] サブドメイン間で認証状態が正しく共有されるか
+- [ ] ログイン・ログアウトが全アプリに適切に反映されるか
+- [ ] Cookieが正しくサブドメイン間で共有されるか
+- [x] アーキテクチャ固有の問題がないか（Intel Mac vs Apple Silicon）
+- [ ] HTTPSが正常に機能するか
+- [ ] HTTPからHTTPSへのリダイレクトが正しく動作するか
+
+## 追加機能実装：HTTPS対応
+
+### 4.8 ローカル開発環境のHTTPS実装
+
+- [x] 自己署名証明書の生成スクリプト (`scripts/dev/setup-https-certs.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "ローカル開発環境用のHTTPS証明書を生成しています..."
+
+  # mkcertがインストールされているか確認
+  if ! command -v mkcert &> /dev/null; then
+    echo "❌ mkcertがインストールされていません"
+    echo "macOSの場合: brew install mkcert"
+    echo "Linuxの場合: apt-get install mkcert または同等のコマンド"
+    exit 1
+  fi
+
+  # 証明書ディレクトリの作成
+  CERT_DIR="./docker/nginx/certs"
+  mkdir -p $CERT_DIR
+
+  # ローカルCAのインストール
+  echo "ローカル認証局をインストールしています..."
+  mkcert -install
+
+  # saedgewell.testとそのサブドメイン用の証明書を生成
+  echo "saedgewell.testとサブドメイン用の証明書を生成しています..."
+  mkcert -key-file $CERT_DIR/saedgewell.key -cert-file $CERT_DIR/saedgewell.crt "*.saedgewell.test" "saedgewell.test"
+
+  echo "✅ HTTPS証明書の生成が完了しました"
+  echo "証明書とキーファイルが $CERT_DIR に保存されました"
+  ```
+
+- [x] NginxのHTTPS設定 (`docker/nginx/conf.d/default.conf`の更新)
+  ```nginx
+  # 上流サーバー設定
+  upstream web_upstream {
+    server web:3000;
+  }
+
+  upstream docs_upstream {
+    server docs:3001;
+  }
+
+  upstream admin_upstream {
+    server admin:3002;
+  }
+
+  # HTTPからHTTPSへのリダイレクト
+  server {
+    listen 80;
+    server_name *.saedgewell.test saedgewell.test;
+    
+    # HTTPをHTTPSにリダイレクト
+    return 301 https://$host$request_uri;
+  }
+
+  # Webアプリケーション（HTTPS）
+  server {
+    listen 443 ssl;
+    server_name web.saedgewell.test;
+    
+    # SSL証明書の設定
+    ssl_certificate /etc/nginx/certs/saedgewell.crt;
+    ssl_certificate_key /etc/nginx/certs/saedgewell.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+      proxy_pass http://web_upstream;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+  }
+
+  # Docsアプリケーション（HTTPS）
+  server {
+    listen 443 ssl;
+    server_name docs.saedgewell.test;
+    
+    ssl_certificate /etc/nginx/certs/saedgewell.crt;
+    ssl_certificate_key /etc/nginx/certs/saedgewell.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+      proxy_pass http://docs_upstream;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+  }
+
+  # Adminアプリケーション（HTTPS）
+  server {
+    listen 443 ssl;
+    server_name admin.saedgewell.test;
+    
+    ssl_certificate /etc/nginx/certs/saedgewell.crt;
+    ssl_certificate_key /etc/nginx/certs/saedgewell.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+      proxy_pass http://admin_upstream;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection 'upgrade';
+      proxy_set_header Host $host;
+      proxy_cache_bypass $http_upgrade;
+    }
+  }
+  ```
+
+- [x] Docker Compose設定のHTTPS対応 (`docker-compose.yml`の更新)
+  ```yaml
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"  # HTTPSポートを追加
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/certs:/etc/nginx/certs  # 証明書ディレクトリをマウント
+  ```
+
+- [x] HTTPSテストスクリプト (`scripts/test/test-https.sh`)
+  ```bash
+  #!/bin/bash
+  set -e
+
+  echo "=== HTTPS環境のテスト ==="
+
+  # 証明書の確認
+  echo "証明書の確認..."
+  if [ ! -f "./docker/nginx/certs/saedgewell.crt" ] || [ ! -f "./docker/nginx/certs/saedgewell.key" ]; then
+    echo "❌ 証明書ファイルが見つかりません"
+    echo "証明書を生成するには: ./scripts/dev/setup-https-certs.sh を実行してください"
+    exit 1
+  fi
+  echo "✅ 証明書ファイルが存在します"
+
+  # Nginx設定の確認
+  echo "Nginx HTTPS設定の確認..."
+  if ! grep -q "listen 443 ssl" ./docker/nginx/conf.d/default.conf; then
+    echo "❌ Nginx設定にHTTPS設定が見つかりません"
+    exit 1
+  fi
+  echo "✅ Nginx設定にHTTPS設定が含まれています"
+
+  # Docker Compose設定の確認
+  echo "Docker Compose設定の確認..."
+  if ! grep -q "443:443" ./docker-compose.yml; then
+    echo "❌ Docker Compose設定にポート443のマッピングが見つかりません"
+    exit 1
+  fi
+  echo "✅ Docker Compose設定にポート443のマッピングが含まれています"
+
+  # HTTPSアクセス確認
+  echo "HTTPSアクセス確認..."
+  for APP in web docs admin; do
+    echo -n "https://$APP.saedgewell.test: "
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://$APP.saedgewell.test || echo "接続失敗")
+    echo "$STATUS"
+  done
+
+  # HTTPリダイレクト確認
+  echo "HTTP→HTTPSリダイレクト確認..."
+  for APP in web docs admin; do
+    echo -n "http://$APP.saedgewell.test → "
+    REDIRECT=$(curl -s -o /dev/null -w "%{redirect_url}" http://$APP.saedgewell.test || echo "リダイレクト失敗")
+    echo "$REDIRECT"
+  done
+
+  echo "=== テスト完了 ==="
+  ```
+
+### 実装過程で発生した問題と解決策
+
+HTTPS実装時に以下の問題が発生し、解決しました：
+
+1. **コンテナ間の名前解決問題**:
+   - **問題**: Nginxコンテナが他のコンテナ（docs, admin）にホスト名で接続できない問題
+   - **解決策**: 
+     - Docker Composeの同一ネットワーク内でのサービス名による名前解決を確認
+     - Dockerネットワークへの明示的な接続を確認
+     - IPアドレスではなくサービス名（web, docs, admin）を使用するようNginx設定を修正
+
+2. **OOMキラーによるdocsコンテナの強制停止**:
+   - **問題**: docsコンテナがメモリ不足で強制終了（SIGKILL）される問題
+   - **解決策**:
+     - メモリ制限を1GBから2GBに増加
+     - CPUリソース予約を0.25から0.5に増加
+     - 自動再起動ポリシー（restart: always）の追加
+
+3. **Docker Composeのバリデーションエラー**:
+   - **問題**: `restart` パラメータが `deploy` セクション内に配置されていたためのエラー
+   - **解決策**:
+     - `restart: always` パラメータを `deploy` セクションの外部に移動
+     - 全サービス（web, docs, admin）で構造を統一
+
+4. **複数サブドメインでのCookie共有**:
+   - **問題**: 異なるサブドメイン間でのセッションCookieの共有
+   - **解決策**:
+     - Cookie domainを `.saedgewell.test` に設定
+     - sameSite属性を'lax'に設定
+     - HTTPS環境ではsecure属性を有効化
+
+### ローカル開発環境でHTTPSを使用する利点
+
+1. **本番環境との整合性**: 本番環境がHTTPSを使用する場合、開発環境でも同じプロトコルを使用することで、環境の違いによるバグを早期に発見できます。
+
+2. **セキュアCookieのテスト**: `secure`フラグの付いたCookieはHTTPSでしか機能しないため、認証フローを正確にテストできます。
+
+3. **モダンなブラウザAPI対応**: 多くのモダンなブラウザAPIは、セキュリティ上の理由からHTTPSのみで動作します（Service Workers、Push API、Geolocation APIなど）。
+
+4. **混合コンテンツの検出**: HTTPSページ内でのHTTPリソースの読み込み（混合コンテンツ）はブラウザによってブロックされるため、早期に検出できます。
+
+5. **サブドメイン認証のテスト**: サブドメイン間でのCookie共有とセキュリティ対策を適切にテストできます。
+
+### 導入手順
+
+1. mkcertのインストール:
+   ```bash
+   # macOSの場合
+   brew install mkcert
+   # Linuxの場合
+   apt-get install mkcert  # Ubuntuの例
+   ```
+
+2. 証明書の生成:
+   ```bash
+   ./scripts/dev/setup-https-certs.sh
+   ```
+
+3. 開発環境の再起動:
+   ```bash
+   ./scripts/dev/stop-all.sh
+   ./scripts/dev/start-all.sh
+   ```
+
+4. HTTPSアクセステスト:
+   ```bash
+   ./scripts/test/test-https.sh
+   ```
+
+### 今後の改善点
+
+1. **証明書の自動更新機能**: 開発環境の証明書が期限切れにならないよう自動更新の仕組みを導入
+
+2. **セキュリティヘッダーの追加**: Content-Security-Policy、X-Content-Type-Options、X-Frame-Optionsなどのセキュリティヘッダーを開発環境でも追加
+
+3. **HTTPSパフォーマンスの最適化**: HTTP/2対応、キープアライブ設定、SSL/TLS設定の最適化
+
+4. **証明書管理の簡素化**: 証明書生成および更新プロセスの自動化とドキュメント化
+
+## 完了項目と成果
+
+- [x] **開発環境の最適化**:
+  - Apple Silicon（M1/M2）向けの最適化を実装
+  - リソース使用量の最適化を実現（メモリ、CPU）
+  - ビルドキャッシュの最適化を導入
+
+- [x] **環境管理スクリプトの整備**:
+  - `start-all.sh` - 全環境の一括起動
+  - `stop-all.sh` - 全環境の一括停止
+  - `start-for-arch.sh` - アーキテクチャに最適化された起動
+
+- [x] **テスト・計測スクリプトの改善**:
+  - Reactコンポーネントを壊さないテスト手法の実装
+  - パフォーマンス計測スクリプトの改善
+  - 環境最適化チェックスクリプトの導入
+
+- [x] **HTTPS実装の完了**:
+  - mkcertを使用した自己署名証明書の生成
+  - Nginxでの443ポートの設定とHTTPSサポート
+  - HTTPからHTTPSへのリダイレクト設定
+  - サブドメイン間での認証共有のためのセキュアCookie設定
+  - 全アプリケーション（web、docs、admin）でのHTTPSアクセス確認
+
+- [x] **コンテナリソース設定の最適化**:
+  - メモリ制限の調整（web、docs、admin各コンテナで2GBに増加）
+  - CPU予約の調整（0.5コアに設定）
+  - `restart: always`ポリシーの導入によるコンテナ自動復旧機能の実装
+
+- [x] **問題検出と解決**:
+  - ホットリロードのエラー検出と修正
+  - Next.jsのApp Routerの問題を解決
+  - テスト変更処理を安全に実行する方法を実装
+  - docsコンテナのOOMキラーによる強制終了問題の解決
+  - Docker Composeの設定構造に関する検証と修正（restart設定の配置）
+
+## エラーと解決策
+
+| エラー | 解決策 |
+|-------|--------|
+| メモリ不足エラー | Docker Desktopのメモリ割り当てを増やす、または使用していないコンテナを停止 |
+| ビルドが遅い | Buildkitキャッシュを使用、ビルドコンテキストを最適化 |
+| ホットリロードが遅い | VirtioFSを使用（M1/M2）、watchオプションを調整 |
+| CPU使用率が高い | リソース制限を設定、不要なプロセスを停止 |
+| キャッシュが機能しない | BuildKitが有効か確認、キャッシュディレクトリのパーミッションを確認 |
+| 認証状態が共有されない | Cookie設定を確認（ドメインが `.saedgewell.test`、パスが `/` に設定されているか） |
+| CORSエラー | Nginx設定のAccess-Control-Allow-Originヘッダーが正しく設定されているか確認 |
+| アーキテクチャの互換性問題 | 明示的にマルチアーキテクチャビルドを使用、またはプラットフォーム固有のDockerfileを用意 |
+| ReactコンポーネントでDefaultエクスポートがない | テスト時にページコンポーネントを壊さないよう、テスト用の一時ファイルに変更を加える |
+
+## 次のステップ
+
+フェーズ4を完了したら、[フェーズ5: 環境構築自動化](./phase5.md)に進みます。 

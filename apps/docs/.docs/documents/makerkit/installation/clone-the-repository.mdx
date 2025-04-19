@@ -1,0 +1,161 @@
+---
+title: 'リポジトリのクローン'
+description: 'Next.js Supabase SaaS Kit Turboリポジトリをローカルマシンにクローンする方法'
+icon: 'git-branch'
+order: 4
+---
+
+# Next.js Supabase SaaS Kit Turboリポジトリのクローン
+
+Next.js Supabase SaaS Kit Turboリポジトリをローカルマシンにクローンします。
+
+## 前提条件
+
+Makerkitを始めるには、以下の前提条件がインストールされ、設定されていることを確認してください：
+
+- Node.js 18.x以降（Node.js 20.x以降を使用することを推奨）
+- Docker
+- PNPM
+- 決済ゲートウェイアカウント（StripeまたはLemon Squeezy）
+- メールサービスアカウント（ローカル開発ではオプション）
+
+### なぜDockerが必要なのか？
+
+Dockerはローカルでのsupabaseの実行に必要です。これは厳密な要件ではありませんが、ローカル開発にはDockerを使用することをお勧めします。Supabaseを使用するためにDockerを知る必要はなく、サービスをローカルで起動できるように実行しておくだけで十分です。
+
+## SSHで設定されたGithubを用意する
+
+SSHを使用してリポジトリをクローンするには、GithubアカウントがSSHで設定されている必要があります。設定されていない場合は、公式ドキュメントを参照して設定してください。
+
+あるいは、HTTPSを使用してリポジトリをクローンすることもできます。例えば、`git clone https://github.com/makerkit/next-supabase-saas-kit-turbo`。
+
+もう一つの選択肢として、Github CLIまたはGithub Desktopを使用してリポジトリをクローンすることもできます。
+
+## Gitユーザー名の確認
+
+アクセス権があることを確認するには、ローカルのGitユーザー名がMakerkitのGithub組織で設定されているものと同じであることを確認する必要があります。
+
+以下のコマンドを実行して、Gitユーザー名を確認してください：
+
+```bash
+git config user.username
+```
+
+出力がGithubユーザー名でない場合、またはMakerkitのGithub組織に登録されているユーザー名と一致しない場合は、以下のコマンドを使用して設定できます：
+
+```bash
+git config --global user.username <your-github-username>
+```
+
+注意：`<your-github-username>`を引用符で囲んだ実際のGithubユーザー名に置き換える必要があります。
+
+例えば、Githubユーザー名が「johndoe」の場合、以下のコマンドを使用して設定できます：
+
+```bash
+git config --global user.username "johndoe"
+```
+
+これはリポジトリを実行できるようにするために重要です。
+
+## リポジトリのクローン
+
+以下のコマンドを使用してリポジトリをクローンします：
+
+```bash
+git clone git@github.com:makerkit/next-supabase-saas-kit-turbo
+```
+
+注意：SSHキーが設定されていない場合は、代わりにHTTPSを使用してください：
+
+```bash
+git clone https://github.com/makerkit/next-supabase-saas-kit-turbo
+```
+
+### Windowsユーザー：リポジトリをドライブのルート近くに配置する
+
+一部のWindowsユーザーは、非常に長いパスのために特定のモジュールの読み込み時にエラーが発生します。これを避けるために、リポジトリをドライブのルート近くに配置してみてください。
+
+Node.jsで問題が発生する可能性があるため、OneDriveの使用は避けてください。
+
+### 重要：SSHを使用していない場合は、すべてのコマンドにHTTPSを使用する
+
+SSHを使用していない場合は、クローンコマンドだけでなく、すべてのGitコマンドでHTTPSを使用するようにしてください。
+
+## Gitリモートの設定
+
+リポジトリをクローンした後、元のoriginリモートを削除します：
+
+```bash
+git remote rm origin
+```
+
+更新を取得するために、元のリポジトリを指すupstreamリモートを追加します：
+
+```bash
+git remote add upstream git@github.com:makerkit/next-supabase-saas-kit-turbo
+```
+
+独自のリポジトリを設定したら、あなたのリポジトリをoriginとして追加します：
+
+```bash
+git remote add origin <your-repository-url>
+```
+
+## リポジトリを最新の状態に保つ
+
+upstreamリポジトリから更新を取得するには、毎日（できれば朝のコーヒーと一緒に☕）以下のコマンドを実行します：
+
+```bash
+git pull upstream main
+```
+
+これにより、リポジトリが最新の変更と同期されます。
+
+## 0.1. Pnpmのインストール
+
+以下のコマンドでPnpmをグローバルにインストールします：
+
+```bash
+npm i -g pnpm
+```
+
+## 1. 依存関係のセットアップ
+
+プロジェクトに必要な依存関係をインストールします：
+
+```bash
+pnpm i
+```
+
+これらの手順を完了すると、開発環境がセットアップされ、準備が整います！🚀
+
+## 2. マージ後のフック
+
+upstreamリポジトリから更新を取得した後、以下のコマンドを実行すると非常に便利です：
+
+```bash
+pnpm i
+```
+
+これにより、新しい依存関係がインストールされ、プロジェクトが最新の状態になります。マージ後のフックを設定することで、更新を取得した後に自動的にこのコマンドを実行できます。
+
+`.git/hooks`ディレクトリに`post-merge`という名前の新しいファイルを作成します：
+
+```bash
+touch .git/hooks/post-merge
+```
+
+`post-merge`ファイルに以下の内容を追加します：
+
+```bash
+#!/bin/bash
+pnpm i
+```
+
+`post-merge`ファイルを実行可能にします：
+
+```bash
+chmod +x .git/hooks/post-merge
+```
+
+これで、upstreamリポジトリから更新を取得するたびに、`pnpm i`コマンドが自動的に実行され、プロジェクトが最新の状態になります。これにより、常に最新の変更と依存関係で作業でき、古い依存関係から生じる可能性のあるエラーを回避できます。

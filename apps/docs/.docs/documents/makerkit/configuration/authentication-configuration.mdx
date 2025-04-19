@@ -1,0 +1,126 @@
+---
+title: '認証設定の構成'
+description: 'Next.js Supabaseアプリケーションの認証設定のセットアップ方法を学びます'
+icon: 'lock'
+order: 3
+---
+
+# 認証設定の構成
+
+Makerkitは3つの異なる認証方法をサポートしています：
+
+- **パスワード** - 従来のメール/パスワード方式、デフォルトで`true`に設定
+- **マジックリンク** - マジックリンク認証、デフォルトで`false`に設定
+- **OAuth** - OAuthプロバイダー、デフォルトではGoogle認証を設定
+
+認証設定は`apps/web/config/auth.config.ts`で設定されています。
+
+推奨されるのは、この設定を直接更新するのではなく、以下の環境変数を定義してデフォルトの動作をオーバーライドすることです。設定は`AuthConfigSchema`というZodスキーマを使用して検証されるため、何か問題があればエラーが表示されます。
+
+```ts
+const authConfig = AuthConfigSchema.parse({
+  // 注意: これは公開キーなので、公開しても安全です。
+  // Supabaseダッシュボードから値をコピーしてください。
+  captchaTokenSiteKey: process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
+  // サインアップ時に利用規約のチェックボックスを表示するかどうか
+  displayTermsCheckbox:
+    process.env.NEXT_PUBLIC_DISPLAY_TERMS_AND_CONDITIONS_CHECKBOX === 'true',
+  // 注意: 本番プロジェクトではSupabaseコンソールで
+  // 以下のプロバイダーを有効にしてください
+  providers: {
+    password: process.env.NEXT_PUBLIC_AUTH_PASSWORD === 'true',
+    magicLink: process.env.NEXT_PUBLIC_AUTH_MAGIC_LINK === 'true',
+    oAuth: ['google'],
+  },
+} satisfies z.infer<typeof AuthConfigSchema>);
+```
+
+例えば、パスワード認証からマジックリンク認証に切り替えたい場合は、以下の変数を設定します：
+
+```
+NEXT_PUBLIC_AUTH_PASSWORD=false
+NEXT_PUBLIC_AUTH_MAGIC_LINK=true
+```
+
+## サードパーティプロバイダー
+
+UIにサードパーティプロバイダーを表示するには、表示したいプロバイダーを含むように`oAuth`配列を設定する必要があります。デフォルトはGoogleです。
+
+```ts
+providers: {
+  oAuth: ['google'],
+}
+```
+
+設定はMakerkit側ではなく、Supabase側で行われます。
+
+サードパーティプロバイダーは、プロバイダー側とSupabase側で完全に設定、管理、有効化する必要があります。Makerkitでは、UIに表示するプロバイダーを設定する以外の設定は必要ありません。
+
+サードパーティプロバイダーの設定方法については、[Supabaseのドキュメント](https://supabase.com/docs/guides/auth/social-login)を参照してください。
+
+ローカル開発については、[ローカルでOAuthプロバイダーを設定する方法に関するSupabaseのドキュメント](https://supabase.com/docs/guides/auth/social-login/auth-github#localhost-urls)も確認してください。
+
+## スコープ
+
+スコープは、ユーザーから特定の権限を要求するために使用されます。異なるプロバイダーは異なるスコープをサポートし、要求します。
+
+必要なスコープを追加するには、`OAuthProviders`コンポーネントで指定してください。
+
+`packages/features/auth/src/components/oauth-providers.tsx`
+
+```tsx
+/**
+ * @name OAUTH_SCOPES
+ * @description
+ * OAuthスコープは、アプリケーションがユーザーに要求する権限を指定するために使用されます。
+ *
+ * ここにOAuthプロバイダーと使用したいスコープを追加してください。
+ *
+ * @see https://supabase.com/docs/guides/auth/social-login
+ */
+const OAUTH_SCOPES: Partial<Record<Provider, string>> = {
+  azure: 'email',
+  // ここにOAuthプロバイダーを追加
+};
+```
+
+例えば、ユーザーのメールアドレスを要求したい場合は、Googleプロバイダーに`email`スコープを追加できます。
+
+`packages/features/auth/src/components/oauth-providers.tsx`
+
+```tsx
+const OAUTH_SCOPES: Partial<Record<Provider, string>> = {
+  azure: 'email',
+  google: 'email',
+};
+```
+
+## パスワード要件
+
+パスワード要件を設定するには、以下の環境変数を設定できます：
+
+```
+NEXT_PUBLIC_PASSWORD_REQUIRE_UPPERCASE=true
+NEXT_PUBLIC_PASSWORD_REQUIRE_NUMBERS=true
+NEXT_PUBLIC_PASSWORD_REQUIRE_SPECIAL_CHARS=true
+```
+
+上記の設定により、以下のルールが適用されます：
+
+- 少なくとも1つの大文字
+- 少なくとも1つの数字
+- 少なくとも1つの特殊文字
+
+## 利用規約の表示
+
+サインアップ時に利用規約のチェックボックスを表示するには、以下の環境変数を設定します：
+
+```
+NEXT_PUBLIC_DISPLAY_TERMS_AND_CONDITIONS_CHECKBOX=true
+```
+
+これはデフォルトではオフになっています。
+
+## MFA（多要素認証）
+
+RLS（行レベルセキュリティ）のためにMFAを強制するには、[Supabaseのドキュメント](https://supabase.com/docs/guides/auth/auth-mfa)に従ってRLSポリシーをカスタマイズする必要があります。

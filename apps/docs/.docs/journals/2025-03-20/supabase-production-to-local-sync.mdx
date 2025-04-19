@@ -1,0 +1,126 @@
+---
+title: 'Supabase本番環境からローカル環境へのデータ同期手順'
+description: '本番環境のSupabaseデータベースのデータをローカル開発環境に同期し、同じデータを使用して開発を行うための手順'
+date: '2025-03-20'
+author: 'Akimasa Sugai'
+tags: ['supabase', 'database', '開発環境', 'データ同期']
+---
+
+# Supabase本番環境からローカル環境へのデータ同期
+
+## 概要
+
+本番環境のSupabaseデータベースのデータをローカル開発環境に同期し、同じデータを使用して開発を行うための手順をまとめました。この方法により、ローカル環境で本番と同じデータを使用した開発・テストが可能になります。
+
+## 前提条件
+
+- Supabase CLIがインストールされていること
+- ローカル環境でSupabaseプロジェクトが初期化されていること
+- 本番環境のSupabaseプロジェクトへのアクセス権があること
+
+## 実施手順
+
+### 1. 現状の確認
+
+まず、ローカル環境のSupabaseの状態を確認しました。
+
+```bash
+supabase status
+```
+
+ローカル環境にはすでに本番環境のテーブル構造が反映されていましたが、データは存在していませんでした。
+
+### 2. 本番環境とのリンクの確認
+
+本番環境との連携状態を確認します。
+
+```bash
+supabase projects list
+```
+
+`pkgvisiqnidmpqchosnv`（Saedgewell）プロジェクトが正しくリンクされていることを確認しました。
+
+```bash
+supabase link --project-ref pkgvisiqnidmpqchosnv
+```
+
+### 3. 本番環境からデータをダンプ
+
+本番環境からデータのみをダンプしてシードファイルとして保存します。
+
+```bash
+supabase db dump -f ./supabase/seed.sql --data-only
+```
+
+これにより、`supabase/seed.sql`ファイルが作成されました。
+
+### 4. マイグレーションエラーの対応
+
+データベースのリセットを実行すると、マイグレーションの適用中にエラーが発生しました。
+
+```
+ERROR: cannot drop function storage.get_level(text) because other objects depend on it (SQLSTATE 2BP01)
+```
+
+問題の原因は、マイグレーションファイル（`supabase/migrations/20250320114333_remote_schema.sql`）内の`drop function if exists "storage"."get_level"(name text);`というステートメントでした。この関数には他のオブジェクトからの依存関係があるため、単純に削除することができませんでした。
+
+以下のように問題箇所をコメントアウトして修正しました：
+
+```sql
+-- 修正前
+drop function if exists "storage"."get_level"(name text);
+
+-- 修正後
+-- drop function if exists "storage"."get_level"(name text);
+```
+
+### 5. データベースのリセットと同期
+
+マイグレーションファイルを修正した後、データベースをリセットして本番データを適用しました。
+
+```bash
+supabase db reset
+```
+
+### 6. データのインポート確認
+
+データが正しくインポートされたことを確認するため、いくつかのテーブルのレコード数をチェックしました。
+
+```bash
+psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -c "SELECT count(*) FROM profiles;"
+psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -c "SELECT count(*) FROM projects;"
+```
+
+確認の結果、`profiles`テーブルには3件、`projects`テーブルには2件のデータが正しくインポートされていました。
+
+## 今後のための自動化スクリプト
+
+本番環境からローカル環境へのデータ同期を簡単に行えるよう、以下のようなスクリプトを作成することをお勧めします。このスクリプトを`scripts/sync-prod-data.sh`として保存し、必要に応じて実行できます。
+
+```bash
+#!/bin/bash
+# 本番環境からデータをローカルに取り込むためのスクリプト
+
+# マイグレーションファイルのバックアップを作成
+cp -r supabase/migrations supabase/migrations.bak
+
+# 本番環境からスキーマを取得
+supabase db pull
+
+# シードデータを取得（--data-onlyフラグで構造ではなくデータのみを取得）
+supabase db dump -f ./supabase/seed.sql --data-only
+
+# データベースをリセットしてシードデータを適用
+supabase db reset
+```
+
+## 注意点
+
+1. マイグレーションに問題がある場合は、エラーメッセージを確認して適切に対応する必要があります。
+2. 大量のデータがある場合、ダンプとインポートに時間がかかる場合があります。
+3. 機密データを含む場合は、ローカル環境でのデータ取り扱いに注意してください。
+4. ローカル環境と本番環境で設定が異なる場合があるため、`config.toml`の違いに注意してください。
+
+## まとめ
+
+この手順により、本番環境のSupabaseデータベースからローカル開発環境へのデータ同期が完了しました。今後は同期スクリプトを活用して、定期的にデータを最新状態に保つことができます。これにより、実際のデータを使用した開発・テストが可能になり、より正確な開発作業を行うことができます。 

@@ -1,0 +1,41 @@
+{
+  "title": "ツール",
+  "description": "ツールAPIリファレンス",
+  "order": 5,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "create-document-chunker-tool",
+      "title": "createDocumentChunkerTool()",
+      "description": "ドキュメントチャンカーツールの作成関数",
+      "order": 1
+    },
+    {
+      "name": "create-graph-rag-tool",
+      "title": "createGraphRAGTool()",
+      "description": "グラフRAGツールの作成関数",
+      "order": 2
+    },
+    {
+      "name": "create-vector-query-tool",
+      "title": "createVectorQueryTool()",
+      "description": "ベクトルクエリツールの作成関数",
+      "order": 3
+    },
+    {
+      "name": "mastra-mcp-client",
+      "title": "MastraMCPClient",
+      "description": "MastraMCPClientクラスのリファレンス",
+      "order": 4
+    },
+    {
+      "name": "mcp-configuration",
+      "title": "MCPConfiguration",
+      "description": "MCPConfiguration設定のリファレンス",
+      "order": 5
+    }
+  ]
+}

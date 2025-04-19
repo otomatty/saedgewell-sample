@@ -1,0 +1,333 @@
+---
+title: 'インタラクティブハイライト機能'
+description: '読み上げ中のテキストをリアルタイムでハイライト表示し、コンテンツの種類に応じた補足説明を提供する機能'
+---
+
+# インタラクティブハイライト機能
+
+## 1. 機能概要
+
+読み上げ中のテキストをリアルタイムでハイライト表示し、コンテンツの種類（通常テキスト、コード、専門用語など）に応じた補足説明をサイドパネルまたはツールチップで表示する機能。
+
+### 主要な特徴:
+- テキスト読み上げと同期したハイライト表示
+- コンテンツ種類の自動検出と分類
+- コンテキストに応じた補足情報の動的生成
+- 視覚的フィードバックによる学習サポート
+
+## 2. 技術要件
+
+- **フロントエンド**: 
+  - Next.js 15
+  - React 19
+  - Tailwind CSS v4
+  - shadcn/ui
+- **状態管理**: 
+  - Jotai
+- **API接続**: 
+  - Gemini API（Google AI）
+- **パッケージ**: 
+  - @google/generative-ai
+  - react-syntax-highlighter
+  - @radix-ui/react-tooltip（ツールチップ表示用）
+
+## 3. ユーザーストーリー
+
+- ユーザーとして、読み上げ中の部分が視覚的にハイライトされることで、音声と視覚の両方で内容を追跡したい
+- ユーザーとして、コードブロックが読み上げられる際に、そのコードの目的と使用例の補足説明が見たい
+- ユーザーとして、専門用語が読み上げられる際に、その用語の詳細な説明が自動的に表示されてほしい
+- ユーザーとして、ハイライト部分をクリックすることで、より詳細な説明を表示/非表示できるようにしたい
+
+## 4. アーキテクチャ
+
+### コンポーネント構成:
+1. **ContentProcessor**: ドキュメントコンテンツを解析し、セグメント分割
+2. **HighlightManager**: 現在の読み上げ位置を追跡し、ハイライト表示を制御
+3. **SupplementGenerator**: Gemini APIを使用して補足情報を生成
+4. **SupplementDisplay**: 生成された補足情報を表示
+
+### データフロー:
+1. ドキュメント読み込み → コンテンツ解析 → セグメント分割
+2. 読み上げ開始 → HighlightManagerが位置追跡
+3. 新セグメント到達 → SupplementGeneratorが補足情報生成
+4. 補足情報表示 → ユーザーインタラクション
+
+## 5. APIインターフェース
+
+```typescript
+// lib/ai/supplement-service.ts
+import { atom } from 'jotai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+export type ContentType = 'text' | 'code' | 'technical-term';
+
+export interface SupplementRequest {
+  content: string;     // 補足対象のテキスト
+  contentType: ContentType;  // コンテンツ種類
+  context?: string;    // 前後の文脈（オプション）
+  language?: string;   // コード言語（コードの場合）
+}
+
+export interface SupplementResponse {
+  explanation: string;  // 生成された説明
+  relatedConcepts?: string[]; // 関連概念（オプション）
+  examples?: string[];  // 使用例（オプション）
+  error?: string;       // エラーメッセージ
+}
+
+// Jotaiを使用した状態管理
+export const currentSegmentAtom = atom<number>(0);
+export const segmentsAtom = atom<{text: string, type: ContentType, id: string}[]>([]);
+export const supplementInfoAtom = atom<Record<string, SupplementResponse>>({});
+export const isGeneratingAtom = atom<boolean>(false);
+
+// 補足情報を取得する関数
+export async function generateSupplement(request: SupplementRequest): Promise<SupplementResponse> {
+  // 実装
+}
+```
+
+## 6. UIコンポーネント
+
+### 1. HighlightedContent
+
+ハイライト表示可能なコンテンツ表示コンポーネント
+
+```tsx
+// components/ai/HighlightedContent.tsx
+'use client';
+
+import { useAtom, useAtomValue } from 'jotai';
+import { currentSegmentAtom, segmentsAtom } from '@/lib/ai/supplement-service';
+import { cn } from '@/lib/utils';
+
+interface HighlightedContentProps {
+  className?: string;
+}
+
+export function HighlightedContent({ className }: HighlightedContentProps) {
+  const segments = useAtomValue(segmentsAtom);
+  const [currentSegment, setCurrentSegment] = useAtom(currentSegmentAtom);
+  
+  return (
+    <div className={cn("content-container", className)}>
+      {segments.map((segment, index) => (
+        <span 
+          key={segment.id}
+          className={cn(
+            "text-segment transition-colors duration-200",
+            index === currentSegment ? "bg-yellow-200 dark:bg-yellow-800" : ""
+          )}
+          onClick={() => setCurrentSegment(index)}
+        >
+          {segment.text}
+        </span>
+      ))}
+    </div>
+  );
+}
+```
+
+### 2. SupplementPanel
+
+補足情報表示パネル
+
+```tsx
+// components/ai/SupplementPanel.tsx
+'use client';
+
+import { useAtomValue } from 'jotai';
+import { 
+  currentSegmentAtom, 
+  segmentsAtom, 
+  supplementInfoAtom,
+  isGeneratingAtom
+} from '@/lib/ai/supplement-service';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface SupplementPanelProps {
+  className?: string;
+}
+
+export function SupplementPanel({ className }: SupplementPanelProps) {
+  const currentSegment = useAtomValue(currentSegmentAtom);
+  const segments = useAtomValue(segmentsAtom);
+  const supplementInfo = useAtomValue(supplementInfoAtom);
+  const isGenerating = useAtomValue(isGeneratingAtom);
+  
+  const currentSegmentData = segments[currentSegment];
+  const currentSupplement = currentSegmentData 
+    ? supplementInfo[currentSegmentData.id] 
+    : null;
+  
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>補足情報</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isGenerating ? (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        ) : currentSupplement ? (
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium">説明</h4>
+              <p>{currentSupplement.explanation}</p>
+            </div>
+            
+            {currentSupplement.relatedConcepts && (
+              <div>
+                <h4 className="font-medium">関連概念</h4>
+                <ul className="list-disc pl-5">
+                  {currentSupplement.relatedConcepts.map((concept, i) => (
+                    <li key={i}>{concept}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {currentSupplement.examples && (
+              <div>
+                <h4 className="font-medium">使用例</h4>
+                <ul className="list-disc pl-5">
+                  {currentSupplement.examples.map((example, i) => (
+                    <li key={i}>{example}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">
+            テキストをクリックすると、その部分の補足情報が表示されます。
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### 3. ContentTypeIndicator
+
+コンテンツ種類表示アイコン
+
+```tsx
+// components/ai/ContentTypeIndicator.tsx
+import { ContentType } from '@/lib/ai/supplement-service';
+import { Code, FileText, BookOpen } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ContentTypeIndicatorProps {
+  contentType: ContentType;
+  className?: string;
+}
+
+export function ContentTypeIndicator({ contentType, className }: ContentTypeIndicatorProps) {
+  return (
+    <div className={cn("inline-flex items-center justify-center", className)}>
+      {contentType === 'code' && (
+        <Code className="h-4 w-4 text-blue-500" />
+      )}
+      {contentType === 'technical-term' && (
+        <BookOpen className="h-4 w-4 text-purple-500" />
+      )}
+      {contentType === 'text' && (
+        <FileText className="h-4 w-4 text-gray-500" />
+      )}
+    </div>
+  );
+}
+```
+
+## 7. 実装ステップ
+
+### フェーズ1: 基本実装（2週間）
+- コンテンツセグメント分割の実装
+- 基本的なハイライト表示機能
+- Gemini API連携の基盤構築
+
+```tsx
+// TODO: コンテンツセグメント分割ロジックの実装
+function splitContentIntoSegments(content: string): {text: string, type: ContentType, id: string}[] {
+  // 実装
+}
+
+// TODO: Gemini API連携の基盤構築
+async function setupGeminiAPI() {
+  // 実装
+}
+```
+
+### フェーズ2: 高度な機能追加（2週間）
+- コンテンツ種類の自動検出
+- コンテキストに応じた補足情報生成
+- UIの洗練
+
+```tsx
+// TODO: コンテンツ種類の自動検出ロジック
+function detectContentType(segment: string): ContentType {
+  // 実装
+}
+
+// TODO: コンテキストに応じた補足情報生成
+async function generateContextAwareSupplement(segment: string, context: string): Promise<SupplementResponse> {
+  // 実装
+}
+```
+
+### フェーズ3: 最適化とパフォーマンス向上（1週間）
+- API呼び出しの最適化
+- キャッシング実装
+- エッジケース対応
+
+```tsx
+// TODO: API呼び出しの最適化とキャッシング
+function setupCaching() {
+  // 実装
+}
+
+// TODO: エッジケース対応
+function handleEdgeCases() {
+  // 実装
+}
+```
+
+## 8. テスト計画
+
+- 単体テスト: 各コンポーネントの機能テスト
+- 統合テスト: コンポーネント間の連携テスト
+- パフォーマンステスト: API呼び出し頻度と応答時間の測定
+- ユーザビリティテスト: 実際のユーザーによる使用感評価
+
+```tsx
+// TODO: テストケースの実装
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+
+describe('HighlightedContent', () => {
+  it('should highlight the current segment', () => {
+    // テスト実装
+  });
+});
+```
+
+## 9. リスクと緩和策
+
+| リスク | 緩和策 |
+|-------|--------|
+| API呼び出し頻度の増加によるコスト上昇 | キャッシング実装、類似コンテンツの結果再利用 |
+| 生成される補足情報の質のばらつき | プロンプトの最適化、結果の後処理 |
+| ハイライト位置と音声の同期ずれ | 同期アルゴリズムの調整、ユーザー制御オプション追加 |
+
+## 10. パフォーマンス考慮事項
+
+- 補足情報の事前生成とキャッシング
+- セグメント数の最適化（細かすぎると処理負荷増加）
+- 表示されていない部分の処理遅延（遅延ロード）
+- API呼び出しの頻度調整と結果の再利用

@@ -1,0 +1,43 @@
+{
+  "extends": "@kit/tsconfig/base.json",
+
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "~/*": ["./app/*"],
+      "~/config/*": ["./config/*"],
+      "~/components/*": ["./components/*"],
+      "~/types/*": ["./types/*"],
+      "~/lib/*": ["./lib/*"],
+      "~/actions/*": ["./actions/*"],
+      "~/services/*": ["./services/*"],
+      "~/hooks/*": ["./hooks/*"],
+      "~/store/*": ["./store/*"]
+    },
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "*.ts",
+    "*.tsx",
+    "./config/**/*.ts",
+    "components/**/*",
+    "lib/**/*.ts",
+    "app",
+    "docs",
+    "types/**/*.d.ts",
+    "types/mdx/types.ts",
+    "hooks/mdx/hooks",
+    "hooks/mdx/use-scroll-to-anchor.ts"
+  ],
+  "exclude": ["node_modules", ".next"]
+}

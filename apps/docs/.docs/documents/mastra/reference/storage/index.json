@@ -1,0 +1,29 @@
+{
+  "title": "ストレージ",
+  "description": "ストレージAPIリファレンス",
+  "order": 8,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "libsql-storage",
+      "title": "LibSQL Storage",
+      "description": "LibSQLストレージのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "postgresql-storage",
+      "title": "PostgreSQL Storage",
+      "description": "PostgreSQLストレージのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "upstash-storage",
+      "title": "Upstash Storage",
+      "description": "Upstashストレージのリファレンス",
+      "order": 3
+    }
+  ]
+}

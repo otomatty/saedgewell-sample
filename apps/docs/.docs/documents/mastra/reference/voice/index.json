@@ -1,0 +1,71 @@
+{
+  "title": "音声",
+  "description": "音声APIリファレンス",
+  "order": 11,
+  "status": "published",
+  "version": "1.0.0",
+  "lastUpdated": "2024-03-18",
+  "maintainers": ["Akimasa Sugai"],
+  "files": [
+    {
+      "name": "mastra-voice",
+      "title": "Mastra Voice",
+      "description": "Mastra Voiceのリファレンス",
+      "order": 1
+    },
+    {
+      "name": "composite-voice",
+      "title": "Composite Voice",
+      "description": "Composite Voiceのリファレンス",
+      "order": 2
+    },
+    {
+      "name": "deepgram",
+      "title": "Deepgram",
+      "description": "Deepgramプロバイダーのリファレンス",
+      "order": 3
+    },
+    {
+      "name": "elevenlabs",
+      "title": "ElevenLabs",
+      "description": "ElevenLabsプロバイダーのリファレンス",
+      "order": 4
+    },
+    {
+      "name": "google",
+      "title": "Google",
+      "description": "Googleプロバイダーのリファレンス",
+      "order": 5
+    },
+    {
+      "name": "murf",
+      "title": "Murf",
+      "description": "Murfプロバイダーのリファレンス",
+      "order": 6
+    },
+    {
+      "name": "openai",
+      "title": "OpenAI",
+      "description": "OpenAIプロバイダーのリファレンス",
+      "order": 7
+    },
+    {
+      "name": "openai-realtime",
+      "title": "OpenAI Realtime",
+      "description": "OpenAI Realtimeプロバイダーのリファレンス",
+      "order": 8
+    },
+    {
+      "name": "playai",
+      "title": "PlayAI",
+      "description": "PlayAIプロバイダーのリファレンス",
+      "order": 9
+    },
+    {
+      "name": "speechify",
+      "title": "Speechify",
+      "description": "Speechifyプロバイダーのリファレンス",
+      "order": 10
+    }
+  ]
+}
